@@ -17,7 +17,7 @@ describe('Users API', () => {
     step('register user', async () => {
         const ret = await s.app.inject({
             method: 'POST',
-            url: '/auth/registerUser',
+            url: '/user/registerUser',
             payload: {
                 username: 'test',
                 password: 'test'
@@ -32,7 +32,7 @@ describe('Users API', () => {
     step('login user', async () => {
         const ret = await s.app.inject({
             method: 'POST',
-            url: '/auth/loginUser',
+            url: '/user/loginUser',
             payload: {
                 username: 'test',
                 password: 'test'

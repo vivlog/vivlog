@@ -3,8 +3,11 @@ import { createUserApi } from './api'
 import { User } from './entities'
 import { UserService } from './service'
 
-function setup(host: ServerHost) {
+function onActivate(host: ServerHost) {
     host.container.register(UserService.name, new UserService(host.container))
+}
+
+function onAllActivated(host: ServerHost) {
     createUserApi(host)
 }
 
@@ -17,7 +20,8 @@ const meta = {
 const entities = [User]
 
 export default {
-    setup,
+    onActivate,
+    onAllActivated,
     entities,
     meta
 }

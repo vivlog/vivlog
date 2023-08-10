@@ -16,4 +16,5 @@ export class ConfigProvider {
     get(key: keyof ConfigType, defaultValue: ConfigType[keyof ConfigType] | undefined = undefined) {
         return this.config[key] || defaultValue
     }
+
 }

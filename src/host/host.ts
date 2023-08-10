@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Extension, Host, Logger } from './types'
-import { topoSort } from '../utils/algorithms'
-import { Container } from '../container'
-import { FastifyInstance } from 'fastify'
+import { Static, TSchema } from '@sinclair/typebox'
+import { FastifyInstance, FastifyRequest } from 'fastify'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../config'
+import { Container } from '../container'
+import { topoSort } from '../utils/algorithms'
+import { Extension, Host, Logger } from './types'
+
+export type RpcRequest<T extends TSchema> = FastifyRequest<{
+    Body: Static<T>
+}>
 
 export class ServerHost implements Host {
 
@@ -43,11 +48,31 @@ export class ServerHost implements Host {
                 i => Object.keys(extensions[i].meta.depends)
             ).map(i => extensions[i])
         // TODO: version compatibility check
-        retExtensions.forEach((extension) => {
-            this.logger.debug('setup extension %s', extension.meta.name)
-            extension.setup(this)
+        retExtensions.forEach((e) => {
+            this.logger.debug('setup extension %s', e.meta.name)
+            e.onActivate && e.onActivate(this)
+        })
+        retExtensions.forEach((e) => {
+            e.onAllActivated && e.onAllActivated(this)
         })
         return retExtensions
+    }
+
+    addRoute<T extends TSchema>(module: string, action: string, schema: T, handler: (req: RpcRequest<T>) => any) {
+        this.logger.debug('add route %s.%s', module, action)
+        this.app.route({
+            method: 'POST',
+            schema: {
+                body: schema
+            },
+            url: `/${module}/${action}`,
+            handler: async (req: RpcRequest<T>, res) => {
+                const ret = await handler(req)
+                res.send({
+                    data: ret
+                })
+            }
+        })
     }
 
     async start() {
@@ -55,9 +80,8 @@ export class ServerHost implements Host {
             this.logger.warn('db is initialized')
         }
         await this.db.initialize()
-        const port: number = 3000
         const addr = await this.app.listen({
-            port
+            port: parseInt(this.config.get('port', '9000')!),
         })
         this.logger.debug('server started at %s', addr)
     }

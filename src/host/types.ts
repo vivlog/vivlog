@@ -17,7 +17,11 @@ export interface Extension {
         version: string
         depends: Record<string, string>
     }
-    setup: (host: Host) => void
+    onActivate?: (host: Host) => void
+    onAllActivated?: (host: Host) => void
+    onReady?: (host: Host) => void
+    onDeactivate?: (host: Host) => void
+    onAllDeactivated?: (host: Host) => void
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     entities?: any[]
 }

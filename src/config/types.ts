@@ -1,4 +1,5 @@
 export const defaultRawConfig = {
+    port: '9000',
     extensionDir: '',
     dbPath: '',
 }

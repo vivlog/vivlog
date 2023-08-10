@@ -1,10 +1,10 @@
-import { DataSource } from 'typeorm'
-import { Container } from '../../../container'
-import { AppJwtPayload, User, UserDto, UserLoginResponse } from './entities'
-import { BadRequestError, Logger } from '../../../host/types'
 import bcrypt from 'bcrypt'
 import * as jwt from 'jsonwebtoken'
+import { DataSource } from 'typeorm'
+import { Container } from '../../../container'
+import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
+import { AppJwtPayload, LoginDto, UserLoginResponse as LoginRes, RegisterDto, User, UserDto } from './entities'
 
 
 export class UserService {
@@ -15,7 +15,7 @@ export class UserService {
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
     }
 
-    async registerUser(username: string, password: string): Promise<UserDto> {
+    async registerUser({ username, password }: RegisterDto): Promise<UserDto> {
         this.logger.debug('register user %s', username)
 
         // no duplicate username
@@ -40,7 +40,7 @@ export class UserService {
         return ret
     }
 
-    async loginUser(username: string, password: string): Promise<UserLoginResponse> {
+    async loginUser({ username, password }: LoginDto): Promise<LoginRes> {
         this.logger.debug('login user %s', username)
         const user = await this.db.manager.findOne(User, {
             where: {

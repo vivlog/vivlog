@@ -1,3 +1,4 @@
+import { Static, Type } from '@sinclair/typebox'
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
@@ -25,3 +26,17 @@ export type UserLoginResponse = {
 export type AppJwtPayload = {
     sub: string // user id
 }
+
+export const registerSchema = Type.Object({
+    username: Type.String(),
+    password: Type.String()
+})
+
+export type RegisterDto = Static<typeof registerSchema>
+
+export const loginSchema = Type.Object({
+    username: Type.String(),
+    password: Type.String()
+})
+
+export type LoginDto = Static<typeof loginSchema>
