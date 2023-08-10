@@ -1,20 +1,20 @@
-import dotenv from 'dotenv'
 import { constantCase } from 'change-case'
+import dotenv from 'dotenv'
 
 export function createDotEnvConfigLoader<ConfigType>(configKeys: string[],
-    envPrefix: string) {
+    envPrefix: string): () => Partial<ConfigType> {
     return () => {
+        const config = Object.create(null)
         const result = dotenv.config()
         if (result.error) {
-            throw result.error
+            return config
         }
 
         const env = result.parsed
         if (!env) {
-            throw new Error('No env file found')
+            return config
         }
         // TODO: load config items from env
-        const config = Object.create(null)
         for (const key of configKeys) {
             const envKey = `${envPrefix}${constantCase(key)}`.toUpperCase()
             if (!env[envKey]) {
@@ -22,7 +22,7 @@ export function createDotEnvConfigLoader<ConfigType>(configKeys: string[],
             }
             config[key] = env[envKey]
         }
-        return config as Partial<ConfigType>
+        return config
     }
 }
 

@@ -2,10 +2,9 @@ import { debug } from 'console'
 import { ConfigType } from './types'
 
 export function validateConfig(config: ConfigType) {
-    debug('validateConfig', config)
-    if (!config.extensionDir) {
-        throw new Error('extensionDir is required')
-    }
+    // if (!config.extensionDir) {
+    //     throw new Error('extensionDir is required')
+    // }
 }
 
 export class ConfigProvider {

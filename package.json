@@ -21,7 +21,7 @@
   "scripts": {
     "start": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
-    "test": "mocha --require mocha-steps ts-node/register src/**/*.spec.ts"
+    "test": "mocha --require mocha-steps --require ts-node/register 'src/**/*.spec.ts'"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.2",
