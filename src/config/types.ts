@@ -1,10 +1,11 @@
 export const defaultRawConfig = {
-    extensionDir: ''
+    extensionDir: '',
+    dbPath: '',
 }
 
-export type RawConfig = typeof defaultRawConfig
+export type ConfigType = typeof defaultRawConfig
 
-export const configKeys = Object.keys(defaultRawConfig) as (keyof RawConfig)[]
+export const configKeys = Object.keys(defaultRawConfig) as (keyof ConfigType)[]
 
 
 

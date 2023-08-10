@@ -1,32 +1,43 @@
 import 'reflect-metadata'
-import { loadExtensions } from './host/extension'
-import { ServerHost } from './host/host'
-import { config } from './config'
-import { builtinExtensions } from './app/extensions'
-import { Container } from './container'
 import fastify from 'fastify'
-import { DataSource } from 'typeorm'
-import { Extension } from './host/types'
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import pino from 'pino'
 
-const logger = pino({
-    transport: {
-        target: 'pino-pretty'
-    },
-    level: 'debug',
-})
+import { builtinExtensions } from './app/extensions'
+import { ConfigProvider, validateConfig } from './config'
+import { Container } from './container'
+import { DataSource } from 'typeorm'
+import { defaultRawConfig, configKeys } from './config/types'
+import { Extension } from './host/types'
+import { loadExtensions } from './host/extension'
+import { loadRawConfig } from './config/loader'
+import { ServerHost } from './host/host'
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 
-export default (async () => {
+
+export async function bootstrap() {
+    const logger = pino({
+        transport: {
+            target: 'pino-pretty'
+        },
+        level: 'debug',
+    })
+
+    const config = new ConfigProvider(loadRawConfig({
+        appName: 'bits',
+        emptyConfig: defaultRawConfig,
+        configKeys,
+        validator: validateConfig
+    }))
+
     try {
-        const externalExtensions = await loadExtensions(config.extensionDir)
+        const externalExtensions = await loadExtensions(config.get('extensionDir'))
         const exts: Extension[] = [...externalExtensions, ...builtinExtensions]
         const app = fastify().withTypeProvider<TypeBoxTypeProvider>()
         const entities = exts.map(i => i.entities || []).flat()
         console.info('entities', entities)
         const db = new DataSource({
             type: 'sqlite',
-            database: 'db.sqlite',
+            database: config.get('dbPath', 'db.sqlite')!,
             entities,
             synchronize: true
         })
@@ -36,6 +47,7 @@ export default (async () => {
             db,
             app,
             logger,
+            config,
             container
         )
         await server.start()
@@ -44,4 +56,8 @@ export default (async () => {
         console.error(e)
         process.exit(1)
     }
-})()
+}
+
+if (require.main === module) {
+    bootstrap()
+}

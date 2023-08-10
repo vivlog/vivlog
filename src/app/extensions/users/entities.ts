@@ -10,6 +10,18 @@ export class User {
 
     @Column()
     password: string
+
+    @Column()
+    role: string
 }
 
+export type UserDto = Omit<User, 'password'>;
 
+export type UserLoginResponse = {
+    token: string
+    user: UserDto
+}
+
+export type AppJwtPayload = {
+    sub: string // user id
+}

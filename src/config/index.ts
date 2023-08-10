@@ -1,23 +1,19 @@
 import { debug } from 'console'
-import { loadRawConfig } from './loader'
-import { RawConfig, configKeys, defaultRawConfig } from './types'
+import { ConfigType } from './types'
 
-export function validateConfig(config: RawConfig) {
+export function validateConfig(config: ConfigType) {
     debug('validateConfig', config)
     if (!config.extensionDir) {
         throw new Error('extensionDir is required')
     }
 }
 
-export function setupConfig(config: RawConfig) {
-    debug('config', config)
+export class ConfigProvider {
 
-    return config
+    constructor(private config: ConfigType) {
+    }
+
+    get(key: keyof ConfigType, defaultValue: ConfigType[keyof ConfigType] | undefined = undefined) {
+        return this.config[key] || defaultValue
+    }
 }
-
-export const config = setupConfig(loadRawConfig({
-    appName: 'bits',
-    emptyConfig: defaultRawConfig,
-    configKeys,
-    validator: validateConfig
-}))

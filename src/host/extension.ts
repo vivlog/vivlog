@@ -3,8 +3,8 @@ import * as fs from 'fs'
 /**
  * load all plugins from a directory, without any dependency resolution or validation
  */
-export function loadExtensions(pluginDir: string) {
-    if (!fs.existsSync(pluginDir)) {
+export function loadExtensions(pluginDir: string | undefined) {
+    if (!pluginDir || !fs.existsSync(pluginDir)) {
         return []
     }
     const promises = fs.readdirSync(pluginDir).filter((file: string) => {

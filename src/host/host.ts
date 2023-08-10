@@ -4,6 +4,7 @@ import { topoSort } from '../utils/algorithms'
 import { Container } from '../container'
 import { FastifyInstance } from 'fastify'
 import { DataSource } from 'typeorm'
+import { ConfigProvider } from '../config'
 
 export class ServerHost implements Host {
 
@@ -13,6 +14,7 @@ export class ServerHost implements Host {
         public db: DataSource,
         public app: FastifyInstance,
         public logger: Logger,
+        public config: ConfigProvider,
         public container: Container
     ) {
 
@@ -20,6 +22,7 @@ export class ServerHost implements Host {
         this.container.register('db', this.db)
         this.container.register('app', this.app)
         this.container.register('logger', this.logger)
+        this.container.register('config', this.config)
         this.extensions = this.setupExtensions(extensions)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         this.app.get('/health', (_req, _res) => {
