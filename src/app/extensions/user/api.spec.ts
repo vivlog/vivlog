@@ -1,10 +1,11 @@
-import { describe } from 'mocha'
-import { bootstrap } from '../../../server'
-import { ServerHost } from '../../../host/host'
 import assert from 'assert'
-import { defaultRawConfig } from '../../../config/types'
-import { step } from 'mocha-steps'
 import * as jwt from 'jsonwebtoken'
+import { describe } from 'mocha'
+import { step } from 'mocha-steps'
+import { defaultRawConfig } from '../../../config/types'
+import { ServerHost } from '../../../host/host'
+import { bootstrap } from '../../../server'
+import { inject } from '../../../utils/testing'
 import { AppJwtPayload } from './entities'
 
 describe('Users API', () => {
@@ -15,13 +16,9 @@ describe('Users API', () => {
     })
 
     step('register user', async () => {
-        const ret = await s.app.inject({
-            method: 'POST',
-            url: '/user/registerUser',
-            payload: {
-                username: 'test',
-                password: 'test'
-            }
+        const ret = await inject(s, 'user', 'registerUser', {
+            username: 'test',
+            password: 'test'
         })
         assert.strictEqual(ret.statusCode, 200)
         const data = JSON.parse(ret.body)
@@ -30,13 +27,9 @@ describe('Users API', () => {
     })
 
     step('login user', async () => {
-        const ret = await s.app.inject({
-            method: 'POST',
-            url: '/user/loginUser',
-            payload: {
-                username: 'test',
-                password: 'test'
-            }
+        const ret = await inject(s, 'user', 'loginUser', {
+            username: 'test',
+            password: 'test'
         })
         assert.strictEqual(ret.statusCode, 200)
         const data = JSON.parse(ret.body)

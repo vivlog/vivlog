@@ -19,7 +19,6 @@ export interface Extension {
     }
     onActivate?: (host: Host) => void
     onAllActivated?: (host: Host) => void
-    onReady?: (host: Host) => void
     onDeactivate?: (host: Host) => void
     onAllDeactivated?: (host: Host) => void
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

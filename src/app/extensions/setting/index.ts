@@ -1,4 +1,5 @@
 import { ServerHost } from '../../../host/host'
+import { Extension } from '../../../host/types'
 import { createSettingApi } from './api'
 import { Setting } from './entities'
 import { SettingService } from './service'
@@ -7,7 +8,7 @@ function onActivate(host: ServerHost) {
     host.container.register(SettingService.name, new SettingService(host.container))
 }
 
-function onReady(host: ServerHost) {
+function onAllActivated(host: ServerHost) {
     createSettingApi(host)
 }
 
@@ -21,8 +22,8 @@ const entities = [Setting]
 
 export default {
     onActivate,
-    onReady,
+    onAllActivated,
     entities,
     meta
-}
+} as Extension
 

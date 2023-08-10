@@ -50,10 +50,10 @@ export class ServerHost implements Host {
         // TODO: version compatibility check
         retExtensions.forEach((e) => {
             this.logger.debug('setup extension %s', e.meta.name)
-            e.onActivate && e.onActivate(this)
+            e.onActivate?.(this)
         })
         retExtensions.forEach((e) => {
-            e.onAllActivated && e.onAllActivated(this)
+            e.onAllActivated?.(this)
         })
         return retExtensions
     }

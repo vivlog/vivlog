@@ -1,4 +1,5 @@
 import { ServerHost } from '../../../host/host'
+import { Extension } from '../../../host/types'
 import { createUserApi } from './api'
 import { User } from './entities'
 import { UserService } from './service'
@@ -24,5 +25,5 @@ export default {
     onAllActivated,
     entities,
     meta
-}
+} as Extension
 
