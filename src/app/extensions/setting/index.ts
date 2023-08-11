@@ -1,21 +1,23 @@
-import { ServerHost } from '../../../host/host'
-import { Extension } from '../../../host/types'
+import { Extension, Host } from '../../../host/types'
 import { createSettingApi } from './api'
 import { Setting } from './entities'
 import { SettingService } from './service'
 
-function onActivate(host: ServerHost) {
+function onActivate(host: Host) {
     host.container.register(SettingService.name, new SettingService(host.container))
 }
 
-function onAllActivated(host: ServerHost) {
+function onAllActivated(host: Host) {
     createSettingApi(host)
 }
 
 const meta = {
     name: 'setting-module',
-    version: '1.0.0-alpha',
-    depends: {}
+    version: '0.0.1-alpha',
+    depends: {
+        'core': '^0.0.1',
+        'user-module': '^0.0.1'
+    }
 }
 
 const entities = [Setting]

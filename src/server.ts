@@ -23,7 +23,7 @@ export async function bootstrap() {
     })
 
     const config = new ConfigProvider(loadRawConfig({
-        appName: 'bits',
+        appName: 'vivlog',
         emptyConfig: defaultRawConfig,
         configKeys,
         validator: validateConfig

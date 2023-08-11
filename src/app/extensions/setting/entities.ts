@@ -55,3 +55,7 @@ export const deleteItemsSchema = Type.Object({
 })
 
 export type DeleteItemsDto = Static<typeof deleteItemsSchema>
+
+export const initSettingsSchema = setItemsSchema
+
+export type InitSettingsDto = Static<typeof initSettingsSchema>

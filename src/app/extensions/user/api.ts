@@ -1,8 +1,8 @@
-import { ServerHost } from '../../../host/host'
+import { Host } from '../../../host/types'
+import { loginSchema, registerSchema } from './entities'
 import { UserService } from './service'
-import { registerSchema, loginSchema } from './entities'
 
-export function createUserApi(host: ServerHost) {
+export function createUserApi(host: Host) {
 
     const userService = host.container.resolve(UserService.name) as UserService
 

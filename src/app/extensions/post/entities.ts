@@ -1,99 +1,143 @@
 import { Static, Type } from '@sinclair/typebox'
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
-/*
-Context:
 
-u1: user 1, on local site
-s1: site 1, a local site
-u2: user 2, on site 2
-s2: site 2, a remote site
-
-use case 1: u1@s1 create a post@s1
-use case 2: u1@s1 update a post@s1
-use case 3: u1@s1 delete a post@s1
-use case 4: u1@s1 create a post@s2 (reply to a post) *
-use case 5: u1@s1 update a post@s2 (reply to a post)
-use case 6: u1@s1 delete a post@s2 (reply to a post)
-use case 7: u1@s2 create a post@s1 (reply to a post) * forbidden or need authorization
-use case 8: u1@s2 update a post@s1 (reply to a post)
-use case 9: u1@s2 delete a post@s1 (reply to a post)
-use case 10: u1@s2 create a post@s2 (reply to a post) * forbidden or need authorization
-use case 11: u1@s2 update a post@s2 (reply to a post)
-use case 12: u1@s2 delete a post@s2 (reply to a post)
-use case 13: u1@s2 create a reply@s2 to u3@s2's post
-
-Email!
-
-*/
 @Entity()
 export class Post {
     @PrimaryGeneratedColumn()
     id: number
 
     @Column()
-    viv_id: string // domain.com+uuid
+    site: string
+
+    @Column()
+    uuid: string
 
     @Column()
     title?: string
+
+    @Column({ default: 'thread' })
+    // thread, reply, comment, etc.
+    type: string
+
+    @Column()
+    // url slug
+    slug?: string
 
     @Column('simple-json')
     content?: unknown
 
     @Column()
-    author?: string
-
-    @Column('simple-json')
-    attachments?: unknown
+    author_uuid?: string
 
     @Column()
-    name: string
+    author_site?: string
 
     @Column('simple-json')
-    custom: unknown
+    attachment_vids?: unknown // like featuredMedias
+
+    @Column('simple-json')
+    custom?: unknown
+
+    @Column({ default: 'published' })
+    status: string // draft | future | published | deleted
+
+    @Column({ default: 'public' })
+    visibility: string // public | private | internal
+
+    @Column({ default: 'standard' })
+    format: string // standard | link
+
+    @Column()
+    sticky: boolean
 
     @CreateDateColumn()
-    created_at: Date;
+    created_at: Date
 
     @UpdateDateColumn()
-    updated_at: Date;
+    updated_at: Date
+
+    @Column()
+    published_at: Date
+
+    // TODO: 圈子？
 }
 
 export type PostDto = typeof Post;
 
-export const setItemSchema = Type.Object({
-    group: Type.String(),
-    name: Type.String(),
-    value: Type.Unknown(),
+const createPostSchemaObj = {
+    site: Type.String(),
+    title: Type.Optional(Type.String()),
+    type: Type.Union([
+        Type.Literal('thread'),
+        Type.Literal('reply'),
+        Type.Literal('comment'),
+    ]),
+    slug: Type.Optional(Type.String()),
+    content: Type.Optional(Type.Unknown()),
+    author_uuid: Type.Optional(Type.String()),
+    author_site: Type.Optional(Type.String()),
+    attachment_vids: Type.Optional(Type.Unknown()),
+    custom: Type.Optional(Type.Unknown()),
+    // draft | future | published | deleted
+    status: Type.Union([
+        Type.Literal('draft'),
+        Type.Literal('future'),
+        Type.Literal('published'),
+        Type.Literal('deleted'),
+    ]),
+    // public | private | internal
+    visibility: Type.Union([
+        Type.Literal('public'),
+        Type.Literal('private'),
+        Type.Literal('internal'),
+    ]),
+    // standard | link
+    format: Type.Union([
+        Type.Literal('standard'),
+        Type.Literal('link'),
+    ]),
+    sticky: Type.Boolean(),
+    published_at: Type.Optional(Type.String()),
+}
+
+export const createPostSchema = Type.Object(createPostSchemaObj)
+
+export type CreatePostDto = Static<typeof createPostSchema>
+
+export const updatePostSchema = Type.Object({
+    uuid: Type.String(),
+    ...createPostSchemaObj,
 })
 
-export type SetItemDto = Static<typeof setItemSchema>
+export type UpdatePostDto = Static<typeof updatePostSchema>
 
-export const setItemsSchema = Type.Array(setItemSchema)
-
-export type SetItemsDto = Static<typeof setItemsSchema>
-
-export const getItemSchema = Type.Object({
-    group: Type.String(),
-    name: Type.String()
+export const deletePostSchema = Type.Object({
+    site: Type.String(),
+    uuid: Type.String(),
 })
 
-export type GetItemDto = Static<typeof getItemSchema>
+export type DeletePostDto = Static<typeof deletePostSchema>
 
-export const getItemsSchema = Type.Object({
-    group: Type.Optional(Type.String()),
+export const getPostSchema = Type.Object({
+    site: Type.String(),
+    uuid: Type.String(),
 })
 
-export type GetItemsDto = Static<typeof getItemsSchema>
+export type GetPostDto = Static<typeof getPostSchema>
 
-export const deleteItemSchema = Type.Object({
-    group: Type.String(),
-    name: Type.String()
+export const getPostsSchema = Type.Object({
+    filters: Type.Optional(Type.Object({
+        title: Type.Optional(Type.String()),
+        site: Type.Optional(Type.String()),
+        type: Type.Optional(Type.String()),
+        status: Type.Optional(Type.String()),
+        visibility: Type.Optional(Type.String()),
+        format: Type.Optional(Type.String()),
+        sticky: Type.Optional(Type.Boolean()),
+    })),
+    limit: Type.Optional(Type.Number()),
+    offset: Type.Optional(Type.Number()),
+    with_total: Type.Optional(Type.Boolean()),
 })
 
-export type DeleteItemDto = Static<typeof deleteItemSchema>
-
-export const deleteItemsSchema = Type.Object({
-    group: Type.String(),
-})
-
-export type DeleteItemsDto = Static<typeof deleteItemsSchema>
+export type GetPostsDto = Static<typeof getPostsSchema>

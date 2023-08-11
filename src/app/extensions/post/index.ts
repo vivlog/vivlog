@@ -1,24 +1,29 @@
-import { ServerHost } from '../../../host/host'
-import { Extension } from '../../../host/types'
-import { createSettingApi } from './api'
-import { Setting } from './entities'
-import { SettingService } from './service'
+import { Extension, Host, Logger } from '../../../host/types'
+import { createPostApi } from './api'
+import { Post } from './entities'
+import { PostService } from './service'
 
-function onActivate(host: ServerHost) {
-    host.container.register(SettingService.name, new SettingService(host.container))
+function onActivate(host: Host) {
+    host.container.register(PostService.name, new PostService(host.container))
 }
 
-function onAllActivated(host: ServerHost) {
-    createSettingApi(host)
+function onAllActivated(host: Host) {
+    const logger = host.container.resolve('logger') as Logger
+    createPostApi(host)
+    logger.info('Post module activated')
 }
 
 const meta = {
-    name: 'setting-module',
-    version: '1.0.0-alpha',
-    depends: {}
+    name: 'post-module',
+    version: '0.0.1-alpha',
+    depends: {
+        'core': '^0.0.1',
+        'user-module': '0.0.1-alpha',
+        'setting-module': '0.0.1-alpha'
+    }
 }
 
-const entities = [Setting]
+const entities = [Post]
 
 export default {
     onActivate,

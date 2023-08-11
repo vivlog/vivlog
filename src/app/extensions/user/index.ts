@@ -1,21 +1,22 @@
-import { ServerHost } from '../../../host/host'
-import { Extension } from '../../../host/types'
+import { Extension, Host } from '../../../host/types'
 import { createUserApi } from './api'
 import { User } from './entities'
 import { UserService } from './service'
 
-function onActivate(host: ServerHost) {
+function onActivate(host: Host) {
     host.container.register(UserService.name, new UserService(host.container))
 }
 
-function onAllActivated(host: ServerHost) {
+function onAllActivated(host: Host) {
     createUserApi(host)
 }
 
 const meta = {
     name: 'user-module',
-    version: '1.0.0-alpha',
-    depends: {}
+    version: '0.0.1-alpha',
+    depends: {
+        'core': '^0.0.1',
+    }
 }
 
 const entities = [User]

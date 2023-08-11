@@ -1,4 +1,5 @@
+import post from './post'
 import setting from './setting'
-import users from './user'
+import user from './user'
 
-export const builtinExtensions = [users, setting]
+export const builtinExtensions = [user, setting, post]

@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export interface Host {
+import { Container } from '../container'
 
+export interface Host {
+    container: Container
 }
 
 export type Logger = {
@@ -28,6 +30,30 @@ export interface Extension {
 export class BadRequestError extends Error {
     statusCode = 400
     code = 'BAD_REQUEST'
+    constructor(message: string) {
+        super(message)
+    }
+}
+
+export class UnauthorizedError extends Error {
+    statusCode = 401
+    code = 'UNAUTHORIZED'
+    constructor(message: string) {
+        super(message)
+    }
+}
+
+export class ForbiddenError extends Error {
+    statusCode = 403
+    code = 'FORBIDDEN'
+    constructor(message: string) {
+        super(message)
+    }
+}
+
+export class NotFoundError extends Error {
+    statusCode = 404
+    code = 'NOT_FOUND'
     constructor(message: string) {
         super(message)
     }

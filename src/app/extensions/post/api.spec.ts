@@ -5,107 +5,39 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { inject } from '../../../utils/testing'
-import { Setting } from './entities'
+import { AdminSession, createNewAdminSession } from '../../util/testing'
 
-describe('Settings API', () => {
-    let s: ServerHost
+describe('Posts API', () => {
+    let host: ServerHost
+    let sess: AdminSession
     before(async () => {
         defaultRawConfig.dbPath = ':memory:'
-        s = await bootstrap()
+        host = await bootstrap()
+    })
+    step('create a post while not logged in', async () => {
+        const ret = await inject(host, 'post', 'createPost', {
+            title: 'test',
+            content: 'test'
+        })
+        assert.strictEqual(ret.statusCode, 403)
+    })
+    step('create a new admin session', async () => {
+        sess = await createNewAdminSession(host)
     })
 
-    step('get items from empty settings', async () => {
-        const ret = await inject(s, 'setting', 'getItems', {})
-        assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
-        const items: Setting[] = data.data
-        assert.strictEqual(items.length, 0)
-    })
-
-    step('set default.test = "value_test"', async () => {
-        const ret = await inject(s, 'setting', 'setItem', {
-            group: 'default',
-            name: 'test',
-            value: 'value_test'
+    step('create a post', async () => {
+        const ret = await sess.inject('post', 'createPost', {
+            title: 'test',
+            content: 'test'
         })
         assert.strictEqual(ret.statusCode, 200)
         const data = JSON.parse(ret.body)
         assert.strictEqual(data.data.id, 1)
-        assert.strictEqual(data.data.group, 'default')
-        assert.strictEqual(data.data.name, 'test')
-        assert.strictEqual(data.data.value, 'value_test')
-    })
-
-    step('bulk set group2.test_i = i', async () => {
-        const ret = await inject(s, 'setting', 'setItems',
-            Array.from(Array(10).keys()).map(i => ({
-                group: 'group2',
-                name: 'test_' + i,
-                value: i
-            }))
-        )
-        assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
-        assert.strictEqual(data.data.length, 10)
-        data.data.forEach((item: Setting, i: number) => {
-            assert.strictEqual(item.group, 'group2')
-            assert.strictEqual(item.name, 'test_' + i)
-            assert.strictEqual(item.value, i)
-        })
-    })
-
-    step('get items in default group', async () => {
-        const ret = await inject(s, 'setting', 'getItems', {
-            group: 'default'
-        })
-        assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
-        const items: Setting[] = data.data
-        assert.strictEqual(items.length, 1)
-        assert.strictEqual(items[0].group, 'default')
-        assert.strictEqual(items[0].name, 'test')
-        assert.strictEqual(items[0].value, 'value_test')
-    })
-
-    step('delete default.test', async () => {
-        const ret = await inject(s, 'setting', 'deleteItem', {
-            group: 'default',
-            name: 'test'
-        })
-
-        assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
-        assert.strictEqual(data.data, null)
-    })
-
-    step('get items in default group', async () => {
-        const ret = await inject(s, 'setting', 'getItems', {
-            group: 'default'
-        })
-        assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
-        const items: Setting[] = data.data
-        assert.strictEqual(items.length, 0)
-    })
-
-    step('delete items in group2', async () => {
-        const ret = await inject(s, 'setting', 'deleteItems', {
-            group: 'group2'
-        })
-        assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
-        assert.strictEqual(data.data, null)
-    })
-
-    step('get all items', async () => {
-        const ret = await inject(s, 'setting', 'getItems', {})
-        assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
-        const items: Setting[] = data.data
-        assert.strictEqual(items.length, 0)
+        assert.strictEqual(data.data.title, 'test')
+        assert.strictEqual(data.data.content, 'test')
     })
 
     after(async () => {
-        await s.stop()
+        await host.stop()
     })
 })

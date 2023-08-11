@@ -13,7 +13,11 @@ export function topoSort<NameType, ItemType>(
     const indegree = new Array(items.length).fill(0)
     for (let i = 0; i < items.length; i++) {
         for (const dep of dependsGetter(i)) {
-            indegree[nameToIndex.get(dep)]++
+            const dep_idx = nameToIndex.get(dep)
+            if (dep_idx === undefined) {
+                throw new Error(`Cannot find dependency item ${dep}`)
+            }
+            indegree[dep_idx]++
         }
     }
 
@@ -29,9 +33,10 @@ export function topoSort<NameType, ItemType>(
         const i = queue.shift()!
         result.push(i)
         for (const dep of dependsGetter(i)) {
-            indegree[nameToIndex.get(dep)]--
-            if (indegree[nameToIndex.get(dep)] === 0) {
-                queue.push(nameToIndex.get(dep))
+            const dep_idx = nameToIndex.get(dep)!
+            indegree[dep_idx]--
+            if (indegree[dep_idx] === 0) {
+                queue.push(dep_idx)
             }
         }
     }

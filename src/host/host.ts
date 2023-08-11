@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Static, TSchema } from '@sinclair/typebox'
+import assert from 'assert'
 import { FastifyInstance, FastifyRequest } from 'fastify'
+import * as semver from 'semver'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../config'
 import { Container } from '../container'
-import { topoSort } from '../utils/algorithms'
 import { Extension, Host, Logger } from './types'
 
 export type RpcRequest<T extends TSchema> = FastifyRequest<{
@@ -26,6 +27,7 @@ export class ServerHost implements Host {
         this.container.register('host', this)
         this.container.register('db', this.db)
         this.container.register('app', this.app)
+        this.container.register('routes', new RouteHelper(this.app))
         this.container.register('logger', this.logger)
         this.container.register('config', this.config)
         this.extensions = this.setupExtensions(extensions)
@@ -42,38 +44,39 @@ export class ServerHost implements Host {
     }
 
     setupExtensions(extensions: Extension[]): Extension[] {
-        const retExtensions =
-            topoSort(extensions,
-                i => extensions[i].meta.name,
-                i => Object.keys(extensions[i].meta.depends)
-            ).map(i => extensions[i])
-        // TODO: version compatibility check
-        retExtensions.forEach((e) => {
-            this.logger.debug('setup extension %s', e.meta.name)
-            e.onActivate?.(this)
-        })
-        retExtensions.forEach((e) => {
-            e.onAllActivated?.(this)
-        })
-        return retExtensions
-    }
+        const coreVersion = process.env.npm_package_version
+        assert(coreVersion !== undefined)
+        this.logger.info(`core version: ${coreVersion}`)
 
-    addRoute<T extends TSchema>(module: string, action: string, schema: T, handler: (req: RpcRequest<T>) => any) {
-        this.logger.debug('add route %s.%s', module, action)
-        this.app.route({
-            method: 'POST',
-            schema: {
-                body: schema
-            },
-            url: `/${module}/${action}`,
-            handler: async (req: RpcRequest<T>, res) => {
-                const ret = await handler(req)
-                res.send({
-                    data: ret
-                })
+        // check core version
+        extensions.forEach(e => {
+            const meta = e.meta
+            if (!('core' in meta.depends)) {
+                throw new Error(`core should be in depends of ${meta.name}, which is ${JSON.stringify(meta.depends)}`)
+            }
+            if (!semver.satisfies(coreVersion, meta.depends.core)) {
+                throw new Error(`core version ${coreVersion} does not satisfy ${meta.depends.core}`)
             }
         })
+
+        // const extensions =
+        //     topoSort(extensions,
+        //         i => extensions[i].meta.name,
+        //         i => Object.keys(omit(extensions[i].meta.depends, ['core']))
+        //     ).map(i => extensions[i])
+        // TODO: version compatibility check
+        extensions.forEach((e) => {
+            this.logger.debug('notify activate extension %s', e.meta.name)
+            e.onActivate?.(this)
+        })
+        extensions.forEach((e) => {
+            this.logger.debug('notify all activated %s', e.meta.name)
+            e.onAllActivated?.(this)
+        })
+        return extensions
     }
+
+    
 
     async start() {
         if (this.db.isInitialized) {

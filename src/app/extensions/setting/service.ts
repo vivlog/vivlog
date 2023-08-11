@@ -66,6 +66,34 @@ export class SettingService {
         return newItems
     }
 
+    async createDefaultSettings() {
+        const defaultSettings = [
+            // TODO: add default settings here
+            { group: 'system', name: 'site', value: 'vivlog.com/x/demo' },
+            { group: 'system', name: 'initialized', value: true }
+        ] as SetItemDto[]
+        return defaultSettings
+    }
+
+    async initSettings(items: SetItemDto[]) {
+        const r = await this.getItem({ group: 'system', name: 'initialized' })
+        if (r) {
+            throw new BadRequestError('already initialized')
+        }
+        const defaultSettings = await this.createDefaultSettings()
+        const mergedItems = [...defaultSettings, ...items]
+        const newItems = mergedItems.map(item => {
+            const newItem = new Setting()
+            newItem.group = item.group
+            newItem.name = item.name
+            newItem.value = item.value
+            return newItem
+        })
+
+        await this.db.manager.save(newItems)
+        return null
+    }
+
     async deleteItem({ group, name }: DeleteItemDto) {
         const item = await this.db.manager.findOne(Setting, {
             where: {

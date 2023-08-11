@@ -1,33 +1,28 @@
-import { ServerHost } from '../../../host/host'
-import { deleteItemSchema, deleteItemsSchema, getItemSchema, getItemsSchema, setItemSchema, setItemsSchema } from './entities'
-import { SettingService } from './service'
+import { Host } from '../../../host/types'
+import { createPostSchema, deletePostSchema, getPostSchema, getPostsSchema, updatePostSchema } from './entities'
+import { PostService } from './service'
 
 
-export function createSettingApi(host: ServerHost) {
-    const settingService = host.container.resolve(SettingService.name) as SettingService
+export function createPostApi(host: Host) {
+    const postService = host.container.resolve(PostService.name) as PostService
 
-    host.addRoute('setting', 'getItem', getItemSchema, async (req) => {
-        return await settingService.getItem(req.body)
+    host.addRoute('post', 'createPost', createPostSchema, async (req) => {
+        return await postService.createPost(req.body)
     })
 
-    host.addRoute('setting', 'getItems', getItemsSchema, async (req) => {
-        return await settingService.getItems(req.body)
+    host.addRoute('post', 'updatePost', updatePostSchema, async (req) => {
+        return await postService.updatePost(req.body)
     })
 
-    host.addRoute('setting', 'setItem', setItemSchema, async (req) => {
-        return await settingService.setItem(req.body)
+    host.addRoute('post', 'deletePost', deletePostSchema, async (req) => {
+        return await postService.deletePost(req.body)
     })
 
-    host.addRoute('setting', 'setItems', setItemsSchema, async (req) => {
-        return await settingService.setItems(req.body)
+    host.addRoute('post', 'getPost', getPostSchema, async (req) => {
+        return await postService.getPost(req.body)
     })
 
-    host.addRoute('setting', 'deleteItem', deleteItemSchema, async (req) => {
-        return await settingService.deleteItem(req.body)
+    host.addRoute('post', 'getPosts', getPostsSchema, async (req) => {
+        return await postService.getPosts(req.body)
     })
-
-    host.addRoute('setting', 'deleteItems', deleteItemsSchema, async (req) => {
-        return await settingService.deleteItems(req.body)
-    })
-
 }

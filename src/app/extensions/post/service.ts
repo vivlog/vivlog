@@ -1,94 +1,73 @@
 import { DataSource } from 'typeorm'
 import { Container } from '../../../container'
-import { BadRequestError, Logger } from '../../../host/types'
+import { Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
-import { DeleteItemDto, DeleteItemsDto, GetItemDto, GetItemsDto, SetItemDto, Setting } from './entities'
+import { CreatePostDto, DeletePostDto, GetPostDto, GetPostsDto, Post, UpdatePostDto } from './entities'
 
-
-export class SettingService {
+export class PostService {
     private db: DataSource
     private logger: Logger
+
     constructor(container: Container) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
     }
 
-    async getItems({ group }: GetItemsDto) {
-        const items = await this.db.manager.find(Setting, {
-            where: {
-                ...(group ? { group } : {})
-            }
-        })
-        return items
-    }
-    async getItem({ group, name }: GetItemDto) {
-        const item = await this.db.manager.findOne(Setting, {
-            where: {
-                group,
-                name
-            }
-        })
-        return item
+    async createPost(req: CreatePostDto) {
+        const post = this.db.getRepository(Post).create(req)
+        await this.db.getRepository(Post).save(post)
+        return post
     }
 
-    async setItem({ group, name, value }: SetItemDto) {
-        const item = await this.db.manager.findOne(Setting, {
-            where: {
-                group,
-                name
+    async updatePost(req: UpdatePostDto) {
+        const post = await this.db.getRepository(Post).findOneBy({ uuid: req.uuid })
+        if (!post) {
+            throw new Error('Post not found')
+        }
+        return this.getPost({ site: req.site, uuid: req.uuid })
+    }
+
+    async deletePost(req: DeletePostDto) {
+        await this.db.getRepository(Post).delete(req.uuid)
+        return { deleted: true }
+    }
+
+    async getPost(req: GetPostDto) {
+        return this.db.getRepository(Post).findOneBy({ uuid: req.uuid })
+    }
+
+    async getPosts(req: GetPostsDto) {
+
+        const { filters, limit, offset, with_total } = req
+
+        const query = this.db.getRepository(Post)
+            .createQueryBuilder('post')
+
+        if (filters) {
+            if (filters.title) {
+                query.andWhere('post.title like :title', { title: `%${filters.title}%` })
             }
-        })
-        if (item) {
-            item.value = value
-            await this.db.manager.save(item)
-            return item
-        } else {
-            const newItem = new Setting()
-            newItem.group = group
-            newItem.name = name
-            newItem.value = value
-            await this.db.manager.save(newItem)
-            return newItem
         }
 
-    }
+        if (limit) {
+            query.limit(limit)
+        }
 
-    async setItems(items: SetItemDto[]) {
-        const newItems = items.map(item => {
-            const newItem = new Setting()
-            newItem.group = item.group
-            newItem.name = item.name
-            newItem.value = item.value
-            return newItem
-        })
+        if (offset) {
+            query.offset(offset)
+        }
 
-        await this.db.manager.save(newItems)
-        return newItems
-    }
-
-    async deleteItem({ group, name }: DeleteItemDto) {
-        const item = await this.db.manager.findOne(Setting, {
-            where: {
-                group,
-                name
+        if (with_total) {
+            const [posts, total] = await query.getManyAndCount()
+            return {
+                posts,
+                total
             }
-        })
-        if (item) {
-            await this.db.manager.remove(item)
-            return null
-        } else {
-            throw new BadRequestError('item not found')
+        }
+
+        const posts = await query.getMany()
+        return {
+            posts
         }
     }
-
-    async deleteItems({ group }: DeleteItemsDto) {
-        const items = await this.db.manager.find(Setting, {
-            where: {
-                group
-            }
-        })
-        await this.db.manager.remove(items)
-        return null
-    }
-
 }
