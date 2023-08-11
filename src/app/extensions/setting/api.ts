@@ -1,38 +1,50 @@
 import { RpcRequest } from '../../../host/host'
 import { Host } from '../../../host/types'
+import { RouteHelper } from '../../helper/route_helper'
+import { Roles } from '../../types'
 import { deleteItemSchema, deleteItemsSchema, getItemSchema, getItemsSchema, initSettingsSchema, setItemSchema, setItemsSchema } from './entities'
 import { SettingService } from './service'
 
 
 export function createSettingApi(host: Host) {
     const settingService = host.container.resolve(SettingService.name) as SettingService
-    const routes = host.container.resolve('routes')
-    routes.role('user').add('setting', 'initSettings', initSettingsSchema, async (req: RpcRequest<typeof initSettingsSchema>) => {
-        return await settingService.initSettings(req.body)
-    })
+    const routes = host.container.resolve('routes') as RouteHelper
 
-    routes.role('user').add('setting', 'getItem', getItemSchema, async (req) => {
-        return await settingService.getItem(req.body)
-    })
+    const module_ = 'setting'
 
-    routes.role('user').add('setting', 'getItems', getItemsSchema, async (req) => {
-        return await settingService.getItems(req.body)
-    })
+    routes.new()
+        .handle(module_, 'initSettings', initSettingsSchema, async (req: RpcRequest<typeof initSettingsSchema>) => {
+            return await settingService.initSettings(req.body!)
+        })
 
-    routes.role('user').add('setting', 'setItem', setItemSchema, async (req) => {
-        return await settingService.setItem(req.body)
-    })
+    routes.new().minRole(Roles.Reader)
+        .handle(module_, 'getItem', getItemSchema, async (req) => {
+            return await settingService.getItem(req.body!)
+        })
 
-    routes.role('user').add('setting', 'setItems', setItemsSchema, async (req) => {
-        return await settingService.setItems(req.body)
-    })
+    routes.new().minRole(Roles.Admin)
+        .handle(module_, 'getItems', getItemsSchema, async (req) => {
+            return await settingService.getItems(req.body!)
+        })
 
-    routes.role('user').add('setting', 'deleteItem', deleteItemSchema, async (req) => {
-        return await settingService.deleteItem(req.body)
-    })
+    routes.new().minRole(Roles.Admin)
+        .handle(module_, 'setItem', setItemSchema, async (req) => {
+            return await settingService.setItem(req.body!)
+        })
 
-    routes.role('user').add('setting', 'deleteItems', deleteItemsSchema, async (req) => {
-        return await settingService.deleteItems(req.body)
-    })
+    routes.new().minRole(Roles.Admin)
+        .handle(module_, 'setItems', setItemsSchema, async (req) => {
+            return await settingService.setItems(req.body!)
+        })
+
+    routes.new().minRole(Roles.Admin)
+        .handle(module_, 'deleteItem', deleteItemSchema, async (req) => {
+            return await settingService.deleteItem(req.body!)
+        })
+
+    routes.new().minRole(Roles.Admin)
+        .handle(module_, 'deleteItems', deleteItemsSchema, async (req) => {
+            return await settingService.deleteItems(req.body!)
+        })
 
 }

@@ -1,10 +1,9 @@
-import { debug } from 'console'
 import { ConfigType } from './types'
 
 export function validateConfig(config: ConfigType) {
-    // if (!config.extensionDir) {
-    //     throw new Error('extensionDir is required')
-    // }
+    if (!config.jwtSecret) {
+        throw new Error('jwtSecret is required')
+    }
 }
 
 export class ConfigProvider {

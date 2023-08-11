@@ -31,7 +31,7 @@ describe('Posts API', () => {
             content: 'test'
         })
         assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
+        const data = ret.json()
         assert.strictEqual(data.data.id, 1)
         assert.strictEqual(data.data.title, 'test')
         assert.strictEqual(data.data.content, 'test')

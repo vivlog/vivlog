@@ -32,6 +32,7 @@ export class SettingService {
     }
 
     async setItem({ group, name, value }: SetItemDto) {
+        this.logger.debug('set setting %s.%s=%s', group, name, value)
         const item = await this.db.manager.findOne(Setting, {
             where: {
                 group,

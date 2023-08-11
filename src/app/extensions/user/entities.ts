@@ -1,5 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class User {
@@ -12,6 +12,13 @@ export class User {
     @Column()
     password: string
 
+    /**
+     * User roles = admin | author | editor | reader
+     * Administrator: has the highest level of privileges and can manage the entire blog system. 
+     * Author: has the ability to create and manage their own articles.
+     * Editor: has higher-level privileges and can edit and manage articles created by all authors.
+     * Reader: is the default role for registered users.  They can leave comments, rate articles, and subscribe to specific authors or topics.
+     */
     @Column()
     role: string
 }

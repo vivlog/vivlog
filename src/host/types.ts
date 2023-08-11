@@ -58,3 +58,12 @@ export class NotFoundError extends Error {
         super(message)
     }
 }
+
+export interface AuthedUser {
+    id: string
+    username: string
+    role: string
+}
+export interface Authenticator {
+    verify(token: string): Promise<AuthedUser | null>
+}

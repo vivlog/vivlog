@@ -6,7 +6,8 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { inject } from '../../../utils/testing'
-import { AppJwtPayload } from './entities'
+import { Roles } from '../../types'
+import { AppJwtPayload, UserDto } from './entities'
 
 describe('Users API', () => {
     let s: ServerHost
@@ -15,15 +16,30 @@ describe('Users API', () => {
         s = await bootstrap()
     })
 
-    step('register user', async () => {
+    step('register first user, should be admin', async () => {
         const ret = await inject(s, 'user', 'registerUser', {
             username: 'test',
             password: 'test'
         })
         assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
-        assert.strictEqual(data.data.username, 'test')
-        assert(data.data.id > 0)
+        const data = ret.json()
+        const user = data.data as UserDto
+        assert(user.id > 0)
+        assert.strictEqual(user.username, 'test')
+        assert.strictEqual(user.role, Roles.Admin)
+    })
+
+    step('register another user, should be non-admin', async () => {
+        const ret = await inject(s, 'user', 'registerUser', {
+            username: 'test',
+            password: 'test'
+        })
+        assert.strictEqual(ret.statusCode, 200)
+        const data = ret.json()
+        const user = data.data as UserDto
+        assert(user.id > 0)
+        assert.strictEqual(user.username, 'test')
+        assert.notEqual(user.role, Roles.Admin)
     })
 
     step('login user', async () => {
@@ -32,7 +48,7 @@ describe('Users API', () => {
             password: 'test'
         })
         assert.strictEqual(ret.statusCode, 200)
-        const data = JSON.parse(ret.body)
+        const data = ret.json()
         assert.strictEqual(data.data.user.username, 'test')
         assert(data.data.user.id > 0)
         assert(data.data.token.length > 0)

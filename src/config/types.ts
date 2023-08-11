@@ -2,6 +2,7 @@ export const defaultRawConfig = {
     port: '9000',
     extensionDir: '',
     dbPath: '',
+    jwtSecret: 'secret',
 }
 
 export type ConfigType = typeof defaultRawConfig

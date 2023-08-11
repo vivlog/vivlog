@@ -4,12 +4,15 @@ import assert from 'assert'
 import { FastifyInstance, FastifyRequest } from 'fastify'
 import * as semver from 'semver'
 import { DataSource } from 'typeorm'
+import { JwtAuthenticator } from '../app/extensions/user/authenticator'
+import { RouteHelper } from '../app/helper/route_helper'
+import { rolePriorities } from '../app/types'
 import { ConfigProvider } from '../config'
 import { Container } from '../container'
 import { Extension, Host, Logger } from './types'
 
 export type RpcRequest<T extends TSchema> = FastifyRequest<{
-    Body: Static<T>
+    Body?: Static<T>
 }>
 
 export class ServerHost implements Host {
@@ -27,9 +30,11 @@ export class ServerHost implements Host {
         this.container.register('host', this)
         this.container.register('db', this.db)
         this.container.register('app', this.app)
-        this.container.register('routes', new RouteHelper(this.app))
+        this.container.register('routes', new RouteHelper(this, rolePriorities))
         this.container.register('logger', this.logger)
         this.container.register('config', this.config)
+        this.container.register('authenticator', new JwtAuthenticator(this))
+
         this.extensions = this.setupExtensions(extensions)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         this.app.get('/health', (_req, _res) => {
@@ -76,7 +81,7 @@ export class ServerHost implements Host {
         return extensions
     }
 
-    
+
 
     async start() {
         if (this.db.isInitialized) {
