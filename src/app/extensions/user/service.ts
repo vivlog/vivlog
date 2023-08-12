@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import { randomUUID } from 'crypto'
 import * as jwt from 'jsonwebtoken'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../../../config'
@@ -38,6 +39,7 @@ export class UserService {
         const user = new User()
         user.username = username
         user.password = hashedPassword
+        user.uuid = randomUUID()
         // if it is the first user, set it as admin
         const userCount = await this.db.manager.count(User)
         if (userCount === 0) {

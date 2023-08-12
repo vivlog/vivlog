@@ -62,10 +62,10 @@ export class Post {
     // TODO: 圈子？
 }
 
-export type PostDto = typeof Post;
+export type PostDto = Post;
 
 const createPostSchemaObj = {
-    site: Type.String(),
+    site: Type.Optional(Type.String()),
     title: Type.Optional(Type.String()),
     type: Type.Union([
         Type.Literal('thread'),
@@ -79,25 +79,33 @@ const createPostSchemaObj = {
     attachment_vids: Type.Optional(Type.Unknown()),
     custom: Type.Optional(Type.Unknown()),
     // draft | future | published | deleted
-    status: Type.Union([
+    status: Type.Optional(Type.Union([
         Type.Literal('draft'),
         Type.Literal('future'),
         Type.Literal('published'),
         Type.Literal('deleted'),
-    ]),
+    ], { default: 'published' })),
     // public | private | internal
-    visibility: Type.Union([
+    visibility: Type.Optional(Type.Union([
         Type.Literal('public'),
         Type.Literal('private'),
         Type.Literal('internal'),
-    ]),
+    ], { default: 'public' })),
     // standard | link
     format: Type.Union([
         Type.Literal('standard'),
         Type.Literal('link'),
-    ]),
-    sticky: Type.Boolean(),
+    ], { default: 'standard' }),
+    sticky: Type.Boolean({ default: false }),
     published_at: Type.Optional(Type.String()),
+}
+
+export type PostType = Static<typeof createPostSchemaObj.type>
+
+export enum PostTypeEnum {
+    Thread = 'thread',
+    Reply = 'reply',
+    Comment = 'comment',
 }
 
 export const createPostSchema = Type.Object(createPostSchemaObj)

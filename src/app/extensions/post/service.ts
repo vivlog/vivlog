@@ -1,44 +1,54 @@
+import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
 import { Container } from '../../../container'
 import { Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
+import { Settings } from '../../types'
+import { SettingService } from '../setting/service'
 import { CreatePostDto, DeletePostDto, GetPostDto, GetPostsDto, Post, UpdatePostDto } from './entities'
 
 export class PostService {
     private db: DataSource
     private logger: Logger
+    private settingService: SettingService
+    private defaultSite: Promise<string>
 
     constructor(container: Container) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
+        lazy(this, 'defaultSite', () => this.settingService.getValue(Settings.System._group, Settings.System.site))
     }
 
-    async createPost(req: CreatePostDto) {
-        const post = this.db.getRepository(Post).create(req)
+    async createPost(dto: CreatePostDto) {
+        const post = this.db.getRepository(Post).create(dto)
+        if (post.status === 'published') {
+            post.published_at = new Date()
+        }
+        post.uuid = randomUUID()
         await this.db.getRepository(Post).save(post)
         return post
     }
 
-    async updatePost(req: UpdatePostDto) {
-        const post = await this.db.getRepository(Post).findOneBy({ uuid: req.uuid })
+    async updatePost(dto: UpdatePostDto) {
+        const post = await this.db.getRepository(Post).findOneBy({ uuid: dto.uuid })
         if (!post) {
             throw new Error('Post not found')
         }
-        return this.getPost({ site: req.site, uuid: req.uuid })
+        return this.getPost({ site: dto.site ?? await this.defaultSite, uuid: dto.uuid })
     }
 
-    async deletePost(req: DeletePostDto) {
-        await this.db.getRepository(Post).delete(req.uuid)
+    async deletePost(dto: DeletePostDto) {
+        await this.db.getRepository(Post).delete(dto.uuid)
         return { deleted: true }
     }
 
-    async getPost(req: GetPostDto) {
-        return this.db.getRepository(Post).findOneBy({ uuid: req.uuid })
+    async getPost(dto: GetPostDto) {
+        return this.db.getRepository(Post).findOneBy({ uuid: dto.uuid })
     }
 
-    async getPosts(req: GetPostsDto) {
+    async getPosts(dto: GetPostsDto) {
 
-        const { filters, limit, offset, with_total } = req
+        const { filters, limit, offset, with_total } = dto
 
         const query = this.db.getRepository(Post)
             .createQueryBuilder('post')

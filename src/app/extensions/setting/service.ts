@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm'
 import { Container } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
+import { defaultSettings } from '../../types'
 import { DeleteItemDto, DeleteItemsDto, GetItemDto, GetItemsDto, SetItemDto, Setting } from './entities'
 
 
@@ -31,6 +32,24 @@ export class SettingService {
         return item
     }
 
+    async getValueOrDefault<T>(group: string, name: string, default_: T): Promise<T> {
+        const item = await this.getItem({ group, name })
+        if (item) {
+            return item.value as T
+        } else {
+            return default_
+        }
+    }
+
+    async getValue<T>(group: string, name: string): Promise<T> {
+        const item = await this.getItem({ group, name })
+        if (item) {
+            return item.value as T
+        } else {
+            throw new BadRequestError(`setting ${group}.${name} not found`)
+        }
+    }
+
     async setItem({ group, name, value }: SetItemDto) {
         this.logger.debug('set setting %s.%s=%s', group, name, value)
         const item = await this.db.manager.findOne(Setting, {
@@ -55,7 +74,7 @@ export class SettingService {
     }
 
     async setItems(items: SetItemDto[]) {
-        const newItems = items.map(item => {
+        const newItems = items.map((item: { group: string; name: string; value: unknown }) => {
             const newItem = new Setting()
             newItem.group = item.group
             newItem.name = item.name
@@ -67,12 +86,7 @@ export class SettingService {
         return newItems
     }
 
-    async createDefaultSettings() {
-        const defaultSettings = [
-            // TODO: add default settings here
-            { group: 'system', name: 'site', value: 'vivlog.com/x/demo' },
-            { group: 'system', name: 'initialized', value: true }
-        ] as SetItemDto[]
+    async createDefaultSettings(): Promise<SetItemDto[]> {
         return defaultSettings
     }
 

@@ -1,47 +1,95 @@
 import assert from 'assert'
+import { randomUUID } from 'crypto'
 import { InjectPayload } from 'light-my-request'
 import { Host } from '../../host/types'
 import { inject, injectWithAuth } from '../../utils/testing'
+import { UserDto } from '../extensions/user/entities'
 import { Roles } from '../types'
 
-export type AdminSession = Awaited<ReturnType<typeof createNewAdminSession>>
+export type AdminSession = Awaited<ReturnType<typeof createNewSession>>
 
-export async function createNewAdminSession(s: Host, initSite = true) {
-    const username = 'demo-admin'
-    const password = `admin-${Date.now()}`
+const defaultUsers = [
+    { username: 'demo-admin', password: randomUUID(), role: Roles.Admin },
+    { username: 'demo-reader', password: randomUUID(), role: Roles.Reader },
+    { username: 'demo-editor', password: randomUUID(), role: Roles.Editor },
+    { username: 'demo-author', password: randomUUID(), role: Roles.Author }
+]
 
-    if (initSite) {
-        const initRet = await inject(s, 'setting', 'initSettings', [
-            { group: 'system', name: 'site', value: 'test.example.com' }
-        ])
+async function initSiteSettings(host: Host) {
+    const response = await inject(host, 'setting', 'initSettings', [
+        { group: 'system', name: 'site', value: 'test.example.com' }
+    ])
 
-        assert.strictEqual(initRet.statusCode, 200, initRet.body)
-    }
+    assert.strictEqual(response.statusCode, 200, response.body)
+}
 
-    const registerRet = await inject(s, 'user', 'registerUser', {
-        username,
-        password
+async function registerUser(host: Host, user: { username: string; password: string }) {
+    const registerResponse = await inject(host, 'user', 'registerUser', {
+        username: user.username,
+        password: user.password
     })
 
-    assert.strictEqual(registerRet.statusCode, 200, registerRet.body)
+    assert.strictEqual(registerResponse.statusCode, 200, registerResponse.body)
 
-    const loginRet = await inject(s, 'user', 'loginUser', {
-        username,
-        password
+    const loginResponse = await inject(host, 'user', 'loginUser', {
+        username: user.username,
+        password: user.password
     })
 
-    assert.strictEqual(loginRet.statusCode, 200, loginRet.body)
+    assert.strictEqual(loginResponse.statusCode, 200, loginResponse.body)
 
-    const data = JSON.parse(loginRet.body)
-    const user = data.data.user
+    const jsonData = loginResponse.json()
+    const userData = jsonData.data.user as UserDto
 
-    assert.strictEqual(user.role, Roles.Admin)
-    const token = data.data.token as string
+    assert.strictEqual(userData.role, user.role)
 
     return {
-        user,
+        token: jsonData.data.token,
+        role: user.role,
+        user: userData
+    }
+}
+
+export async function createNewSession(host: Host, initSite = true) {
+    if (initSite) {
+        await initSiteSettings(host)
+    }
+
+    const tokens = defaultUsers.map(user => registerUser(host, user))
+
+    const [admin, reader, editor, author] = await Promise.all(tokens);
+
+    [reader, editor, author].forEach(async (user) => {
+        assert(user.user.role !== Roles.Admin)
+
+        const updateResponse = await injectWithAuth(host, 'user', 'updateUser', {
+            id: user.user.id,
+            role: user.role
+        }, admin.token)
+
+        assert.strictEqual(updateResponse.statusCode, 200, updateResponse.body)
+
+        const jsonData = updateResponse.json()
+        user.role = jsonData.data.role
+    })
+
+    const roles = {
+        [Roles.Admin]: admin,
+        [Roles.Reader]: reader,
+        [Roles.Editor]: editor,
+        [Roles.Author]: author,
+    }
+
+    return {
+        admin,
+        reader,
+        editor,
+        author,
         inject: (api: string, method: string, payload: InjectPayload) => {
-            return injectWithAuth(s, api, method, payload, token)
+            return injectWithAuth(host, api, method, payload, admin.token)
+        },
+        injectAs: (role: Roles, api: string, method: string, payload: InjectPayload) => {
+            return injectWithAuth(host, api, method, payload, roles[role].token)
         }
     }
 }

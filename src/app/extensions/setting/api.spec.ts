@@ -5,7 +5,7 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { inject } from '../../../utils/testing'
-import { AdminSession, createNewAdminSession } from '../../util/testing'
+import { AdminSession, createNewSession } from '../../util/testing'
 import { Setting } from './entities'
 
 describe('Settings API', () => {
@@ -37,7 +37,7 @@ describe('Settings API', () => {
         })
 
         step('create a new admin session', async () => {
-            sess = await createNewAdminSession(host, false)
+            sess = await createNewSession(host, false)
         })
 
         step('get initialized item', async () => {
@@ -67,7 +67,7 @@ describe('Settings API', () => {
         })
 
         step('create a new admin session', async () => {
-            sess = await createNewAdminSession(host)
+            sess = await createNewSession(host)
         })
 
         step('get items from settings', async () => {

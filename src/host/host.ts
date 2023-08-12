@@ -81,8 +81,6 @@ export class ServerHost implements Host {
         return extensions
     }
 
-
-
     async start() {
         if (this.db.isInitialized) {
             this.logger.warn('db is initialized')

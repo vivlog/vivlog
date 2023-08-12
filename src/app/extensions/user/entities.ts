@@ -7,6 +7,9 @@ export class User {
     id: number
 
     @Column()
+    uuid: string
+
+    @Column()
     username: string
 
     @Column()
