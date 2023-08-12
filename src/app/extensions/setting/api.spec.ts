@@ -5,14 +5,15 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { inject } from '../../../utils/testing'
-import { AdminSession, createNewSession } from '../../util/testing'
+import { Roles } from '../../types'
+import { CombinedSession, createNewSession } from '../../util/testing'
 import { Setting } from './entities'
 
 describe('Settings API', () => {
 
     describe('init and re-init', () => {
         let host: ServerHost
-        let sess: AdminSession
+        let sess: CombinedSession
         before(async () => {
             defaultRawConfig.dbPath = ':memory:'
             host = await bootstrap()
@@ -37,7 +38,7 @@ describe('Settings API', () => {
         })
 
         step('create a new admin session', async () => {
-            sess = await createNewSession(host, false)
+            sess = await createNewSession(host, false, [Roles.Admin])
         })
 
         step('get initialized item', async () => {
@@ -54,7 +55,7 @@ describe('Settings API', () => {
 
     describe('Read and write', () => {
         let host: ServerHost
-        let sess: AdminSession
+        let sess: CombinedSession
         let initialItemCount: number
 
         before(async () => {
@@ -67,7 +68,7 @@ describe('Settings API', () => {
         })
 
         step('create a new admin session', async () => {
-            sess = await createNewSession(host)
+            sess = await createNewSession(host, true, [Roles.Admin])
         })
 
         step('get items from settings', async () => {

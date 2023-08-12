@@ -120,14 +120,14 @@ export const updatePostSchema = Type.Object({
 export type UpdatePostDto = Static<typeof updatePostSchema>
 
 export const deletePostSchema = Type.Object({
-    site: Type.String(),
+    site: Type.Optional(Type.String()),
     uuid: Type.String(),
 })
 
 export type DeletePostDto = Static<typeof deletePostSchema>
 
 export const getPostSchema = Type.Object({
-    site: Type.String(),
+    site: Type.Optional(Type.String()),
     uuid: Type.String(),
 })
 

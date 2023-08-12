@@ -16,6 +16,7 @@ export class PostService {
     constructor(container: Container) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
+        lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
         lazy(this, 'defaultSite', () => this.settingService.getValue(Settings.System._group, Settings.System.site))
     }
 
@@ -43,7 +44,10 @@ export class PostService {
     }
 
     async getPost(dto: GetPostDto) {
-        return this.db.getRepository(Post).findOneBy({ uuid: dto.uuid })
+        if (!dto.site) {
+            dto.site = await this.defaultSite
+        }
+        return this.db.getRepository(Post).findOneBy(dto)
     }
 
     async getPosts(dto: GetPostsDto) {

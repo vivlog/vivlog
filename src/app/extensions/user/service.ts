@@ -7,7 +7,7 @@ import { Container } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Roles } from '../../types'
-import { AppJwtPayload, LoginDto, UserLoginResponse as LoginRes, RegisterDto, User, UserDto } from './entities'
+import { AppJwtPayload, LoginDto, UserLoginResponse as LoginRes, RegisterDto, UpdateUserDto, User, UserDto } from './entities'
 
 
 export class UserService {
@@ -80,5 +80,22 @@ export class UserService {
                 id
             }
         })
+    }
+
+    async updateUser(dto: UpdateUserDto) {
+        const user = await this.db.getRepository(User).findOneBy({ id: dto.id })
+        if (!user) {
+            throw new Error('User not found')
+        }
+
+        if (dto.role) {
+            user.role = dto.role
+        }
+
+        if (dto.password) {
+            user.password = await bcrypt.hash(dto.password, 10)
+        }
+
+        return this.db.getRepository(User).save(user)
     }
 }

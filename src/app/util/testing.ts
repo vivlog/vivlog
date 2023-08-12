@@ -3,17 +3,17 @@ import { randomUUID } from 'crypto'
 import { InjectPayload } from 'light-my-request'
 import { Host } from '../../host/types'
 import { inject, injectWithAuth } from '../../utils/testing'
-import { UserDto } from '../extensions/user/entities'
-import { Roles } from '../types'
+import { User } from '../extensions/user/entities'
+import { Role, Roles } from '../types'
 
-export type AdminSession = Awaited<ReturnType<typeof createNewSession>>
+export type CombinedSession = Awaited<ReturnType<typeof createNewSession>>
 
-const defaultUsers = [
-    { username: 'demo-admin', password: randomUUID(), role: Roles.Admin },
-    { username: 'demo-reader', password: randomUUID(), role: Roles.Reader },
-    { username: 'demo-editor', password: randomUUID(), role: Roles.Editor },
-    { username: 'demo-author', password: randomUUID(), role: Roles.Author }
-]
+const defaultUsers = {
+    [Roles.Admin]: { username: 'demo-admin', password: randomUUID(), role: Roles.Admin },
+    [Roles.Reader]: { username: 'demo-reader', password: randomUUID(), role: Roles.Reader },
+    [Roles.Editor]: { username: 'demo-editor', password: randomUUID(), role: Roles.Editor },
+    [Roles.Author]: { username: 'demo-author', password: randomUUID(), role: Roles.Author }
+}
 
 async function initSiteSettings(host: Host) {
     const response = await inject(host, 'setting', 'initSettings', [
@@ -23,7 +23,7 @@ async function initSiteSettings(host: Host) {
     assert.strictEqual(response.statusCode, 200, response.body)
 }
 
-async function registerUser(host: Host, user: { username: string; password: string }) {
+async function registerUser(host: Host, user: { username: string; password: string; role: Roles }) {
     const registerResponse = await inject(host, 'user', 'registerUser', {
         username: user.username,
         password: user.password
@@ -39,9 +39,10 @@ async function registerUser(host: Host, user: { username: string; password: stri
     assert.strictEqual(loginResponse.statusCode, 200, loginResponse.body)
 
     const jsonData = loginResponse.json()
-    const userData = jsonData.data.user as UserDto
+    const userData = jsonData.data.user as User
 
-    assert.strictEqual(userData.role, user.role)
+    // here userData.role, user.role can be different, because the user's role
+    // will be set after by the admin
 
     return {
         token: jsonData.data.token,
@@ -50,46 +51,69 @@ async function registerUser(host: Host, user: { username: string; password: stri
     }
 }
 
-export async function createNewSession(host: Host, initSite = true) {
+type UserSession = {
+    user: User
+    role: Role
+    token: string
+};
+
+type RoleSessionMap = {
+    [role: string]: UserSession
+};
+
+export async function createNewSession(host: Host, initSite = true, rolesToCreate?: Role[]) {
+    const roleSessions: RoleSessionMap = {}
+
     if (initSite) {
         await initSiteSettings(host)
     }
 
-    const tokens = defaultUsers.map(user => registerUser(host, user))
+    const createUserByRole = async (role: Role) => {
+        // skip if already created
+        if (roleSessions[role]) {
+            return
+        }
+        const sess = await registerUser(host, defaultUsers[role])
+        roleSessions[role] = sess
 
-    const [admin, reader, editor, author] = await Promise.all(tokens);
-
-    [reader, editor, author].forEach(async (user) => {
-        assert(user.user.role !== Roles.Admin)
-
+        // the first user created will automatically be the admin
+        if (role == Roles.Admin) {
+            return
+        }
+        // update user's role
         const updateResponse = await injectWithAuth(host, 'user', 'updateUser', {
-            id: user.user.id,
-            role: user.role
-        }, admin.token)
+            id: sess.user.id,
+            role: sess.role,
+        }, roleSessions[Roles.Admin].token)
 
         assert.strictEqual(updateResponse.statusCode, 200, updateResponse.body)
 
         const jsonData = updateResponse.json()
-        user.role = jsonData.data.role
-    })
 
-    const roles = {
-        [Roles.Admin]: admin,
-        [Roles.Reader]: reader,
-        [Roles.Editor]: editor,
-        [Roles.Author]: author,
+        roleSessions[role].user.role = jsonData.data.role
     }
 
+    const defaultRoles = [Roles.Admin, Roles.Reader, Roles.Editor, Roles.Author]
+    const rolesToCreateOrDefault = rolesToCreate ?? defaultRoles
+
+    assert(rolesToCreateOrDefault[0] === Roles.Admin, 'first role must be admin')
+
+    await createUserByRole(Roles.Admin)
+    await Promise.all(rolesToCreateOrDefault.map(createUserByRole))
+
     return {
-        admin,
-        reader,
-        editor,
-        author,
+        admin: roleSessions[Roles.Admin] || undefined,
+        reader: roleSessions[Roles.Reader] || undefined,
+        editor: roleSessions[Roles.Editor] || undefined,
+        author: roleSessions[Roles.Author] || undefined,
         inject: (api: string, method: string, payload: InjectPayload) => {
-            return injectWithAuth(host, api, method, payload, admin.token)
+            return injectWithAuth(host, api, method, payload, roleSessions[Roles.Admin].token)
         },
         injectAs: (role: Roles, api: string, method: string, payload: InjectPayload) => {
-            return injectWithAuth(host, api, method, payload, roles[role].token)
-        }
+            if (!roleSessions[role]) {
+                throw new Error(`role ${role} not initialized for this session`)
+            }
+            return injectWithAuth(host, api, method, payload, roleSessions[role].token)
+        },
     }
 }

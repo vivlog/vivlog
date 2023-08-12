@@ -50,3 +50,11 @@ export const loginSchema = Type.Object({
 })
 
 export type LoginDto = Static<typeof loginSchema>
+
+export const updateUserSchema = Type.Object({
+    id: Type.Number(),
+    role: Type.Optional(Type.String()),
+    password: Type.Optional(Type.String())
+})
+
+export type UpdateUserDto = Static<typeof updateUserSchema>

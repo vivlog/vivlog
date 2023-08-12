@@ -5,13 +5,13 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { inject } from '../../../utils/testing'
-import { defaultSettings } from '../../types'
-import { AdminSession, createNewSession } from '../../util/testing'
+import { Roles, defaultSettings } from '../../types'
+import { CombinedSession, createNewSession } from '../../util/testing'
 import { PostDto, PostTypeEnum } from './entities'
 
 describe('Posts API', () => {
     let host: ServerHost
-    let sess: AdminSession
+    let sess: CombinedSession
     before(async () => {
         defaultRawConfig.dbPath = ':memory:'
         host = await bootstrap()
@@ -25,9 +25,10 @@ describe('Posts API', () => {
         assert.strictEqual(ret.statusCode, 401, ret.body)
     })
     step('create a new admin session', async () => {
-        sess = await createNewSession(host)
+        sess = await createNewSession(host, true, [Roles.Admin, Roles.Reader])
     })
 
+    let postUUID: string
     step('create a post', async () => {
         const ret = await sess.inject('post', 'createPost', {
             title: 'test',
@@ -42,15 +43,17 @@ describe('Posts API', () => {
         assert.strictEqual(post.content, 'test')
         assert.strictEqual(post.type, PostTypeEnum.Thread)
         assert.strictEqual(post.author_site, defaultSettings.find(ent => ent.group == 'system' && ent.name == 'site')?.value)
-        assert.strictEqual(post.author_uuid, sess.admin.uuid)
+        assert.strictEqual(post.author_uuid, sess.admin.user.uuid)
         assert.strictEqual(post.slug, '')
         assert.deepStrictEqual(post.attachment_vids, [])
         assert.deepStrictEqual(post.custom, {})
+
+        postUUID = post.uuid
     })
 
     step('get post', async () => {
-        const ret = await sess.inject('post', 'getPost', {
-            id: 1
+        const ret = await sess.injectAs(Roles.Reader, 'post', 'getPost', {
+            uuid: postUUID
         })
         assert.strictEqual(ret.statusCode, 200, ret.body)
         const data = ret.json()
@@ -60,7 +63,7 @@ describe('Posts API', () => {
         assert.strictEqual(post.content, 'test')
         assert.strictEqual(post.type, PostTypeEnum.Thread)
         assert.strictEqual(post.author_site, defaultSettings.find(ent => ent.group == 'system' && ent.name == 'site')?.value)
-        assert.strictEqual(post.author_uuid, sess.admin.uuid)
+        assert.strictEqual(post.author_uuid, sess.admin.user.uuid)
         assert.strictEqual(post.slug, '')
         assert.deepStrictEqual(post.attachment_vids, [])
         assert.deepStrictEqual(post.custom, {})
