@@ -11,13 +11,14 @@ export class PostService {
     private db: DataSource
     private logger: Logger
     private settingService: SettingService
-    private defaultSite: Promise<string>
+    get defaultSite() {
+        return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
+    }
 
     constructor(container: Container) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
-        lazy(this, 'defaultSite', () => this.settingService.getValue(Settings.System._group, Settings.System.site))
     }
 
     async createPost(dto: CreatePostDto) {
