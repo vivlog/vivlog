@@ -1,3 +1,4 @@
+import { H1, H2 } from 'app/design/typography';
 import { useState } from 'react';
 import { Button, StyleSheet, TextInput, View } from 'react-native';
 
@@ -13,6 +14,8 @@ export const UserLoginScreen = () => {
 
     return (
         <View style={styles.container}>
+            <H1>Vivlog</H1>
+            <H2>Login</H2>
             <TextInput
                 style={styles.input}
                 placeholder="Email"

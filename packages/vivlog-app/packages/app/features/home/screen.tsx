@@ -44,7 +44,9 @@ export function HomeScreen() {
       <View className="h-[32px]" />
       <Row className="space-x-8">
         <TextLink href="/user/fernando">Regular Link</TextLink>
-        <TextLink href="/user/login">Login Link</TextLink>
+        <TextLink href="/auth/login">Login</TextLink>
+        <TextLink href="/auth/register">Register</TextLink>
+
         <MotiLink
           href="/user/fernando"
           animate={({ hovered, pressed }) => {

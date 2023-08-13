@@ -1,6 +1,6 @@
+import { StyledProps, styled } from 'nativewind'
 import { ComponentProps, forwardRef } from 'react'
-import { Text as NativeText, Platform, Linking, TextStyle } from 'react-native'
-import { styled, StyledProps } from 'nativewind'
+import { Linking, Text as NativeText, Platform, TextStyle } from 'react-native'
 import { TextLink as SolitoTextLink } from 'solito/link'
 
 export const Text = styled(NativeText)
@@ -16,6 +16,12 @@ export const P = styled(NativeText, 'text-base text-black my-4')
 export const H1 = styled(NativeText, 'text-3xl font-extrabold my-4')
 H1.defaultProps = {
   accessibilityLevel: 1,
+  accessibilityRole: 'header',
+}
+
+export const H2 = styled(NativeText, 'text-2xl font-bold my-4')
+H2.defaultProps = {
+  accessibilityLevel: 2,
   accessibilityRole: 'header',
 }
 
