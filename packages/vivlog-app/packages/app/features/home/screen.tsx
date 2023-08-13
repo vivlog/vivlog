@@ -1,5 +1,5 @@
-import { A, H1, P, Text, TextLink } from 'app/design/typography'
 import { Row } from 'app/design/layout'
+import { A, H1, P, Text, TextLink } from 'app/design/typography'
 import { View } from 'app/design/view'
 
 import { MotiLink } from 'solito/moti'
@@ -44,6 +44,7 @@ export function HomeScreen() {
       <View className="h-[32px]" />
       <Row className="space-x-8">
         <TextLink href="/user/fernando">Regular Link</TextLink>
+        <TextLink href="/user/login">Login Link</TextLink>
         <MotiLink
           href="/user/fernando"
           animate={({ hovered, pressed }) => {
