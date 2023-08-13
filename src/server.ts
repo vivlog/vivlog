@@ -1,17 +1,19 @@
-import 'reflect-metadata'
+import cors from '@fastify/cors'
 import fastify from 'fastify'
+import 'reflect-metadata'
+
 import pino from 'pino'
 
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { DataSource } from 'typeorm'
 import { builtinExtensions } from './app/extensions'
 import { ConfigProvider, validateConfig } from './config'
-import { Container } from './container'
-import { DataSource } from 'typeorm'
-import { defaultRawConfig, configKeys } from './config/types'
-import { Extension } from './host/types'
-import { loadExtensions } from './host/extension'
 import { loadRawConfig } from './config/loader'
+import { configKeys, defaultRawConfig } from './config/types'
+import { Container } from './container'
+import { loadExtensions } from './host/extension'
 import { ServerHost } from './host/host'
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { Extension } from './host/types'
 
 
 export async function bootstrap() {
@@ -32,7 +34,9 @@ export async function bootstrap() {
     try {
         const externalExtensions = await loadExtensions(config.get('extensionDir'))
         const exts: Extension[] = [...externalExtensions, ...builtinExtensions]
-        const app = fastify().withTypeProvider<TypeBoxTypeProvider>()
+        const app = fastify().withTypeProvider<TypeBoxTypeProvider>().register(cors, {
+            origin: '*',
+        })
         const entities = exts.map(i => i.entities || []).flat()
         console.info('entities', entities)
         const db = new DataSource({

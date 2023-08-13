@@ -51,7 +51,7 @@ class RoleBasedRpcRouteBuilder {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handle<T extends TSchema>(module_: string, action: string, schema: T, handler: (req: RpcRequest<T>) => any) {
-        this.logger.debug('add route %s.%s', module_, action)
+        this.logger.debug('route /%s/%s', module_, action)
         this.app.route({
             method: 'POST',
             schema: {
