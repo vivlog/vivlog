@@ -1,5 +1,5 @@
 module.exports = {
-  extends: 'next',
+  extends: ['next', "next/babel"],
   settings: {
     next: {
       rootDir: 'apps/next/',
