@@ -20,7 +20,11 @@ export class UserService {
         lazy(this, 'config', () => container.resolve('config') as ConfigProvider)
     }
 
-    async registerUser({ username, password }: RegisterDto): Promise<UserDto> {
+    signJwt(userId:  User['id']) {
+        return jwt.sign({ sub: userId.toString() } as AppJwtPayload, this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
+    }
+
+    async registerUser({ username, password }: RegisterDto): Promise<LoginRes> {
         this.logger.debug('register user %s', username)
 
         // no duplicate username
@@ -49,7 +53,10 @@ export class UserService {
         }
         const ret = await this.db.manager.save(user)
         ret.password = ''
-        return ret
+        return {
+            user: ret,
+            token: this.signJwt(ret.id)
+        }
     }
 
     async loginUser({ username, password }: LoginDto): Promise<LoginRes> {
@@ -67,10 +74,9 @@ export class UserService {
             throw new BadRequestError('username or password is incorrect')
         }
         user.password = ''
-        const token = jwt.sign({ sub: user.id.toString() } as AppJwtPayload, this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
         return {
             user,
-            token: token
+            token: this.signJwt(user.id)
         }
     }
 

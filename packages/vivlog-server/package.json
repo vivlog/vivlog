@@ -8,6 +8,7 @@
     "@fastify/type-provider-typebox": "^3.4.0",
     "@sinclair/typebox": "^0.30.4",
     "@types/bcrypt": "^5.0.0",
+    "async-mutex": "^0.4.0",
     "bcrypt": "^5.1.0",
     "change-case": "^4.1.2",
     "dotenv": "^16.3.1",

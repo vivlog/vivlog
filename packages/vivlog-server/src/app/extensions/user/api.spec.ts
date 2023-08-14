@@ -21,9 +21,11 @@ describe('Users API', () => {
             username: 'test',
             password: 'test'
         })
-        assert.strictEqual(ret.statusCode, 200)
+        assert.strictEqual(ret.statusCode, 200, ret.body)
         const data = ret.json()
-        const user = data.data as UserDto
+        const token = data.data.token
+        assert(token.length > 0, 'token should not be empty')
+        const user = data.data.user as UserDto
         assert(user.id > 0)
         assert.strictEqual(user.username, 'test')
         assert.strictEqual(user.role, Roles.Admin)
@@ -31,15 +33,20 @@ describe('Users API', () => {
 
     step('register another user, should be non-admin', async () => {
         const ret = await inject(s, 'user', 'registerUser', {
-            username: 'test',
-            password: 'test'
+            username: 'test2',
+            password: 'test2'
         })
-        assert.strictEqual(ret.statusCode, 200)
+        assert.strictEqual(ret.statusCode, 200, ret.body)
         const data = ret.json()
-        const user = data.data as UserDto
+        const token = data.data.token
+        assert(token.length > 0, 'token should not be empty')
+        const user = data.data.user as UserDto
         assert(user.id > 0)
-        assert.strictEqual(user.username, 'test')
+        assert.strictEqual(user.username, 'test2')
         assert.notEqual(user.role, Roles.Admin)
+
+        const decoded = jwt.verify(token, defaultRawConfig.jwtSecret) as AppJwtPayload
+        assert.strictEqual(decoded.sub, user.id.toString())
     })
 
     step('login user', async () => {
@@ -47,12 +54,12 @@ describe('Users API', () => {
             username: 'test',
             password: 'test'
         })
-        assert.strictEqual(ret.statusCode, 200)
+        assert.strictEqual(ret.statusCode, 200, ret.body)
         const data = ret.json()
         assert.strictEqual(data.data.user.username, 'test')
         assert(data.data.user.id > 0)
         assert(data.data.token.length > 0)
-        const decoded = jwt.verify(data.data.token, 'secret') as AppJwtPayload
+        const decoded = jwt.verify(data.data.token, defaultRawConfig.jwtSecret) as AppJwtPayload
         assert.strictEqual(decoded.sub, data.data.user.id.toString())
         console.log('decoded', decoded)
 
