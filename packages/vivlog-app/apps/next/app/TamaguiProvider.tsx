@@ -8,7 +8,7 @@ import { NextThemeProvider, useRootTheme } from '@tamagui/next-theme'
 import { useServerInsertedHTML } from 'next/navigation'
 import React from 'react'
 import { StyleSheet } from 'react-native'
-import { createTamagui, TamaguiProvider as TamaguiProviderOG } from 'tamagui'
+import { TamaguiProvider as TamaguiProviderOG, createTamagui } from 'tamagui'
 
 import Tamagui from '../tamagui.config'
 
