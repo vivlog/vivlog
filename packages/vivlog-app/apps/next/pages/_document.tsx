@@ -1,25 +1,47 @@
-import React from 'react'
+import NextDocument, {
+  DocumentContext,
+  DocumentInitialProps,
+  Head,
+  Html,
+  Main,
+  NextScript,
+} from 'next/document'
+import { Children } from 'react'
 import { AppRegistry } from 'react-native'
 
-import NextDocument, { Html, Head, Main, NextScript } from 'next/document'
-import type { DocumentContext } from 'next/document'
+import Tamagui from '../tamagui.config'
 
-class Document extends NextDocument {
-  static async getInitialProps(ctx: DocumentContext) {
+export default class Document extends NextDocument {
+  static async getInitialProps(ctx: DocumentContext): Promise<DocumentInitialProps> {
     AppRegistry.registerComponent('Main', () => Main)
+    const page = await ctx.renderPage()
+
     // @ts-ignore
     const { getStyleElement } = AppRegistry.getApplication('Main')
-    const styles = [getStyleElement()]
 
-    const initialProps = await NextDocument.getInitialProps(ctx)
-    return { ...initialProps, styles: React.Children.toArray(styles) }
+    /**
+     * Note: be sure to keep tamagui styles after react-native-web styles like it is here!
+     * So Tamagui styles can override the react-native-web styles.
+     */
+    const styles = [
+      getStyleElement(),
+      <style
+        key="tamagui-css"
+        dangerouslySetInnerHTML={{
+          __html: Tamagui.getCSS({
+            exclude: process.env.NODE_ENV === 'development' ? null : 'design-system',
+          }),
+        }}
+      />,
+    ]
+
+    return { ...page, styles: Children.toArray(styles) }
   }
 
   render() {
     return (
-      <Html lang="en">
+      <Html>
         <Head>
-          <meta charSet="UTF-8" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         </Head>
         <body>
@@ -30,5 +52,3 @@ class Document extends NextDocument {
     )
   }
 }
-
-export default Document
