@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base",
   "include": [
     "src"
-, "../app/provider/InitLocal.tsx"  ],
+  ],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx"

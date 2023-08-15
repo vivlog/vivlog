@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { setToken } from 'app/services/api'
 import { fetchLocalToken } from 'app/services/local'
-export default function InitLocal() {
+export const InitLocal = ()=> {
     console.log('InitLocal')
 
     const tokenQuery = useQuery(['token'], fetchLocalToken)

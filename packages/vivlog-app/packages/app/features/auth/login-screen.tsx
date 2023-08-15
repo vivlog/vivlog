@@ -1,7 +1,7 @@
 import { Button, Input, Paragraph, Spacer, YStack, useToastController } from '@my/ui'
 import { ChevronLeft } from '@tamagui/lucide-icons'
 import { useMutation } from '@tanstack/react-query'
-import { RegisterDto, RegisterRes, auth, setToken } from 'app/services/api'
+import { LoginDto, LoginRes, auth, setToken } from 'app/services/api'
 import { setLocalToken, setLocalUser } from 'app/services/local'
 import { useFormik } from 'formik'
 import { GestureResponderEvent } from 'react-native'
@@ -9,21 +9,19 @@ import { useLink } from 'solito/link'
 import { useRouter } from 'solito/router'
 import * as yup from 'yup'
 
-type RegisterFormProps = {
-  onSubmit: (values: RegisterDto) => void
+type LoginFormProps = {
+  onSubmit: (values: LoginDto) => void
 }
 
-const RegisterForm = ({ onSubmit }: RegisterFormProps) => {
+const LoginForm = ({ onSubmit }: LoginFormProps) => {
   const form = useFormik({
     initialValues: {
       username: '',
       password: '',
-      email: '',
     },
     validationSchema: yup.object().shape({
       username: yup.string().required().min(4).max(32),
       password: yup.string().required().min(8).max(32),
-      email: yup.string(),
     }),
     onSubmit(values) {
       onSubmit(values)
@@ -46,15 +44,6 @@ const RegisterForm = ({ onSubmit }: RegisterFormProps) => {
       }
       <Spacer />
       <Input
-        placeholder="Email (optional)"
-        value={form.values.email}
-        onChangeText={form.handleChange('email')}>
-      </Input>
-      {
-        form.touched.email && form.errors.email && <Paragraph color="red">{form.errors.email}</Paragraph>
-      }
-      <Spacer />
-      <Input
         placeholder="Password"
         value={form.values.password}
         onChangeText={form.handleChange('password')}>
@@ -65,27 +54,27 @@ const RegisterForm = ({ onSubmit }: RegisterFormProps) => {
 
       <Spacer />
 
-      <Button onPress={handlePressSubmit}>Register</Button>
+      <Button onPress={handlePressSubmit}>Login</Button>
     </YStack>
   )
 }
-export function RegisterScreen() {
+export function LoginScreen() {
   const link = useLink({
-    href: '/auth/login',
+    href: '/',
   })
   const toast = useToastController()
   const { replace } = useRouter()
-  const registerMutation = useMutation(auth.registerUser)
+  const loginMutation = useMutation(auth.loginUser)
   const handleSubmit = (values) => {
-    registerMutation.mutate(values, {
+    loginMutation.mutate(values, {
       onSuccess: async (data) => {
-        toast.show('Register success!')
+        toast.show('Login success!')
 
         if (!data) {
           console.log('data is null')
           return
         }
-        const res = (await data) as unknown as RegisterRes
+        const res = (await data) as unknown as LoginRes
         setLocalToken(res.token)
         setLocalUser(res.user)
 
@@ -93,7 +82,8 @@ export function RegisterScreen() {
         replace('/')
       },
       onError: (err: Error) => {
-        toast.show('Register failed!', {
+        console.log('err', err)
+        toast.show('Login failed!', {
           message: err.message,
         })
       }
@@ -101,13 +91,13 @@ export function RegisterScreen() {
   }
   return (
     <YStack f={1} jc="center" ai="center" space>
-      <Paragraph ta="center" fow="700">Register</Paragraph>
-      <RegisterForm onSubmit={handleSubmit}></RegisterForm>
+      <Paragraph ta="center" fow="700">Login</Paragraph>
+      <LoginForm onSubmit={handleSubmit}></LoginForm>
       <Button {...link} icon={ChevronLeft}>
-        Go Login
+        Go Home
       </Button>
     </YStack>
   )
 }
 
-export default RegisterScreen
+export default LoginScreen

@@ -5,7 +5,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { useColorScheme } from 'react-native'
 import config from '../tamagui.config'
-import InitLocal from './InitLocal'
+import {InitLocal} from './InitLocal'
 import { ToastViewport } from './ToastViewport'
 
 

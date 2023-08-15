@@ -22,7 +22,16 @@ export function getToken() {
     return token
 }
 
-export function fetchApi(url, options) {
+export class RequestError extends Error {
+    details?: ErrRes
+    constructor(message: string, details?: ErrRes) {
+        super(message)
+        this.name = 'RequestError'
+        this.details = details
+    }
+}
+
+export async function fetchApi(url, options) {
     if (!options) {
         options = {}
     }
@@ -35,12 +44,19 @@ export function fetchApi(url, options) {
         options.headers['Authorization'] = token
     }
 
-    return fetch(`${baseUrl}${url}`, {
+    const resp = await fetch(`${baseUrl}${url}`, {
         ...options,
         headers: {
             ...options.headers,
         },
     })
+
+    if (resp.status !== 200) {
+        const eres = (await resp.json()) as unknown as ErrRes
+        throw new RequestError(eres.message, eres)
+    }
+
+    return (await resp.json()).data
 }
 
 
@@ -80,6 +96,13 @@ export type LoginRes = {
         id: number
         username: string
     }
+}
+
+export type ErrRes = {
+    code:string
+    message:string
+    error: string
+    statusCode: number
 }
 
 export type RegisterRes = LoginRes

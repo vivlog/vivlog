@@ -1,12 +1,14 @@
 import {
   Button,
-  Separator,
   Sheet,
+  Text,
   useToastController,
-  XStack,
   YStack
 } from '@my/ui'
 import { ChevronDown, ChevronUp } from '@tamagui/lucide-icons'
+import { useQuery } from '@tanstack/react-query'
+import { LoginRes } from 'app/services/api'
+import { fetchLocalUser } from 'app/services/local'
 import React, { useState } from 'react'
 import { useLink } from 'solito/link'
 
@@ -19,14 +21,19 @@ export function HomeScreen() {
     href: '/auth/register',
   })
 
+  const linkToLogin = useLink({
+    href: '/auth/login',
+  })
+
+  const userQuery = useQuery<null | LoginRes['user']>(['user'], fetchLocalUser)
+
   return (
     <YStack f={1} jc="center" ai="center" p="$4" space>
-
-      <XStack>
-        <Button {...linkProps}>Link to user</Button>
-        <Separator />
-        <Button {...linkToRegister}>Register</Button>
-      </XStack>
+      <Text>User: {userQuery.data?.username ?? 'not login'}</Text>
+      <Button {...linkProps}>Link to user</Button>
+      <Button {...linkToRegister}>Register</Button>
+      <Button {...linkToLogin}>Log in</Button>
+      <Button {...linkToLogin}>Log out</Button>
 
       <SheetDemo />
     </YStack>
