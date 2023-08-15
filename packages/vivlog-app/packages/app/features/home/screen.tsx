@@ -6,9 +6,9 @@ import {
   YStack
 } from '@my/ui'
 import { ChevronDown, ChevronUp } from '@tamagui/lucide-icons'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { LoginRes } from 'app/services/api'
-import { fetchLocalUser } from 'app/services/local'
+import { clearLocalToken, clearLocalUser, fetchLocalUser } from 'app/services/local'
 import React, { useState } from 'react'
 import { useLink } from 'solito/link'
 
@@ -24,8 +24,18 @@ export function HomeScreen() {
   const linkToLogin = useLink({
     href: '/auth/login',
   })
+  const queryClient = useQueryClient()
 
   const userQuery = useQuery<null | LoginRes['user']>(['user'], fetchLocalUser)
+
+  const logoutMutation = useMutation(
+    () => Promise.all([clearLocalToken(), clearLocalUser()]),
+    {
+      onSuccess: () => Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['user'] }),
+        queryClient.invalidateQueries({ queryKey: ['token'] })
+      ])
+    })
 
   return (
     <YStack f={1} jc="center" ai="center" p="$4" space>
@@ -33,7 +43,7 @@ export function HomeScreen() {
       <Button {...linkProps}>Link to user</Button>
       <Button {...linkToRegister}>Register</Button>
       <Button {...linkToLogin}>Log in</Button>
-      <Button {...linkToLogin}>Log out</Button>
+      <Button onPress={() => logoutMutation.mutate()}>Log out</Button>
 
       <SheetDemo />
     </YStack>

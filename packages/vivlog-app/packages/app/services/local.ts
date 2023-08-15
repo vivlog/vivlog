@@ -27,3 +27,13 @@ export async function setLocalUser(user: LoginRes['user']) {
     console.log('setLocalUser', user)
     await AsyncStorage.setItem(prefix + 'user', JSON.stringify(user))
 }
+
+export async function clearLocalToken() {
+    console.log('clearLocalToken')
+    await AsyncStorage.removeItem(prefix + 'token')
+}
+
+export async function clearLocalUser() {
+    console.log('clearLocalUser')
+    await AsyncStorage.removeItem(prefix + 'user')
+}
