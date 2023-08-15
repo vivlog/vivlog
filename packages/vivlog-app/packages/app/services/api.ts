@@ -12,11 +12,13 @@ export function getBaseUrl() {
     return baseUrl
 }
 
-export function setToken(t: string) {
+export async function setToken(t: string) {
+    console.log('setToken', t)
     token = t
 }
 
 export function getToken() {
+    console.log('getToken', token)
     return token
 }
 
@@ -70,6 +72,20 @@ export type RegisterDto = {
 export type LoginDto = {
     username: string
     password: string
+};
+
+export type LoginRes = {
+    token: string
+    user: {
+        id: number
+        username: string
+    }
+}
+
+export type RegisterRes = LoginRes
+
+export type RespWrapper<T> = {
+    data: T
 };
 
 export const auth = {
