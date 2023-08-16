@@ -24,6 +24,11 @@ export function HomeScreen() {
   const linkToLogin = useLink({
     href: '/auth/login',
   })
+
+  const linkToPosts = useLink({
+    href: '/post/recent',
+  })
+
   const queryClient = useQueryClient()
 
   const userQuery = useQuery<null | LoginRes['user']>(['user'], fetchLocalUser)
@@ -41,9 +46,14 @@ export function HomeScreen() {
     <YStack f={1} jc="center" ai="center" p="$4" space>
       <Text>User: {userQuery.data?.username ?? 'not login'}</Text>
       <Button {...linkProps}>Link to user</Button>
-      <Button {...linkToRegister}>Register</Button>
-      <Button {...linkToLogin}>Log in</Button>
-      <Button onPress={() => logoutMutation.mutate()}>Log out</Button>
+      {!userQuery.data && (<>
+        <Button {...linkToRegister}>Register</Button>
+        <Button {...linkToLogin}>Log in</Button>
+      </>)}
+      {userQuery.data && <YStack >
+        <Button {...linkToPosts}>Posts</Button>
+        <Button onPress={() => logoutMutation.mutate()}>Log out</Button>
+      </YStack>}
 
       <SheetDemo />
     </YStack>
