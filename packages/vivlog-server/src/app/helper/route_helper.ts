@@ -1,5 +1,6 @@
 import { TSchema } from '@sinclair/typebox'
 import { FastifyInstance } from 'fastify'
+import { ConfigProvider } from '../../config'
 import { RpcRequest } from '../../host/host'
 import { Authenticator, Host, Logger } from '../../host/types'
 import { RoleAuthMiddleware } from '../../middlewares/role_auth_middleware'
@@ -12,12 +13,16 @@ class RoleBasedRpcRouteBuilder {
     private app: FastifyInstance
     private authenticator: Authenticator
     private roleAuth: RoleAuthMiddleware
+    private config: ConfigProvider
+    private sitePath: string = '' // for site that is not running at root path
 
     constructor(private host: Host, private rolePriorityMap: { [role: string]: number }) {
         lazy(this, 'logger', () => this.host.container.resolve('logger') as Logger)
         lazy(this, 'app', () => this.host.container.resolve('app') as FastifyInstance)
         lazy(this, 'authenticator', () => this.host.container.resolve('authenticator') as Authenticator)
         lazy(this, 'roleAuth', () => new RoleAuthMiddleware(this.authenticator))
+        lazy(this, 'config', () => this.host.container.resolve('config') as ConfigProvider)
+        lazy(this, 'sitePath', () => this.config.get('sitePath', '') as string)
     }
 
     allowRoles(roles: string[]) {
@@ -51,13 +56,14 @@ class RoleBasedRpcRouteBuilder {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handle<T extends TSchema>(module_: string, action: string, schema: T, handler: (req: RpcRequest<T>) => any) {
-        this.logger.debug('route /%s/%s', module_, action)
+        const route = `${this.sitePath}/api/v1/${module_}/${action}`
+        this.logger.debug('add route %s', route)
         this.app.route({
             method: 'POST',
             schema: {
                 body: schema
             },
-            url: `/${module_}/${action}`,
+            url: route,
             preHandler: this.roleAuth.getMiddlewares(this.requireLogin_, this.allowRoles_),
             handler: async (req: RpcRequest<T>, res) => {
                 this.logger.info('rpc %s.%s', module_, action)

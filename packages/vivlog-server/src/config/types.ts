@@ -3,6 +3,7 @@ export const defaultRawConfig = {
     extensionDir: '',
     dbPath: '',
     jwtSecret: 'secret',
+    sitePath: '',
 }
 
 export type ConfigType = typeof defaultRawConfig

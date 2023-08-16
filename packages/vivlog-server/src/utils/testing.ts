@@ -1,22 +1,63 @@
 import { FastifyInstance } from 'fastify'
+import * as fs from 'fs'
 import { InjectPayload } from 'light-my-request'
-import { Host } from '../host/types'
+import * as net from 'net'
+import { ConfigProvider } from '../config'
+import { Host, Logger } from '../host/types'
 
-export async function inject(s: Host, module: string, action: string, payload: InjectPayload) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function inject(s: Host, module_: string, action: string, payload: InjectPayload, options?: any) {
+    const configProvider = s.container.resolve<ConfigProvider>('config')
+    const sitePath = configProvider.get('sitePath', '') as string
+    const url = `${sitePath}/api/v1/${module_}/${action}`
+    const logger = s.container.resolve('logger') as Logger
+    logger.debug('inject %s', url)
     return await s.container.resolve<FastifyInstance>('app').inject({
         method: 'POST',
-        url: `/${module}/${action}`,
-        payload
+        url: url,
+        payload,
+        ...options
     })
 }
 
-export async function injectWithAuth(s: Host, module: string, action: string, payload: InjectPayload, token: string) {
-    return await s.container.resolve<FastifyInstance>('app').inject({
-        method: 'POST',
-        url: `/${module}/${action}`,
-        payload,
+export async function injectWithAuth(s: Host, module_: string, action: string, payload: InjectPayload, token: string) {
+    return inject(s, module_, action, payload, {
         headers: {
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`
         }
     })
+}
+
+export function clearUp(paths: string[]) {
+    for (const path of paths) {
+        try {
+            fs.unlinkSync(path)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+}
+
+export async function isPortAvailable(port: number): Promise<boolean> {
+    return new Promise((resolve) => {
+        const s = net.createServer()
+        s.once('error', () => {
+            s.close()
+            resolve(false)
+        })
+        s.once('listening', () => {
+            resolve(true)
+            s.close()
+        })
+        s.listen(port)
+    })
+}
+
+export async function getNextAvailablePort(startFrom: number = 20011) {
+    for (let port = startFrom; port < 65535; port++) {
+        if (await isPortAvailable(port)) {
+            return port
+        }
+    }
+    throw new Error('No available port')
 }

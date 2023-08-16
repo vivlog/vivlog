@@ -40,6 +40,14 @@ export class ServerHost implements Host {
         this.app.get('/health', (_req, _res) => {
             return { status: 'ok' }
         })
+        this.app.addHook('onRoute', (routeOptions) => {
+            this.logger.debug('route %s %s', routeOptions.method, routeOptions.url)
+        })
+        // access log
+        this.app.addHook('onRequest', (request, reply, done) => {
+            this.logger.info('%s %s', request.method, request.url)
+            done()
+        })
         this.app.setErrorHandler((error, request, reply) => {
             if (error.statusCode == 500) {
                 this.logger.error('error: %o', error)
@@ -50,8 +58,9 @@ export class ServerHost implements Host {
 
     setupExtensions(extensions: Extension[]): Extension[] {
         const coreVersion = process.env.npm_package_version
+        const coreName = process.env.npm_package_name
         assert(coreVersion !== undefined)
-        this.logger.info(`core version: ${coreVersion}`)
+        this.logger.info(`core version: ${coreName} ${coreVersion}`)
 
         // check core version
         extensions.forEach(e => {
@@ -71,11 +80,11 @@ export class ServerHost implements Host {
         //     ).map(i => extensions[i])
         // TODO: version compatibility check
         extensions.forEach((e) => {
-            this.logger.debug('notify activate extension %s', e.meta.name)
+            this.logger.debug('notify activate of %s', e.meta.name)
             e.onActivate?.(this)
         })
         extensions.forEach((e) => {
-            this.logger.debug('notify all activated %s', e.meta.name)
+            this.logger.debug('notify all activated to %s', e.meta.name)
             e.onAllActivated?.(this)
         })
         return extensions

@@ -11,7 +11,7 @@ export function loadRawConfig<RawConfigType extends Record<string, string>>(opti
     const loaders = [
         createDotEnvConfigLoader<RawConfigType>(options.configKeys, `${options.appName}_`)
     ]
-    const config: RawConfigType = options.emptyConfig
+    const config: RawConfigType = structuredClone(options.emptyConfig)
     for (const loader of loaders) {
         const loaded = loader()
         Object.assign(config, loaded)
