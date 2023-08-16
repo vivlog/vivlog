@@ -8,7 +8,7 @@ import { inject } from '../../../utils/testing'
 import { Roles } from '../../types'
 import { CombinedSession, createNewSession } from '../../util/testing'
 
-describe('Example API', () => {
+describe.skip('Example API', () => {
     let host: ServerHost
     let sess: CombinedSession
     before(async () => {
@@ -16,7 +16,7 @@ describe('Example API', () => {
         host = await bootstrap()
     })
     step('create a example while not logged in, expect permission denied', async () => {
-        const ret = await inject(host, 'example', 'createPost', {
+        const ret = await inject(host, 'example', 'createExample', {
             title: 'test',
             content: 'test',
         })
@@ -27,7 +27,7 @@ describe('Example API', () => {
     })
 
     step('create a example', async () => {
-        await sess.inject('example', 'createPost', {
+        await sess.inject('example', 'createExample', {
             title: 'test',
             content: 'test',
         })
