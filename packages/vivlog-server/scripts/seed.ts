@@ -1,37 +1,28 @@
-import assert from 'assert'
-import { randomUUID } from 'crypto'
-import { RegisterDto, UserLoginResponse } from '../src/app/extensions/user/entities'
-import { rpc } from '../src/utils/rpc'
+import { createNewSession } from '../src/app/util/testing'
+import { bootstrap } from '../src/server'
+import { injectWithAuth, removeFile } from '../src/utils/testing'
 
 const f = (async () => {
+    console.log('Unlink Database...')
+    removeFile('db.sqlite')
+
+    console.log('Start server...')
+    const host = await bootstrap()
+
     console.log('Seeding...')
-
-    const request = rpc('http://127.0.0.1:9000')
-    {
-        const ret = await request<boolean, null>('status', 'ready', null)
-        assert(ret)
-    }
-
-    const userRegInfo = {
-        username: 'admin',
-        password: randomUUID()
-    }
-
-    let token: string
-    {
-        const ret = await request<UserLoginResponse, RegisterDto>('user', 'registerUser', userRegInfo)
-        token = ret.token
-    }
-
+    const sess = await createNewSession(host, true, ['admin'])
     const createPost = (content: string) => {
-        return request('post', 'createPost', { content }, { token })
+        return injectWithAuth(host, 'post', 'createPost', { content }, sess.admin.token)
     }
-    {
-        createPost('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam sit amet ligula pulvinar, porttitor ligula at, efficitur nisi.')
-        createPost('Donec egestas molestie neque nec convallis. Donec pulvinar faucibus arcu eget lacinia. Ut rutrum odio tortor, quis aliquet lacus eleifend.')
-        createPost('Sed tristique vitae neque a iaculis. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi at.')
-        createPost('Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In ut volutpat eros. Aenean vitae vestibulum.')
-    }
+    await Promise.all([
+        createPost('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam sit amet ligula pulvinar, porttitor ligula at, efficitur nisi.'),
+        createPost('Donec egestas molestie neque nec convallis. Donec pulvinar faucibus arcu eget lacinia. Ut rutrum odio tortor, quis aliquet lacus eleifend.'),
+        createPost('Sed tristique vitae neque a iaculis. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi at.'),
+        createPost('Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In ut volutpat eros. Aenean vitae vestibulum.'),
+    ])
+    await host.stop()
+
+    host.logger.info('password for admin:' + sess.admin.password)
 
 })
 
