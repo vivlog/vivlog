@@ -16,6 +16,7 @@ const meta = {
     version: '0.0.1-alpha',
     depends: {
         'core': '^0.0.1',
+        'setting': '^0.0.1'
     }
 }
 

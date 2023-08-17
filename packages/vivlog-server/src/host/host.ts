@@ -40,12 +40,16 @@ export class ServerHost implements Host {
         this.app.get('/health', (_req, _res) => {
             return { status: 'ok' }
         })
-        this.app.addHook('onRoute', (routeOptions) => {
-            this.logger.debug('route %s %s', routeOptions.method, routeOptions.url)
+        this.app.register(import('fastify-graceful-shutdown'))
+        this.app.after(() => {
+            this.app.gracefulShutdown((signal, next) => {
+                console.log(`🛑 Received ${signal}, gracefully shutting down...`)
+                next()
+            })
         })
         // access log
         this.app.addHook('onRequest', (request, reply, done) => {
-            this.logger.info('%s %s', request.method, request.url)
+            this.logger.info('[%s] %s', request.method, request.url)
             done()
         })
         this.app.setErrorHandler((error, request, reply) => {

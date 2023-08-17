@@ -32,6 +32,7 @@ export async function bootstrap() {
         level: config.get('logLevel'),
         sync: true
     })
+    logger.trace('logLevel %s', config.get('logLevel'))
 
     try {
         const externalExtensions = await loadExtensions(config.get('extensionDir'))
