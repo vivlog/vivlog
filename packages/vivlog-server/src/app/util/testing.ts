@@ -78,6 +78,7 @@ type UserSession = {
     user: User
     role: Role
     token: string
+    password: string
 };
 
 type RoleSessionMap = {
@@ -97,7 +98,7 @@ export async function createNewSession(host: Host, initSite = true, rolesToCreat
             return
         }
         const sess = await registerUser(host, defaultUsers[role])
-        roleSessions[role] = sess
+        roleSessions[role] = { ...sess, password: defaultUsers[role].password }
 
         // the first user created will automatically be the admin
         if (role == Roles.Admin) {

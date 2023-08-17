@@ -16,8 +16,8 @@ export function createExampleApi(host: Host) {
 
     const routes = host.container.resolve('routes') as RouteHelper
     const cachedValues = {
-        'site': null
-    } as { [key: string]: Promise<string> | null }
+        'site': undefined
+    } as { [key: string]: Promise<string> | undefined }
 
     lazy(cachedValues, 'site', async () => {
         const index = { group: Settings.System._group, name: Settings.System.site }
@@ -30,8 +30,9 @@ export function createExampleApi(host: Host) {
         const user = await userService.getUser({ id: parseInt(req.user!.id) })
         assert(user !== null)
         dto.site = await cachedValues['site'] as string
-        assert(dto.site !== '')
+        assert(dto.site)
         dto.author_site = await cachedValues['site'] as string
+        assert(dto.author_site)
         dto.author_uuid = user!.uuid
         return await exampleService.createExample(dto)
     })
