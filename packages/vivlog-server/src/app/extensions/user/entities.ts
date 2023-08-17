@@ -7,6 +7,9 @@ export class User {
     id: number
 
     @Column()
+    email: string
+
+    @Column()
     uuid: string
 
     @Column()
@@ -39,6 +42,7 @@ export type AppJwtPayload = {
 
 export const registerSchema = Type.Object({
     username: Type.String(),
+    email: Type.String({ format: 'email' }),
     password: Type.String()
 })
 
@@ -54,6 +58,7 @@ export type LoginDto = Static<typeof loginSchema>
 export const updateUserSchema = Type.Object({
     id: Type.Number(),
     role: Type.Optional(Type.String()),
+    email: Type.Optional(Type.String({ format: 'email' })),
     password: Type.Optional(Type.String())
 })
 

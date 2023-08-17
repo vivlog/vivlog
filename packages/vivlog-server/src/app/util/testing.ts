@@ -49,6 +49,7 @@ async function initSiteSettings(host: Host) {
 async function registerUser(host: Host, user: { username: string; password: string; role: Roles }) {
     const registerResponse = await inject(host, 'user', 'registerUser', {
         username: user.username,
+        email: user.username + '@example.com',
         password: user.password
     })
 

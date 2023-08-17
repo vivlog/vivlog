@@ -43,13 +43,7 @@ export class ServerHost implements Host {
         this.app.post(`${this.sitePath}/api/v1/status/ready`, (_req, _res) => {
             return { data: true }
         })
-        this.app.register(import('fastify-graceful-shutdown'))
-        this.app.after(() => {
-            this.app.gracefulShutdown((signal, next) => {
-                console.log(`🛑 Received ${signal}, gracefully shutting down...`)
-                next()
-            })
-        })
+
         // access log
         this.app.addHook('onRequest', (request, reply, done) => {
             this.logger.info('[%s] %s', request.method, request.url)

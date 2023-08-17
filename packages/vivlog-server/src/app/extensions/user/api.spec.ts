@@ -19,6 +19,7 @@ describe('Users API', () => {
     step('register first user, should be admin', async () => {
         const ret = await inject(s, 'user', 'registerUser', {
             username: 'test',
+            email: 'test@example.com',
             password: 'test'
         })
         assert.strictEqual(ret.statusCode, 200, ret.body)
@@ -34,6 +35,7 @@ describe('Users API', () => {
     step('register another user, should be non-admin', async () => {
         const ret = await inject(s, 'user', 'registerUser', {
             username: 'test2',
+            email: 'test2@example.com',
             password: 'test2'
         })
         assert.strictEqual(ret.statusCode, 200, ret.body)

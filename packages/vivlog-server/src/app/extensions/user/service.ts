@@ -20,11 +20,11 @@ export class UserService {
         lazy(this, 'config', () => container.resolve('config') as ConfigProvider)
     }
 
-    signJwt(userId:  User['id']) {
+    signJwt(userId: User['id']) {
         return jwt.sign({ sub: userId.toString() } as AppJwtPayload, this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
     }
 
-    async registerUser({ username, password }: RegisterDto): Promise<LoginRes> {
+    async registerUser({ username, email, password }: RegisterDto): Promise<LoginRes> {
         this.logger.debug('register user %s', username)
 
         // no duplicate username
@@ -42,6 +42,7 @@ export class UserService {
 
         const user = new User()
         user.username = username
+        user.email = email
         user.password = hashedPassword
         user.uuid = randomUUID()
         // if it is the first user, set it as admin

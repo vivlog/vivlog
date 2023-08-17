@@ -22,8 +22,8 @@ const RegisterForm = ({ onSubmit }: RegisterFormProps) => {
     },
     validationSchema: yup.object().shape({
       username: yup.string().required().min(4).max(32),
+      email: yup.string().required().email(),
       password: yup.string().required().min(8).max(32),
-      email: yup.string(),
     }),
     onSubmit(values) {
       onSubmit(values)
@@ -46,7 +46,7 @@ const RegisterForm = ({ onSubmit }: RegisterFormProps) => {
       }
       <Spacer />
       <Input
-        placeholder="Email (optional)"
+        placeholder="Email"
         value={form.values.email}
         onChangeText={form.handleChange('email')}>
       </Input>
