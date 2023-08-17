@@ -101,11 +101,11 @@ export function RegisterScreen() {
   }
   return (
     <YStack f={1} jc="center" ai="center" space>
-      <Paragraph ta="center" fow="700">Register</Paragraph>
-      <RegisterForm onSubmit={handleSubmit}></RegisterForm>
       <Button {...link} icon={ChevronLeft}>
         Go Login
       </Button>
+      <Paragraph ta="center" fow="700">Register</Paragraph>
+      <RegisterForm onSubmit={handleSubmit}></RegisterForm>
     </YStack>
   )
 }

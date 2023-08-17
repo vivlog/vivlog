@@ -12,14 +12,14 @@ export class Post {
     @Column()
     uuid: string
 
-    @Column()
+    @Column({ nullable: true, })
     title?: string
 
     @Column({ default: 'thread' })
     // thread, reply, comment, etc.
     type: string
 
-    @Column()
+    @Column({ nullable: true, })
     // url slug
     slug?: string
 
@@ -67,11 +67,11 @@ export type PostDto = Post;
 const createPostSchemaObj = {
     site: Type.Optional(Type.String()),
     title: Type.Optional(Type.String()),
-    type: Type.Union([
+    type: Type.Optional(Type.Union([
         Type.Literal('thread'),
         Type.Literal('reply'),
         Type.Literal('comment'),
-    ]),
+    ])),
     slug: Type.Optional(Type.String()),
     content: Type.Optional(Type.Unknown()),
     author_uuid: Type.Optional(Type.String()),
@@ -92,11 +92,11 @@ const createPostSchemaObj = {
         Type.Literal('internal'),
     ], { default: 'public' })),
     // standard | link
-    format: Type.Union([
+    format: Type.Optional(Type.Union([
         Type.Literal('standard'),
         Type.Literal('link'),
-    ], { default: 'standard' }),
-    sticky: Type.Boolean({ default: false }),
+    ], { default: 'standard' })),
+    sticky: Type.Optional(Type.Boolean({ default: false })),
     published_at: Type.Optional(Type.String()),
 }
 
@@ -143,9 +143,9 @@ export const getPostsSchema = Type.Object({
         format: Type.Optional(Type.String()),
         sticky: Type.Optional(Type.Boolean()),
     })),
-    limit: Type.Optional(Type.Number()),
-    offset: Type.Optional(Type.Number()),
-    with_total: Type.Optional(Type.Boolean()),
+    limit: Type.Optional(Type.Number({ default: 10, maximum: 100, minimum: 1 })),
+    offset: Type.Optional(Type.Number({ default: 0, minimum: 0 })),
+    with_total: Type.Optional(Type.Boolean({ default: false })),
 })
 
 export type GetPostsDto = Static<typeof getPostsSchema>

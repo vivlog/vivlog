@@ -26,7 +26,7 @@ export function HomeScreen() {
   })
 
   const linkToPosts = useLink({
-    href: '/post/recent',
+    href: '/post/list',
   })
 
   const queryClient = useQueryClient()

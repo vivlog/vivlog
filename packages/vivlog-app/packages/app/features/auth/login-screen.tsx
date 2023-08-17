@@ -91,11 +91,11 @@ export function LoginScreen() {
   }
   return (
     <YStack f={1} jc="center" ai="center" space>
-      <Paragraph ta="center" fow="700">Login</Paragraph>
-      <LoginForm onSubmit={handleSubmit}></LoginForm>
       <Button {...link} icon={ChevronLeft}>
         Go Home
       </Button>
+      <Paragraph ta="center" fow="700">Login</Paragraph>
+      <LoginForm onSubmit={handleSubmit}></LoginForm>
     </YStack>
   )
 }

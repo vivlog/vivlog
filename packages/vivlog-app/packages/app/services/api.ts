@@ -1,4 +1,4 @@
-export let baseUrl = 'http://localhost:9000'
+export let baseUrl = 'http://localhost:9000/api/v1'
 export let token = ''
 
 export function setBaseUrl(url: string) {
@@ -116,3 +116,6 @@ export const auth = {
     loginUser: (dto: LoginDto, options?) => rpcRequest('user', 'loginUser', dto, options),
 }
 
+export const post = {
+    getPosts: (options?) => rpcRequest('post', 'getPosts', {}, options),
+}
