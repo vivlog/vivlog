@@ -70,7 +70,7 @@ export class ServerHost implements Host {
         extensions.forEach(e => {
             const meta = e.meta
             if (!('core' in meta.depends)) {
-                throw new Error(`core should be in depends of ${meta.name}, which is ${JSON.stringify(meta.depends)}`)
+                new Error(`'core' should be in the dependencies of '${meta.name}', but the dependencies are ${JSON.stringify(meta.depends)}`)
             }
             if (!semver.satisfies(coreVersion, meta.depends.core)) {
                 throw new Error(`core version ${coreVersion} does not satisfy ${meta.depends.core}`)
