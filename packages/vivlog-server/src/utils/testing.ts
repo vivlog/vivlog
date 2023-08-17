@@ -28,12 +28,47 @@ export async function injectWithAuth(s: Host, module_: string, action: string, p
     })
 }
 
-export function clearUp(paths: string[]) {
+export function removeAllFiles(paths: string[]) {
     for (const path of paths) {
         try {
             fs.unlinkSync(path)
         } catch (error) {
             console.warn(`Failed to delete ${path}`)
+        }
+    }
+}
+
+export function removeFile(path: string) {
+    try {
+        fs.unlinkSync(path)
+    } catch (error) {
+        console.warn(`Failed to delete ${path}`)
+    }
+}
+
+const finalizeStack: (() => void)[] = []
+
+export function defer<T>(resource: T, finalizer: (v: T) => void) {
+    finalizeStack.push(() => finalizer(resource))
+    return resource
+}
+
+export async function finalize() {
+    while (finalizeStack.length > 0) {
+        const finalizer = finalizeStack.pop()
+        if (!finalizer) {
+            continue
+        }
+
+        try {
+            // await for async finalizer
+            if (finalizer.constructor.name === 'AsyncFunction') {
+                await finalizer()
+            } else {
+                finalizer()
+            }
+        } catch (error) {
+            console.error('Failed to finalize', error)
         }
     }
 }

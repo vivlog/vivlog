@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { lazy } from './lazy' // the implementation
+import { lazy } from './lazy'
 
 describe('lazy', () => {
 

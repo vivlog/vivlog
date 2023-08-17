@@ -1,10 +1,13 @@
 import assert from 'assert'
 import { randomUUID } from 'crypto'
 import { InjectPayload } from 'light-my-request'
+import { defaultRawConfig } from '../../config/types'
 import { Host } from '../../host/types'
-import { inject, injectWithAuth } from '../../utils/testing'
+import { bootstrap } from '../../server'
+import { getNextAvailablePort, inject, injectWithAuth, removeAllFiles } from '../../utils/testing'
+import { SettingService } from '../extensions/setting/service'
 import { User } from '../extensions/user/entities'
-import { Role, Roles } from '../types'
+import { Role, Roles, Settings } from '../types'
 
 export type CombinedSession = Awaited<ReturnType<typeof createNewSession>>
 
@@ -13,6 +16,26 @@ const defaultUsers = {
     [Roles.Reader]: { username: 'demo-reader', password: randomUUID(), role: Roles.Reader },
     [Roles.Editor]: { username: 'demo-editor', password: randomUUID(), role: Roles.Editor },
     [Roles.Author]: { username: 'demo-author', password: randomUUID(), role: Roles.Author }
+}
+
+
+type CreateSiteOptions = {
+    name: string
+    dbPath: string
+    sitePath: string
+}
+
+export const createSite = async ({ dbPath, sitePath }: CreateSiteOptions) => {
+    const port = (await getNextAvailablePort()).toString()
+    const siteUrl = `localhost:${port}${sitePath}`
+    defaultRawConfig.dbPath = dbPath
+    removeAllFiles([defaultRawConfig.dbPath])
+    defaultRawConfig.port = port
+    defaultRawConfig.sitePath = sitePath
+    const site = await bootstrap()
+    const settingService = site.container.resolve(SettingService.name) as SettingService
+    settingService.setItem({ group: Settings.System._group, name: Settings.System.site, value: siteUrl })
+    return { siteName: siteUrl, port, host: site }
 }
 
 async function initSiteSettings(host: Host) {
