@@ -14,15 +14,10 @@ import { Container } from './container'
 import { loadExtensions } from './host/extension'
 import { ServerHost } from './host/host'
 import { Extension } from './host/types'
+import { parseBool } from './utils/data'
 
 
 export async function bootstrap() {
-    const logger = pino({
-        transport: {
-            target: 'pino-pretty'
-        },
-        level: 'debug',
-    })
 
     const config = new ConfigProvider(loadRawConfig({
         appName: 'vivlog',
@@ -30,6 +25,13 @@ export async function bootstrap() {
         configKeys,
         validator: validateConfig
     }))
+    const logger = pino({
+        transport: {
+            target: 'pino-pretty'
+        },
+        level: config.get('logLevel'),
+        sync: true
+    })
 
     try {
         const externalExtensions = await loadExtensions(config.get('extensionDir'))
@@ -43,6 +45,7 @@ export async function bootstrap() {
             type: 'sqlite',
             database: config.get('dbPath', 'db.sqlite')!,
             entities,
+            logging: parseBool(config.get('logQuery', 'false')) ? ['query', 'error'] : [],
             synchronize: true
         })
         const container = new Container()

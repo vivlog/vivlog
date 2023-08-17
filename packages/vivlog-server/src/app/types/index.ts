@@ -28,12 +28,14 @@ export const Settings = {
     System: {
         _group: 'system',
         site: 'site',
-        title: 'title'
+        title: 'title',
+        initialized: 'initialized',
     }
 }
 
 export const defaultSettings = [
     // TODO: add default settings here
     { group: Settings.System._group, name: Settings.System.site, value: 'vivlog.com/x/demo' },
-    { group: 'system', name: 'initialized', value: true }
+    { group: Settings.System._group, name: Settings.System.title, value: 'Vivlog' },
+    { group: Settings.System._group, name: Settings.System.initialized, value: 'true' },
 ]

@@ -59,14 +59,30 @@ export class ConnectionService {
         if (!remote_token) {
             throw new BadRequestError('Failed to request connection: remote_token is null')
         }
-        const connection = this.db.getRepository(Connection).create({
-            remote_site,
-            remote_token,
-            direction: 'outgoing'
-        })
-        this.pendingConnections.delete(remote_site)
-        await this.db.getRepository(Connection).save(connection)
-        return connection
+
+        const existingConnection = await this.db.getRepository(Connection).findOneBy({ remote_site })
+
+        if (existingConnection) {
+            if (existingConnection.direction == 'incoming') {
+                existingConnection.direction = ConnectionDirections.Both
+            }
+            existingConnection.remote_token = remote_token
+            this.logger.info('[%s] upgrade connection %o', await this.currentSite, existingConnection)
+            await this.db.getRepository(Connection).update(existingConnection.id, existingConnection)
+            this.pendingConnections.delete(remote_site)
+            return existingConnection
+        }
+        else {
+
+            const connection = this.db.getRepository(Connection).create({
+                remote_site,
+                remote_token,
+                direction: ConnectionDirections.Outgoing
+            })
+            await this.db.getRepository(Connection).save(connection)
+            this.pendingConnections.delete(remote_site)
+            return connection
+        }
     }
 
     // async updateConnection(dto: UpdateConnectionDto) {
@@ -142,16 +158,18 @@ export class ConnectionService {
         }
 
         // if outgoing connection already exists, upgrade it to both
-        const existingConnection = await this.db.getRepository(Connection).findOneBy({ remote_site })
+        const existingConnection = await this.db.getRepository(Connection).findOneBy({ remote_site: local_site })
 
         if (existingConnection) {
             if (existingConnection.direction == 'outgoing') {
                 existingConnection.direction = ConnectionDirections.Both
             }
-            existingConnection.remote_token = remote_token
-            await this.db.getRepository(Connection).save(existingConnection)
+            existingConnection.remote_token = local_token
+            this.logger.info('[%s] upgrade connection %o', await this.currentSite, existingConnection)
+            await this.db.getRepository(Connection).update(existingConnection.id, existingConnection)
         }
         else {
+            this.logger.info('[%s] create connection %o', await this.currentSite, dto)
             const connection = this.db.getRepository(Connection).create({
                 remote_site: local_site,
                 remote_token: local_token,

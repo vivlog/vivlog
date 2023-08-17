@@ -33,7 +33,7 @@ export function clearUp(paths: string[]) {
         try {
             fs.unlinkSync(path)
         } catch (error) {
-            console.error(error)
+            console.warn(`Failed to delete ${path}`)
         }
     }
 }

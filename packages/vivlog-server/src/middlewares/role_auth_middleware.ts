@@ -19,7 +19,6 @@ export class RoleAuthMiddleware {
     // Auth user and set `req.user`
     private setupUser: () => Middleware
         = () => async (req) => {
-            console.log('setupUser for ', req.url)
             const authHeaderValue = req.headers['authorization'] as string | undefined
             if (!authHeaderValue) {
                 throw new UnauthorizedError('unauthorized')
@@ -36,6 +35,7 @@ export class RoleAuthMiddleware {
                 throw new UnauthorizedError('invalid token')
             }
             req.user = user
+            console.log(`setupUser [${user.username}] for ${req.url}`)
         }
 
     // 该方法用于检查用户角色是否满足要求

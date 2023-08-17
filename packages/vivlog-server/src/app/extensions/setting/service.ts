@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm'
 import { Container } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
-import { defaultSettings } from '../../types'
+import { Settings, defaultSettings } from '../../types'
 import { DeleteItemDto, DeleteItemsDto, GetItemDto, GetItemsDto, SetItemDto, Setting } from './entities'
 
 
@@ -91,7 +91,7 @@ export class SettingService {
     }
 
     async initSettings(items: SetItemDto[]) {
-        const r = await this.getItem({ group: 'system', name: 'initialized' })
+        const r = await this.getItem({ group: Settings.System._group, name: Settings.System.initialized })
         if (r) {
             throw new BadRequestError('already initialized')
         }

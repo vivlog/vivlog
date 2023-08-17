@@ -9,3 +9,11 @@ export function omit(obj: any, keys: string[]) {
     }
     return result
 }
+
+export function parseBool(value: string | undefined) {
+    if (value === undefined) {
+        return false
+    }
+    value = value.toLowerCase()
+    return value === 'true' || value === '1'
+}

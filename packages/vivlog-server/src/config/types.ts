@@ -4,6 +4,8 @@ export const defaultRawConfig = {
     dbPath: '',
     jwtSecret: 'secret',
     sitePath: '',
+    logLevel: 'info',
+    logQuery: 'false',
 }
 
 export type ConfigType = typeof defaultRawConfig

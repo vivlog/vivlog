@@ -30,6 +30,6 @@ export function rpc(site: string, https?: boolean) {
             throw error
         }
         const body = await response.json()
-        return body as TRes
+        return body.data as TRes
     }
 }

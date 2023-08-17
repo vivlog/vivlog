@@ -9,7 +9,7 @@ export class Connection {
     @Column({ unique: true })
     remote_site: string
 
-    @Column({ unique: true })
+    @Column()
     remote_token: string
 
     @Column()

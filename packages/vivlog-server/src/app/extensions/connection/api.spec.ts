@@ -26,6 +26,7 @@ describe('Connection API', () => {
 
         site1Name = `localhost:${port}/site1`
         defaultRawConfig.dbPath = 'host_site1.db'
+        clearUp([defaultRawConfig.dbPath])
         defaultRawConfig.port = port
         defaultRawConfig.sitePath = '/site1'
         site1 = await bootstrap()
@@ -39,6 +40,7 @@ describe('Connection API', () => {
         port = (await getNextAvailablePort()).toString()
         site2Name = `localhost:${port}/site2`
         defaultRawConfig.dbPath = 'host_site2.db'
+        clearUp([defaultRawConfig.dbPath])
         defaultRawConfig.port = port
         defaultRawConfig.sitePath = '/site2'
         site2 = await bootstrap()
@@ -57,8 +59,8 @@ describe('Connection API', () => {
     })
 
     step('create admin sessions', async () => {
-        sess1 = await createNewSession(site1, true, [Roles.Admin, Roles.Reader])
-        sess2 = await createNewSession(site2, true, [Roles.Admin, Roles.Reader])
+        sess1 = await createNewSession(site1, false, [Roles.Admin, Roles.Reader])
+        sess2 = await createNewSession(site2, false, [Roles.Admin, Roles.Reader])
     })
 
     step('create a connection from site1 to site 2', async () => {
