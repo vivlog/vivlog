@@ -44,12 +44,18 @@ export async function fetchApi(url, options) {
         options.headers['Authorization'] = token
     }
 
-    const resp = await fetch(`${baseUrl}${url}`, {
-        ...options,
-        headers: {
-            ...options.headers,
-        },
-    })
+    let resp
+    try {
+        resp = await fetch(`${baseUrl}${url}`, {
+            ...options,
+            headers: {
+                ...options.headers,
+            },
+        })
+    } catch (error) {
+        console.log('fetchApi error', error)
+        throw new Error('Network error')
+    }
 
     if (resp.status !== 200) {
         const eres = (await resp.json()) as unknown as ErrRes
@@ -99,8 +105,8 @@ export type LoginRes = {
 }
 
 export type ErrRes = {
-    code:string
-    message:string
+    code: string
+    message: string
     error: string
     statusCode: number
 }

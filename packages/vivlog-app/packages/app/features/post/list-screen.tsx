@@ -16,7 +16,7 @@ export function PostListPart() {
     }
     return (<YStack space>
         {getPostsQuery.isLoading && <Paragraph>Loading...</Paragraph>}
-        {getPostsQuery.isError && <View><Paragraph>Unable to fetch posts {(getPostsQuery.error as Error).message}</Paragraph></View>}
+        {getPostsQuery.isError && <View><Paragraph>Unable to fetch posts: {(getPostsQuery.error as Error).message}</Paragraph></View>}
         {getPostsQuery.isSuccess &&
             getPostsQuery.data?.posts.map((post) => {
                 return <View maw={400} bg="$gray3" p="$3" key={post.id} borderRadius="$3">
