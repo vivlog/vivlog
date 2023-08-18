@@ -1,6 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
-import { User } from '../user/entities'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { IUserDto } from '../user/entities'
 
 @Entity()
 export class Post {
@@ -28,10 +28,10 @@ export class Post {
     content?: unknown
 
     @Column()
-    author_uuid?: string
+    author_uuid: string
 
     @Column()
-    author_site?: string
+    author_site: string
 
     @Column('simple-json')
     attachment_vids?: unknown // like featuredMedias
@@ -61,8 +61,7 @@ export class Post {
     published_at: Date
 
     // TODO: 圈子？
-    @ManyToOne(() => User)
-    author?: User
+    author?: IUserDto
 }
 
 export type PostDto = Post;

@@ -21,12 +21,13 @@ const defaultUsers = {
 
 type CreateSiteOptions = {
     name: string
+    port?: string
     dbPath: string
     sitePath: string
 }
 
-export const createSite = async ({ dbPath, sitePath }: CreateSiteOptions) => {
-    const port = (await getNextAvailablePort()).toString()
+export const createSite = async ({ dbPath, sitePath, port }: CreateSiteOptions) => {
+    port = port || (await getNextAvailablePort()).toString()
     const siteUrl = `localhost:${port}${sitePath}`
     defaultRawConfig.dbPath = dbPath
     removeAllFiles([defaultRawConfig.dbPath])

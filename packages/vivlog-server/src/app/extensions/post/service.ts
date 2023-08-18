@@ -6,7 +6,7 @@ import { lazy } from '../../../utils/lazy'
 import { Settings } from '../../types'
 import { Masker } from '../../util/mask'
 import { SettingService } from '../setting/service'
-import { User, UserMaskFields } from '../user/entities'
+import { UserMaskFields } from '../user/entities'
 import { UserService } from '../user/service'
 import { CreatePostDto, DeletePostDto, GetPostDto, GetPostsDto, Post, UpdatePostDto } from './entities'
 
@@ -88,9 +88,19 @@ export class PostService {
 
         if (with_author) {
             // query.innerJoinAndSelect('post.author', 'author')
-            query.leftJoinAndMapOne('post.author', User, 'author', 'author.uuid = post.author_uuid')
+            query.leftJoinAndMapOne('post.author', 'user', 'author', 'author.uuid = post.author_uuid')
         }
-        const posts = Masker.of(await query.getMany()).mask('author', UserMaskFields).get()
+        const posts = Masker
+            .of(await query.getMany())
+            .mask('author', UserMaskFields)
+            .get()
+            .map(post => {
+                if (post.author) {
+                    post.author.is_local = true
+                    post.author.site = post.author_site
+                }
+                return post
+            })
 
         return {
             posts

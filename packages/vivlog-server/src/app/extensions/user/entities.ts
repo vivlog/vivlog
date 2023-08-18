@@ -12,6 +12,9 @@ export class User {
     @Column()
     avatarUrl: string
 
+    @Column({ nullable: true })
+    description?: string
+
     @Column({ unique: true })
     uuid: string
 
@@ -69,3 +72,11 @@ export const updateUserSchema = Type.Object({
 })
 
 export type UpdateUserDto = Static<typeof updateUserSchema>
+
+export type IUserDto = {
+    username: string
+    avatarUrl: string
+    site: string
+    is_local: boolean
+    description?: string
+}
