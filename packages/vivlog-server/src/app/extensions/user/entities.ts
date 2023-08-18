@@ -10,6 +10,9 @@ export class User {
     email: string
 
     @Column()
+    avatarUrl: string
+
+    @Column()
     uuid: string
 
     @Column()
@@ -59,6 +62,7 @@ export const updateUserSchema = Type.Object({
     id: Type.Number(),
     role: Type.Optional(Type.String()),
     email: Type.Optional(Type.String({ format: 'email' })),
+    avatarUrl: Type.Optional(Type.String()),
     password: Type.Optional(Type.String())
 })
 

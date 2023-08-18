@@ -7,6 +7,7 @@ import { Container } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Roles } from '../../types'
+import { gravatarFromEmail } from '../../util/gravatar'
 import { AppJwtPayload, LoginDto, UserLoginResponse as LoginRes, RegisterDto, UpdateUserDto, User, UserDto } from './entities'
 
 
@@ -23,7 +24,27 @@ export class UserService {
     signJwt(userId: User['id']) {
         return jwt.sign({ sub: userId.toString() } as AppJwtPayload, this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
     }
+    async createUser(userData: RegisterDto) {
+        // hash password
+        const hashedPassword = await bcrypt.hash(userData.password, 10)
 
+        const user = new User()
+        user.username = userData.username
+        user.email = userData.email
+        user.password = hashedPassword
+        user.uuid = randomUUID()
+        user.avatarUrl = gravatarFromEmail(user.email)
+
+        // if first user, set as admin
+        const userCount = await this.db.manager.count(User)
+        if (userCount === 0) {
+            user.role = Roles.Admin
+        } else {
+            user.role = Roles.Reader
+        }
+
+        return this.db.manager.save(user)
+    }
     async registerUser({ username, email, password }: RegisterDto): Promise<LoginRes> {
         this.logger.debug('register user %s', username)
 
@@ -37,27 +58,17 @@ export class UserService {
             throw new BadRequestError('username already exists')
         }
 
-        // hash password
-        const hashedPassword = await bcrypt.hash(password, 10)
+        const user = await this.createUser({
+            username,
+            email,
+            password
+        })
 
-        const user = new User()
-        user.username = username
-        user.email = email
-        user.password = hashedPassword
-        user.uuid = randomUUID()
-        // if it is the first user, set it as admin
-        const userCount = await this.db.manager.count(User)
-        if (userCount === 0) {
-            user.role = Roles.Admin
-        } else {
-            user.role = Roles.Reader
-        }
-        const ret = await this.db.manager.save(user)
-        ret.password = ''
         return {
-            user: ret,
-            token: this.signJwt(ret.id)
+            user,
+            token: this.signJwt(user.id)
         }
+
     }
 
     async loginUser({ username, password }: LoginDto): Promise<LoginRes> {

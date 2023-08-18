@@ -15,6 +15,7 @@
     "fastify": "^4.21.0",
     "fastify-graceful-shutdown": "^3.5.1",
     "jsonwebtoken": "^9.0.1",
+    "md5": "^2.3.0",
     "pino": "^8.15.0",
     "pino-pretty": "^10.2.0",
     "reflect-metadata": "^0.1.13",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.2",
+    "@types/md5": "^2.3.2",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.4.8",
     "@types/sinon": "^10.0.16",
