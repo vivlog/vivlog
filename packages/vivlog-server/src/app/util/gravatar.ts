@@ -13,7 +13,8 @@ export function gravatarFromEmail(
     const hash = md5(email.trim().toLowerCase())
 
     const defaults = {
-        source: 'https://www.gravatar.com/avatar/',
+        // source: 'https://www.gravatar.com/avatar/',
+        source: 'https://cravatar.cn/avatar/',
         parameters: 'd=identicon'
     }
 
