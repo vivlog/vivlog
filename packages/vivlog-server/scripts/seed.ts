@@ -1,6 +1,6 @@
 import { loremIpsum } from 'lorem-ipsum'
 import { CombinedSession, createNewSession, createSite } from '../src/app/util/testing'
-import { repeat } from '../src/utils/data'
+import { toRepeatAsync } from '../src/utils/data'
 import { defer, finalize, injectWithAuth, removeFile } from '../src/utils/testing'
 
 export type Options = {
@@ -26,7 +26,7 @@ const seed = (async ({ stop, multipleSite }: Options) => {
     defer(host1, h => stop && h.stop())
     const sess1 = await createNewSession(host1, true, ['admin'])
 
-    await Promise.all(repeat(5, () => createPost(sess1)))
+    await Promise.all(toRepeatAsync(5, () => createPost(sess1)))
     host1.logger.info('password for admin:' + sess1.admin.password)
 
     !multipleSite && finalize()
@@ -39,7 +39,7 @@ const seed = (async ({ stop, multipleSite }: Options) => {
     })
     defer(host2, h => stop && h.stop())
     const sess2 = await createNewSession(host1, true, ['admin'])
-    await Promise.all(repeat(5, () => createPost(sess2)))
+    await Promise.all(toRepeatAsync(5, () => createPost(sess2)))
 
     host1.logger.info(`password for ${siteName1} admin: + ${sess1.admin.password}`)
     host2.logger.info(`password for ${siteName2} admin: + ${sess2.admin.password}`)

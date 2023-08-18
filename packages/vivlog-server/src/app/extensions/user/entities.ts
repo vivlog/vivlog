@@ -80,3 +80,9 @@ export type IUserDto = {
     is_local: boolean
     description?: string
 }
+
+export enum AgentType {
+    User = 'user',
+    ConnectionReader = 'conn_reader',
+    ConnectionRequest = 'conn_req',
+}

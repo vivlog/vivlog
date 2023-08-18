@@ -7,6 +7,7 @@ import { lazy } from '../../../utils/lazy'
 import { rpc } from '../../../utils/rpc'
 import { Settings } from '../../types'
 import { SettingService } from '../setting/service'
+import { AgentType } from '../user/entities'
 import { Connection, ConnectionDirections, CreateConnectionDto, DeleteConnectionDto, GetConnectionDto, GetConnectionsDto, RequestConnectionDto, ValidateConnectionRequestDto } from './entities'
 
 export class ConnectionService {
@@ -32,7 +33,7 @@ export class ConnectionService {
         const { remote_site } = dto
         const request = rpc(remote_site)
         const secret = this.config.get('jwtSecret', 'secret')!
-        const local_token = jwt.sign({ sub: remote_site }, secret, { expiresIn: '1h' })
+        const local_token = jwt.sign({ sub: remote_site, type: AgentType.ConnectionRequest }, secret, { expiresIn: '1h' })
         try {
             this.pendingConnections.set(remote_site, { local_token })
             const ret = await request<unknown, RequestConnectionDto>('connection', 'requestConnection', {
@@ -77,6 +78,7 @@ export class ConnectionService {
             const connection = this.db.getRepository(Connection).create({
                 remote_site,
                 remote_token,
+                active_at: new Date(),
                 direction: ConnectionDirections.Outgoing
             })
             await this.db.getRepository(Connection).save(connection)
@@ -124,16 +126,16 @@ export class ConnectionService {
         }
 
         if (with_total) {
-            const [examples, total] = await query.getManyAndCount()
+            const [connections, total] = await query.getManyAndCount()
             return {
-                examples,
+                connections,
                 total
             }
         }
 
-        const examples = await query.getMany()
+        const connections = await query.getMany()
         return {
-            examples
+            connections
         }
     }
 
@@ -144,7 +146,7 @@ export class ConnectionService {
             throw new BadRequestError('Remote site is not current site')
         }
         const secret = this.config.get('jwtSecret', 'secret')!
-        const remote_token = jwt.sign({ sub: local_site }, secret, { expiresIn: '1h' })
+        const remote_token = jwt.sign({ sub: local_site, type: AgentType.ConnectionReader }, secret, { expiresIn: '1h' })
         const request = rpc(local_site)
         try {
             await request<unknown, ValidateConnectionRequestDto>('connection', 'validateConnectionRequest', { local_token, remote_token, local_site, remote_site })
@@ -173,7 +175,8 @@ export class ConnectionService {
             const connection = this.db.getRepository(Connection).create({
                 remote_site: local_site,
                 remote_token: local_token,
-                direction: ConnectionDirections.Incoming
+                direction: ConnectionDirections.Incoming,
+                active_at: new Date()
             })
             await this.db.getRepository(Connection).save(connection)
         }

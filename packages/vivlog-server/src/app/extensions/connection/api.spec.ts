@@ -9,7 +9,7 @@ import { ConnectionDirections, ConnectionDto, CreateConnectionDto } from './enti
 
 
 describe('Connection API', () => {
-    let site1Url: string, site2Url: string
+    let siteName1: string, siteName2: string
     let host1: ServerHost, host2: ServerHost
     let sess1: CombinedSession, sess2: CombinedSession
 
@@ -20,14 +20,14 @@ describe('Connection API', () => {
             sitePath: '/site1'
         })
         host1 = defer(host1ret.host, h => h.stop())
-        site1Url = host1ret.siteName
+        siteName1 = host1ret.siteName
         const host2ret = await createSite({
             name: 'site2',
             dbPath: defer('host_site2.db', removeFile),
             sitePath: '/site2'
         })
         host2 = defer(host2ret.host, h => h.stop())
-        site2Url = host2ret.siteName
+        siteName2 = host2ret.siteName
 
         assert.notEqual(host1, host2)
         assert.notEqual(host1.app, host2.app)
@@ -43,7 +43,7 @@ describe('Connection API', () => {
 
     step('create a connection from site1 to site 2', async () => {
         const crRet = await sess1.inject('connection', 'createConnection', {
-            remote_site: site2Url
+            remote_site: siteName2
         } as CreateConnectionDto)
 
         assert.strictEqual(crRet.statusCode, 200, crRet.body)
@@ -52,29 +52,29 @@ describe('Connection API', () => {
 
     step('on site1, should get the created connection from site1 to site 2', async () => {
         const getRet = await sess1.inject('connection', 'getConnection', {
-            remote_site: site2Url
+            remote_site: siteName2
         } as CreateConnectionDto)
         assert.strictEqual(getRet.statusCode, 200, getRet.body)
         const data = getRet.json().data as ConnectionDto
-        assert.strictEqual(data.remote_site, site2Url)
+        assert.strictEqual(data.remote_site, siteName2)
         assert.strictEqual(data.direction, ConnectionDirections.Outgoing)
         assert(data.remote_token.length > 0)
     })
 
     step('on site2, should get the created connection from site1 to site 2', async () => {
         const getRet = await sess2.inject('connection', 'getConnection', {
-            remote_site: site1Url
+            remote_site: siteName1
         } as CreateConnectionDto)
         assert.strictEqual(getRet.statusCode, 200, getRet.body)
         const data = getRet.json().data as ConnectionDto
-        assert.strictEqual(data.remote_site, site1Url)
+        assert.strictEqual(data.remote_site, siteName1)
         assert.strictEqual(data.direction, ConnectionDirections.Incoming)
         assert(data.remote_token.length > 0)
     })
 
     step('create a connection from site2 to site 1', async () => {
         const crRet = await sess2.inject('connection', 'createConnection', {
-            remote_site: site1Url
+            remote_site: siteName1
         } as CreateConnectionDto)
 
         assert.strictEqual(crRet.statusCode, 200, crRet.body)
@@ -82,22 +82,22 @@ describe('Connection API', () => {
 
     step('on site1, should get the bi-directional connection from site1 to site 2', async () => {
         const getRet = await sess1.inject('connection', 'getConnection', {
-            remote_site: site2Url
+            remote_site: siteName2
         } as CreateConnectionDto)
         assert.strictEqual(getRet.statusCode, 200, getRet.body)
         const data = getRet.json().data as ConnectionDto
-        assert.strictEqual(data.remote_site, site2Url)
+        assert.strictEqual(data.remote_site, siteName2)
         assert.strictEqual(data.direction, ConnectionDirections.Both)
         assert(data.remote_token.length > 0)
     })
 
     step('on site2, should get the bi-directional connection from site1 to site 2', async () => {
         const getRet = await sess2.inject('connection', 'getConnection', {
-            remote_site: site1Url
+            remote_site: siteName1
         } as CreateConnectionDto)
         assert.strictEqual(getRet.statusCode, 200, getRet.body)
         const data = getRet.json().data as ConnectionDto
-        assert.strictEqual(data.remote_site, site1Url)
+        assert.strictEqual(data.remote_site, siteName1)
         assert.strictEqual(data.direction, ConnectionDirections.Both)
         assert(data.remote_token.length > 0)
     })

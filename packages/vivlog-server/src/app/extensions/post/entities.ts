@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Static, Type } from '@sinclair/typebox'
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 import { IUserDto } from '../user/entities'
@@ -25,7 +26,7 @@ export class Post {
     slug?: string
 
     @Column('simple-json')
-    content?: unknown
+    content?: any
 
     @Column()
     author_uuid: string
@@ -34,10 +35,10 @@ export class Post {
     author_site: string
 
     @Column('simple-json')
-    attachment_vids?: unknown // like featuredMedias
+    attachment_vids?: any[] // like featuredMedias
 
     @Column('simple-json')
-    custom?: unknown
+    custom?: any
 
     @Column({ default: 'published' })
     status: string // draft | future | published | deleted
@@ -75,11 +76,11 @@ const createPostSchemaObj = {
         Type.Literal('comment'),
     ])),
     slug: Type.Optional(Type.String()),
-    content: Type.Optional(Type.Unknown()),
+    content: Type.Optional(Type.Any()),
     author_uuid: Type.Optional(Type.String()),
     author_site: Type.Optional(Type.String()),
-    attachment_vids: Type.Optional(Type.Unknown()),
-    custom: Type.Optional(Type.Unknown()),
+    attachment_vids: Type.Optional(Type.Any()),
+    custom: Type.Optional(Type.Any()),
     // draft | future | published | deleted
     status: Type.Optional(Type.Union([
         Type.Literal('draft'),
@@ -135,16 +136,35 @@ export const getPostSchema = Type.Object({
 
 export type GetPostDto = Static<typeof getPostSchema>
 
+const commonFilters = {
+    title: Type.Optional(Type.String()),
+    type: Type.Optional(Type.String()),
+    status: Type.Optional(Type.String()),
+    visibility: Type.Optional(Type.String()),
+    format: Type.Optional(Type.String()),
+    sticky: Type.Optional(Type.Boolean()),
+    after_time: Type.Optional(Type.String()),
+}
+
+const browseFilters = Type.Object({
+    ...commonFilters,
+    site: Type.Optional(Type.String())
+})
+
+const getFilters = Type.Object(commonFilters)
+
+export const browsePostsSchema = Type.Object({
+    filters: Type.Optional(browseFilters),
+    limit: Type.Optional(Type.Number({ default: 10, maximum: 100, minimum: 1 })),
+    offset: Type.Optional(Type.Number({ default: 0, minimum: 0 })),
+    with_total: Type.Optional(Type.Boolean({ default: false })),
+    with_author: Type.Optional(Type.Boolean({ default: true })),
+})
+
+export type BrowsePostsDto = Static<typeof browsePostsSchema>
+
 export const getPostsSchema = Type.Object({
-    filters: Type.Optional(Type.Object({
-        title: Type.Optional(Type.String()),
-        site: Type.Optional(Type.String()),
-        type: Type.Optional(Type.String()),
-        status: Type.Optional(Type.String()),
-        visibility: Type.Optional(Type.String()),
-        format: Type.Optional(Type.String()),
-        sticky: Type.Optional(Type.Boolean()),
-    })),
+    filters: Type.Optional(getFilters),
     limit: Type.Optional(Type.Number({ default: 10, maximum: 100, minimum: 1 })),
     offset: Type.Optional(Type.Number({ default: 0, minimum: 0 })),
     with_total: Type.Optional(Type.Boolean({ default: false })),
@@ -152,3 +172,11 @@ export const getPostsSchema = Type.Object({
 })
 
 export type GetPostsDto = Static<typeof getPostsSchema>
+
+export const syncPostsSchema = Type.Object({
+    site: Type.Optional(Type.String()),
+    limit: Type.Optional(Type.Number({ default: 10, maximum: 100, minimum: 1 })),
+    after_time: Type.Optional(Type.String()),
+})
+
+export type SyncPostsDto = Static<typeof syncPostsSchema>

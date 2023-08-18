@@ -20,6 +20,9 @@ export class Connection {
 
     @UpdateDateColumn()
     updated_at: Date
+
+    @Column()
+    active_at: Date
 }
 
 export type ConnectionDto = Connection;
@@ -60,6 +63,7 @@ export type GetConnectionDto = Static<typeof getConnectionSchema>
 export const getConnectionsSchema = Type.Object({
     filters: Type.Optional(Type.Object({
         remote_site: Type.Optional(Type.String()),
+        direction: Type.Optional(Type.Enum(ConnectionDirections)),
     })),
     limit: Type.Optional(Type.Number()),
     offset: Type.Optional(Type.Number()),
