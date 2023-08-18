@@ -4,13 +4,17 @@ import { Container } from '../../../container'
 import { Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Settings } from '../../types'
+import { Masker } from '../../util/mask'
 import { SettingService } from '../setting/service'
+import { User, UserMaskFields } from '../user/entities'
+import { UserService } from '../user/service'
 import { CreatePostDto, DeletePostDto, GetPostDto, GetPostsDto, Post, UpdatePostDto } from './entities'
 
 export class PostService {
     private db: DataSource
     private logger: Logger
     private settingService: SettingService
+    private userService: UserService
     get defaultSite() {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
@@ -19,6 +23,7 @@ export class PostService {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
+        lazy(this, 'userService', () => container.resolve(UserService.name) as UserService)
     }
 
     async createPost(dto: CreatePostDto) {
@@ -51,9 +56,10 @@ export class PostService {
         return this.db.getRepository(Post).findOneBy(dto)
     }
 
-    async getPosts(dto: GetPostsDto) {
 
-        const { filters, limit, offset, with_total } = dto
+    async getPosts(dto: GetPostsDto): Promise<{ posts: Post[]; total?: number }> {
+
+        const { filters, limit, offset, with_total, with_author } = dto
 
         const query = this.db.getRepository(Post)
             .createQueryBuilder('post')
@@ -80,7 +86,12 @@ export class PostService {
             }
         }
 
-        const posts = await query.getMany()
+        if (with_author) {
+            // query.innerJoinAndSelect('post.author', 'author')
+            query.innerJoinAndMapOne('post.author', User, 'author', 'author.uuid = post.author_uuid')
+        }
+        const posts = Masker.of(await query.getMany()).mask('author', UserMaskFields).get()
+
         return {
             posts
         }

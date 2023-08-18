@@ -12,7 +12,7 @@ export class User {
     @Column()
     avatarUrl: string
 
-    @Column()
+    @Column({ unique: true })
     uuid: string
 
     @Column()
@@ -31,6 +31,8 @@ export class User {
     @Column()
     role: string
 }
+
+export const UserMaskFields: (keyof User)[] = ['password', 'email', 'role']
 
 export type UserDto = Omit<User, 'password'>;
 

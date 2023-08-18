@@ -1,5 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { User } from '../user/entities'
 
 @Entity()
 export class Post {
@@ -60,6 +61,8 @@ export class Post {
     published_at: Date
 
     // TODO: 圈子？
+    @ManyToOne(() => User)
+    author?: User
 }
 
 export type PostDto = Post;
@@ -146,6 +149,7 @@ export const getPostsSchema = Type.Object({
     limit: Type.Optional(Type.Number({ default: 10, maximum: 100, minimum: 1 })),
     offset: Type.Optional(Type.Number({ default: 0, minimum: 0 })),
     with_total: Type.Optional(Type.Boolean({ default: false })),
+    with_author: Type.Optional(Type.Boolean({ default: true })),
 })
 
 export type GetPostsDto = Static<typeof getPostsSchema>
