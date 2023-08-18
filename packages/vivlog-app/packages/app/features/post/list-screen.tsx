@@ -1,4 +1,4 @@
-import { Button, Paragraph, View, YStack } from '@my/ui'
+import { Button, Image, Paragraph, Text, View, YStack } from '@my/ui'
 import { ChevronLeft } from '@tamagui/lucide-icons'
 import { useQuery } from '@tanstack/react-query'
 import { post } from 'app/services/api'
@@ -20,7 +20,19 @@ export function PostListPart() {
         {getPostsQuery.isSuccess &&
             getPostsQuery.data?.posts.map((post) => {
                 return <View maw={400} bg="$gray3" p="$3" key={post.id} borderRadius="$3">
-                    <Paragraph>{post.content}</Paragraph>
+                    <View display='flex' marginBottom={8}>
+                        <Image mr={8} borderRadius={99} source={{ uri: 'https://placekitten.com/200/300', width: 32, height: 32 }}></Image>
+                        <YStack>
+                            <View>
+                                <Text flex={1}>{post.author.username}</Text>
+                                <Text color="$gray10"> @{post.author.site}</Text>
+                            </View>
+                            <Text color="$gray11"> {post.author.descritpion ?? 'nothing to say'}</Text>
+                        </YStack>
+                    </View>
+                    <View borderTopWidth={1} borderColor="$gray5">
+                        <Paragraph>{post.content}</Paragraph>
+                    </View>
                 </View>
             })
         }
