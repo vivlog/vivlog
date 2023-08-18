@@ -17,3 +17,11 @@ export function parseBool(value: string | undefined) {
     value = value.toLowerCase()
     return value === 'true' || value === '1'
 }
+
+export function repeat<T>(times: number, func: T): T[] {
+    const ret = [] as T[]
+    for (let i = 0; i < times; i++) {
+        ret.push(func)
+    }
+    return ret
+}

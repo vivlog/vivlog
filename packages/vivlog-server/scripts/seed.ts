@@ -1,33 +1,56 @@
-import { createNewSession } from '../src/app/util/testing'
-import { bootstrap } from '../src/server'
-import { injectWithAuth, removeFile } from '../src/utils/testing'
+import { loremIpsum } from 'lorem-ipsum'
+import { CombinedSession, createNewSession, createSite } from '../src/app/util/testing'
+import { repeat } from '../src/utils/data'
+import { defer, finalize, injectWithAuth, removeFile } from '../src/utils/testing'
 
-const f = (async () => {
-    console.log('Unlink Database...')
+export type Options = {
+    stop: boolean
+    multipleSite: boolean
+}
+
+const seed = (async ({ stop, multipleSite }: Options) => {
+    const createPost = (sess: CombinedSession) => {
+        const content = loremIpsum({ count: 1, units: 'paragraphs' })
+        const token = sess.admin.token
+        return injectWithAuth(host1, 'post', 'createPost', { content }, token)
+    }
+
     removeFile('db.sqlite')
 
-    console.log('Start server...')
-    const host = await bootstrap()
+    const { host: host1, siteName: siteName1 } = await createSite({
+        name: 'site1',
+        dbPath: 'db.sqlite',
+        port: '9009',
+        sitePath: '/site1'
+    })
+    defer(host1, h => stop && h.stop())
+    const sess1 = await createNewSession(host1, true, ['admin'])
 
-    console.log('Seeding...')
-    const sess = await createNewSession(host, true, ['admin'])
-    const createPost = (content: string) => {
-        return injectWithAuth(host, 'post', 'createPost', { content }, sess.admin.token)
-    }
-    await Promise.all([
-        createPost('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam sit amet ligula pulvinar, porttitor ligula at, efficitur nisi.'),
-        createPost('Donec egestas molestie neque nec convallis. Donec pulvinar faucibus arcu eget lacinia. Ut rutrum odio tortor, quis aliquet lacus eleifend.'),
-        createPost('Sed tristique vitae neque a iaculis. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi at.'),
-        createPost('Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In ut volutpat eros. Aenean vitae vestibulum.'),
-    ])
-    await host.stop()
+    await Promise.all(repeat(5, () => createPost(sess1)))
+    host1.logger.info('password for admin:' + sess1.admin.password)
 
-    host.logger.info('password for admin:' + sess.admin.password)
+    !multipleSite && finalize()
 
+    const { host: host2, siteName: siteName2 } = await createSite({
+        name: 'site2',
+        dbPath: 'db2.sqlite',
+        port: '9009',
+        sitePath: '/site1'
+    })
+    defer(host2, h => stop && h.stop())
+    const sess2 = await createNewSession(host1, true, ['admin'])
+    await Promise.all(repeat(5, () => createPost(sess2)))
+
+    host1.logger.info(`password for ${siteName1} admin: + ${sess1.admin.password}`)
+    host2.logger.info(`password for ${siteName2} admin: + ${sess2.admin.password}`)
 })
 
 try {
-    f()
+    const args = process.argv.slice(2)
+    seed({
+        stop: !args.includes('--boot'),
+        multipleSite: args.includes('--multiple-site')
+    })
 } catch (error) {
     console.error(error)
 }
