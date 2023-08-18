@@ -88,7 +88,7 @@ export class PostService {
 
         if (with_author) {
             // query.innerJoinAndSelect('post.author', 'author')
-            query.innerJoinAndMapOne('post.author', User, 'author', 'author.uuid = post.author_uuid')
+            query.leftJoinAndMapOne('post.author', User, 'author', 'author.uuid = post.author_uuid')
         }
         const posts = Masker.of(await query.getMany()).mask('author', UserMaskFields).get()
 
