@@ -81,17 +81,25 @@ export async function isPortAvailable(port: number): Promise<boolean> {
             resolve(false)
         })
         s.once('listening', () => {
-            resolve(true)
             s.close()
+            resolve(true)
         })
         s.listen(port)
     })
 }
 
+export function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export async function getNextAvailablePort(startFrom: number = 20011) {
     for (let port = startFrom; port < 65535; port++) {
-        if (await isPortAvailable(port)) {
-            return port
+        try {
+            if (await isPortAvailable(port)) {
+                return port
+            }
+        } catch (error) {
+            console.log('skip port', port, error)
         }
     }
     throw new Error('No available port')

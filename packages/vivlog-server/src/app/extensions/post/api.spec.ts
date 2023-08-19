@@ -5,7 +5,7 @@ import { step } from 'mocha-steps'
 import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
-import { defer, finalize, inject, removeFile } from '../../../utils/testing'
+import { defer, finalize, getNextAvailablePort, inject, removeFile } from '../../../utils/testing'
 import { Roles, defaultSettings } from '../../types'
 import { CombinedSession, createNewSession, createSite } from '../../util/testing'
 import { CreateConnectionDto } from '../connection/entities'
@@ -98,6 +98,7 @@ describe('Post + Connection API', () => {
         const host2ret = await createSite({
             name: 'site2',
             dbPath: defer('site2.sqlite', removeFile),
+            port: (await getNextAvailablePort(parseInt(host1ret.port) + 1)).toString(),
             sitePath: '/site2'
         })
         host2 = defer(host2ret.host, h => h.stop())

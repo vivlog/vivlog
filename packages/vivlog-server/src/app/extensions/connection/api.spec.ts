@@ -2,7 +2,7 @@ import assert from 'assert'
 import { describe } from 'mocha'
 import { step } from 'mocha-steps'
 import { ServerHost } from '../../../host/host'
-import { defer, finalize, removeFile } from '../../../utils/testing'
+import { defer, finalize, getNextAvailablePort, removeFile } from '../../../utils/testing'
 import { Roles } from '../../types'
 import { CombinedSession, createNewSession, createSite } from '../../util/testing'
 import { ConnectionDirections, ConnectionDto, CreateConnectionDto } from './entities'
@@ -24,6 +24,7 @@ describe('Connection API', () => {
         const host2ret = await createSite({
             name: 'site2',
             dbPath: defer('host_site2.db', removeFile),
+            port: (await getNextAvailablePort(parseInt(host1ret.port) + 1)).toString(),
             sitePath: '/site2'
         })
         host2 = defer(host2ret.host, h => h.stop())

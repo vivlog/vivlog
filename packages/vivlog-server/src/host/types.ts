@@ -11,6 +11,7 @@ export type Logger = {
     info: (...args: any[]) => void
     warn: (...args: any[]) => void
     error: (...args: any[]) => void
+    trace: (...args: any[]) => void
 }
 
 export interface Extension {

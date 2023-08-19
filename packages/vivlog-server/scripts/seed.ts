@@ -34,7 +34,7 @@ const seed = (async ({ stop, multipleSite }: Options) => {
     const { host: host2, siteName: siteName2 } = await createSite({
         name: 'site2',
         dbPath: 'db2.sqlite',
-        port: '9009',
+        port: '9010',
         sitePath: '/site1'
     })
     defer(host2, h => stop && h.stop())

@@ -95,11 +95,15 @@ export class ServerHost implements Host {
         if (this.db.isInitialized) {
             this.logger.warn('db is initialized')
         }
+        this.logger.trace('initialize db')
         await this.db.initialize()
+        this.logger.trace('initialize db done')
+        const port = this.config.get('port', '9000')!
+        this.logger.trace('try to listen on port %s', port)
         const addr = await this.app.listen({
-            port: parseInt(this.config.get('port', '9000')!),
+            port: parseInt(port),
         })
-        this.logger.debug('server started at %s', addr)
+        this.logger.info('server started at %s', addr)
     }
 
     async stop() {
