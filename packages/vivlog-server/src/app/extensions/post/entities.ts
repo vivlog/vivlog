@@ -63,6 +63,9 @@ export class Post {
 
     // TODO: 圈子？
     author?: IUserDto
+    
+    @Column('simple-json', { nullable: true })
+    remote_author?: IUserDto
 }
 
 export type PostDto = Post;

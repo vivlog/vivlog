@@ -54,6 +54,8 @@ export function defer<T>(resource: T, finalizer: (v: T) => void) {
 }
 
 export async function finalize() {
+    console.log('finalize')
+
     while (finalizeStack.length > 0) {
         const finalizer = finalizeStack.pop()
         if (!finalizer) {

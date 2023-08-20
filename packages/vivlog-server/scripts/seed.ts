@@ -1,18 +1,23 @@
+import assert from 'assert'
 import { loremIpsum } from 'lorem-ipsum'
+import { CreateConnectionDto } from '../src/app/extensions/connection/entities'
+import { Roles } from '../src/app/types'
 import { CombinedSession, createNewSession, createSite } from '../src/app/util/testing'
 import { toRepeatAsync } from '../src/utils/data'
-import { defer, finalize, injectWithAuth, removeFile } from '../src/utils/testing'
+import { defer, finalize, removeFile } from '../src/utils/testing'
 
 export type Options = {
     stop: boolean
     multipleSite: boolean
 }
 
-const seed = (async ({ stop, multipleSite }: Options) => {
+const seed = (async (opts: Options) => {
+    const { stop, multipleSite } = opts
+    console.log('options', opts)
+
     const createPost = (sess: CombinedSession) => {
         const content = loremIpsum({ count: 1, units: 'paragraphs' })
-        const token = sess.admin.token
-        return injectWithAuth(host1, 'post', 'createPost', { content }, token)
+        return sess.injectAs(Roles.Admin, 'post', 'createPost', { content })
     }
 
     removeFile('db.sqlite')
@@ -20,29 +25,44 @@ const seed = (async ({ stop, multipleSite }: Options) => {
     const { host: host1, siteName: siteName1 } = await createSite({
         name: 'site1',
         dbPath: 'db.sqlite',
-        port: '9009',
-        sitePath: '/site1'
+        port: '9000',
+        sitePath: ''
     })
     defer(host1, h => stop && h.stop())
-    const sess1 = await createNewSession(host1, true, ['admin'])
+    const sess1 = await createNewSession(host1, false, ['admin'])
 
     await Promise.all(toRepeatAsync(5, () => createPost(sess1)))
     host1.logger.info('password for admin:' + sess1.admin.password)
 
-    !multipleSite && finalize()
+    if (!multipleSite) {
+        await finalize()
+        return
+    }
+
+    removeFile('db2.sqlite')
 
     const { host: host2, siteName: siteName2 } = await createSite({
         name: 'site2',
         dbPath: 'db2.sqlite',
         port: '9010',
-        sitePath: '/site1'
+        sitePath: ''
     })
     defer(host2, h => stop && h.stop())
-    const sess2 = await createNewSession(host1, true, ['admin'])
+    const sess2 = await createNewSession(host2, false, ['admin'])
     await Promise.all(toRepeatAsync(5, () => createPost(sess2)))
 
-    host1.logger.info(`password for ${siteName1} admin: + ${sess1.admin.password}`)
-    host2.logger.info(`password for ${siteName2} admin: + ${sess2.admin.password}`)
+    host1.logger.info(`password for ${siteName1} demo-admin: ${sess1.admin.password}`)
+    host2.logger.info(`password for ${siteName2} demo-admin: ${sess2.admin.password}`)
+
+    const crRet = await sess1.inject('connection', 'createConnection', {
+        remote_site: siteName2
+    } as CreateConnectionDto)
+
+    assert.strictEqual(crRet.statusCode, 200, crRet.body)
+
+    if (stop) {
+        await finalize()
+    }
 })
 
 try {

@@ -25,9 +25,9 @@ export class RoleAuthMiddleware {
             }
 
             // Remove Bearer
-            const parts = authHeaderValue.split(' ')
+            let parts = authHeaderValue.split(' ')
             if (parts.length !== 2) {
-                throw new UnauthorizedError('broken token')
+                parts = ['', authHeaderValue]
             }
 
             const user = await this.authenticator.verify(parts[1])

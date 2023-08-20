@@ -115,7 +115,6 @@ describe('Post + Connection API', () => {
         finalize()
     })
 
-
     step('create admin sessions', async () => {
         sess1 = await createNewSession(host1, false, [Roles.Admin, Roles.Reader])
         sess2 = await createNewSession(host2, false, [Roles.Admin, Roles.Reader])

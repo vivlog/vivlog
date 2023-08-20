@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
 import { Container } from '../../../container'
@@ -62,7 +63,7 @@ export class PostService {
     }
 
     async syncPosts({ site, limit, after_time }: SyncPostsDto): Promise<{ posts: Post[] }> {
-        const posts: Post[] = []
+        const remotePosts: Post[] = []
         const { connections } = await this.connectionService.getConnections({
             filters: {
                 remote_site: site,
@@ -89,7 +90,7 @@ export class PostService {
             ret.posts.forEach(post => {
                 try {
                     this.validateRemotePost(connection.remote_site, post)
-                    posts.push(post)
+                    remotePosts.push(post)
                 } catch (error) {
                     this.logger.error('failed to validate remote post %s from %s: %o', post.uuid, connection.remote_site, error)
                 }
@@ -98,19 +99,22 @@ export class PostService {
         }).map(fn => fn()))
 
         // sync remote posts to database
-        posts.forEach(async post => {
+        remotePosts.forEach(async post => {
             const existingPost = await this.db.getRepository(Post).findOneBy({ uuid: post.uuid, site: post.site })
             if (existingPost) {
+                post.remote_author = post.author
+                post.author = undefined
+                post.id = undefined as any
                 await this.db.getRepository(Post).update(existingPost.id, post)
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 post.id = undefined as any
+                post.remote_author = post.author
                 await this.db.getRepository(Post).save(post)
             }
         })
 
         return {
-            posts
+            posts: remotePosts
         }
     }
 
@@ -187,7 +191,13 @@ export class PostService {
                 if (post.author) {
                     post.author.is_local = true
                     post.author.site = post.author_site
+                } else {
+                    post.author = post.remote_author
+                    if (post.author) {
+                        post.author.is_local = false
+                    }
                 }
+                delete post.remote_author
                 return post
             })
 

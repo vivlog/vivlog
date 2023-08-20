@@ -1,5 +1,4 @@
 import assert from 'assert'
-import { randomUUID } from 'crypto'
 import { InjectPayload } from 'light-my-request'
 import { defaultRawConfig } from '../../config/types'
 import { Host } from '../../host/types'
@@ -12,10 +11,10 @@ import { Role, Roles, Settings } from '../types'
 export type CombinedSession = Awaited<ReturnType<typeof createNewSession>>
 
 const defaultUsers = {
-    [Roles.Admin]: { username: 'demo-admin', password: randomUUID(), role: Roles.Admin },
-    [Roles.Reader]: { username: 'demo-reader', password: randomUUID(), role: Roles.Reader },
-    [Roles.Editor]: { username: 'demo-editor', password: randomUUID(), role: Roles.Editor },
-    [Roles.Author]: { username: 'demo-author', password: randomUUID(), role: Roles.Author }
+    [Roles.Admin]: { username: 'admin', password: '12345678', role: Roles.Admin },
+    [Roles.Reader]: { username: 'reader', password: '12345678', role: Roles.Reader },
+    [Roles.Editor]: { username: 'editor', password: '12345678', role: Roles.Editor },
+    [Roles.Author]: { username: 'author', password: '12345678', role: Roles.Author }
 }
 
 

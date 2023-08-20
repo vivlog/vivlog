@@ -13,8 +13,26 @@ import { configKeys, defaultRawConfig } from './config/types'
 import { Container } from './container'
 import { loadExtensions } from './host/extension'
 import { ServerHost } from './host/host'
-import { Extension } from './host/types'
+import { Extension, Logger } from './host/types'
 import { parseBool } from './utils/data'
+
+// set backtrace size
+Error.stackTraceLimit = 100
+
+
+export function createLogger(config: ConfigProvider): Logger {
+    const loggerConfig = config.get('logger', 'pino')!
+    if (loggerConfig == 'pino') {
+        return pino({
+            transport: {
+                target: 'pino-pretty'
+            },
+            level: config.get('logLevel'),
+            sync: true
+        })
+    }
+    return console
+}
 
 
 export async function bootstrap() {
@@ -25,14 +43,8 @@ export async function bootstrap() {
         configKeys,
         validator: validateConfig
     }))
-    const logger = pino({
-        transport: {
-            target: 'pino-pretty'
-        },
-        level: config.get('logLevel'),
-        sync: true
-    })
-    logger.trace('logLevel %s', config.get('logLevel'))
+    const logger = createLogger(config)
+    logger.debug('logLevel %s', config.get('logLevel'))
 
     try {
         const externalExtensions = await loadExtensions(config.get('extensionDir'))
