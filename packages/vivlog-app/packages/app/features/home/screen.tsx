@@ -29,6 +29,10 @@ export function HomeScreen() {
     href: '/post/list',
   })
 
+  const linkToBrowsePosts = useLink({
+    href: '/post/browse',
+  })
+
   const queryClient = useQueryClient()
 
   const userQuery = useQuery<null | LoginRes['user']>(['user'], fetchLocalUser)
@@ -36,22 +40,23 @@ export function HomeScreen() {
   const logoutMutation = useMutation(
     () => Promise.all([clearLocalToken(), clearLocalUser()]),
     {
-      onSuccess: () => Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['user'] }),
-        queryClient.invalidateQueries({ queryKey: ['token'] })
+      onSuccess: async () => await Promise.all([
+        await queryClient.invalidateQueries({ queryKey: ['user'] }),
+        await queryClient.invalidateQueries({ queryKey: ['token'] })
       ])
     })
 
   return (
     <YStack f={1} jc="center" ai="center" p="$4" space>
       <Text>User: {userQuery.data?.username ?? 'not login'}</Text>
-      <Button {...linkProps}>Link to user</Button>
+      <Button {...linkProps} >Link to user</Button>
       {!userQuery.data && (<>
         <Button {...linkToRegister}>Register</Button>
         <Button {...linkToLogin}>Log in</Button>
       </>)}
-      {userQuery.data && <YStack >
+      {userQuery.data && <YStack p="$4">
         <Button {...linkToPosts}>Posts</Button>
+        <Button {...linkToBrowsePosts}>Browse posts</Button>
         <Button onPress={() => logoutMutation.mutate()}>Log out</Button>
       </YStack>}
 

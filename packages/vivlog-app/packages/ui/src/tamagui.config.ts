@@ -1,8 +1,8 @@
-import { createTamagui } from 'tamagui'
 import { createInterFont } from '@tamagui/font-inter'
+import { createMedia } from '@tamagui/react-native-media-driver'
 import { shorthands } from '@tamagui/shorthands'
 import { themes, tokens } from '@tamagui/themes'
-import { createMedia } from '@tamagui/react-native-media-driver'
+import { createTamagui } from 'tamagui'
 
 import { animations } from './animations'
 
@@ -60,7 +60,15 @@ export const config = createTamagui({
     body: bodyFont,
     heading: headingFont,
   },
-  themes,
+  // themes,
+  themes: {
+    dark: {
+      ...themes.dark,
+    },
+    light: {
+      ...themes.light,
+    },
+  } as typeof themes,
   tokens,
   media: createMedia({
     xs: { maxWidth: 660 },

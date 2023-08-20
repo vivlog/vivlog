@@ -1,6 +1,6 @@
 import { Button, Input, Paragraph, Spacer, YStack, useToastController } from '@my/ui'
 import { ChevronLeft } from '@tamagui/lucide-icons'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { RegisterDto, RegisterRes, auth, setToken } from 'app/services/api'
 import { setLocalToken, setLocalUser } from 'app/services/local'
 import { useFormik } from 'formik'
@@ -76,6 +76,7 @@ export function RegisterScreen() {
   const toast = useToastController()
   const { replace } = useRouter()
   const registerMutation = useMutation(auth.registerUser)
+  const queryClient = useQueryClient()
   const handleSubmit = (values) => {
     registerMutation.mutate(values, {
       onSuccess: async (data) => {
@@ -86,10 +87,11 @@ export function RegisterScreen() {
           return
         }
         const res = (await data) as unknown as RegisterRes
-        setLocalToken(res.token)
-        setLocalUser(res.user)
-
-        setToken(res.token)
+        await setLocalToken(res.token)
+        await setLocalUser(res.user)
+        await setToken(res.token)
+        await queryClient.invalidateQueries(['user'])
+        await queryClient.invalidateQueries(['token'])
         replace('/')
       },
       onError: (err: Error) => {

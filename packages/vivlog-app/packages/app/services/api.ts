@@ -1,4 +1,5 @@
-export let baseUrl = 'http://localhost:9000/api/v1'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export let baseUrl = 'http://192.168.1.2:9000/api/v1'
 export let token = ''
 
 export function setBaseUrl(url: string) {
@@ -66,13 +67,13 @@ export async function fetchApi(url, options) {
 }
 
 
-export function rpcRequest(module_: string, action: string, payload, options) {
+export async function rpcRequest(module_: string, action: string, payload, options) {
     if (!options) {
         options = {}
     }
     console.log('rpcRequest', module_, action, payload, options)
 
-    return fetchApi(`/${module_}/${action}`, {
+    const res = await fetchApi(`/${module_}/${action}`, {
         method: 'POST',
         ...options,
         headers: {
@@ -84,6 +85,8 @@ export function rpcRequest(module_: string, action: string, payload, options) {
             ...options.body,
         }),
     })
+    console.log('rpcRequest res', res)
+    return res
 }
 
 export type RegisterDto = {
@@ -122,6 +125,15 @@ export const auth = {
     loginUser: (dto: LoginDto, options?) => rpcRequest('user', 'loginUser', dto, options),
 }
 
+export type Post = any
+
+export type PostsResp = {
+    posts: Post[]
+    total?: number
+}
+
 export const post = {
     getPosts: (options?) => rpcRequest('post', 'getPosts', {}, options),
+    browsePosts: (options?) => rpcRequest('post', 'browsePosts', {}, options),
+    syncPosts: (options?) => rpcRequest('post', 'syncPosts', {}, options),
 }

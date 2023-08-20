@@ -5,7 +5,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { useColorScheme } from 'react-native'
 import config from '../tamagui.config'
-import {InitLocal} from './InitLocal'
+import { InitLocal } from './InitLocal'
 import { ToastViewport } from './ToastViewport'
 
 
@@ -16,15 +16,15 @@ export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'conf
     storage: AsyncStorage,
   })
   return (
-    <TamaguiProvider
-      config={config}
-      disableInjectCSS
-      defaultTheme={scheme === 'dark' ? 'dark' : 'light'}
-      {...rest}
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister: asyncStoragePersister }}
     >
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{ persister: asyncStoragePersister }}
+      <TamaguiProvider
+        config={config}
+        disableInjectCSS
+        defaultTheme={scheme === 'dark' ? 'dark' : 'light'}
+        {...rest}
       >
         <ToastProvider
           swipeDirection="horizontal"
@@ -41,7 +41,7 @@ export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'conf
           <CustomToast />
           <ToastViewport />
         </ToastProvider>
-      </PersistQueryClientProvider>
-    </TamaguiProvider >
+      </TamaguiProvider >
+    </PersistQueryClientProvider>
   )
 }
