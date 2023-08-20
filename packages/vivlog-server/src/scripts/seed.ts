@@ -1,10 +1,10 @@
 import assert from 'assert'
 import { loremIpsum } from 'lorem-ipsum'
-import { CreateConnectionDto } from '../src/app/extensions/connection/entities'
-import { Roles } from '../src/app/types'
-import { CombinedSession, createNewSession, createSite } from '../src/app/util/testing'
-import { toRepeatAsync } from '../src/utils/data'
-import { defer, finalize, removeFile } from '../src/utils/testing'
+import { CreateConnectionDto } from '../app/extensions/connection/entities'
+import { Roles } from '../app/types'
+import { CombinedSession, createNewSession, createSite } from '../app/util/testing'
+import { toRepeatAsync } from '../utils/data'
+import { defer, finalize, removeFile } from '../utils/testing'
 
 export type Options = {
     stop: boolean

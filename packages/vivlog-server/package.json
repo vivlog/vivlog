@@ -28,7 +28,8 @@
     "build": "tsc",
     "test": "mocha --require mocha-steps --require ts-node/register 'src/**/*.spec.ts'",
     "test_only": "mocha --require mocha-steps --require ts-node/register",
-    "seed": "ts-node scripts/seed.ts"
+    "seed": "ts-node src/scripts/seed.ts",
+    "start:seed": "nodemon --exec ts-node src/scripts/seed.ts"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.2",
