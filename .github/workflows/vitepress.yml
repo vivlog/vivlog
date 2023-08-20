@@ -28,6 +28,9 @@ jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/vivlog-docs
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -41,8 +44,6 @@ jobs:
           cache: npm # or pnpm / yarn
       - name: Setup Pages
         uses: actions/configure-pages@v3
-      - name: Switch folder
-        run: cd packages/vivlog-docs
       - name: Install dependencies
         run: npm ci # or pnpm install / yarn install
       - name: Build with VitePress
