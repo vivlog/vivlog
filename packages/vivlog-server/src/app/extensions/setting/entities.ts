@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Static, Type } from '@sinclair/typebox'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
@@ -13,7 +14,7 @@ export class Setting {
     name: string
 
     @Column('simple-json')
-    value: unknown // 'json'
+    value: any // 'json'
 }
 
 export type SettingDto = typeof Setting;
@@ -21,7 +22,7 @@ export type SettingDto = typeof Setting;
 export const setItemSchema = Type.Object({
     group: Type.String(),
     name: Type.String(),
-    value: Type.Unknown(),
+    value: Type.Any(),
 })
 
 export type SetItemDto = Static<typeof setItemSchema>

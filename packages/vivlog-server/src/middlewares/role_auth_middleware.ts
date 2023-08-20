@@ -15,45 +15,63 @@ export class RoleAuthMiddleware {
 
     constructor(private authenticator: Authenticator) {
     }
-
-    // Auth user and set `req.user`
-    private setupUser: () => Middleware
-        = () => async (req) => {
-            const authHeaderValue = req.headers['authorization'] as string | undefined
-            if (!authHeaderValue) {
-                throw new UnauthorizedError('unauthorized')
-            }
-
-            // Remove Bearer
-            let parts = authHeaderValue.split(' ')
-            if (parts.length !== 2) {
-                parts = ['', authHeaderValue]
-            }
-
-            const user = await this.authenticator.verify(parts[1])
-            if (!user) {
-                throw new UnauthorizedError('invalid token')
-            }
-            req.user = user
-            console.log(`setupUser [${user.username}] for ${req.url}`)
+    private setupUser: Middleware = async (req) => {
+        const authHeaderValue = req.headers['authorization'] as string | undefined
+        if (!authHeaderValue) {
+            throw new UnauthorizedError('unauthorized')
         }
 
+        // Remove Bearer
+        const parts = authHeaderValue.split(' ')
+        let token = ''
+        if (parts.length !== 2) {
+            token = authHeaderValue
+        } else {
+            token = parts[1]
+        }
+
+        const user = await this.authenticator.verify(token)
+        if (!user) {
+            throw new UnauthorizedError('invalid token')
+        }
+        req.user = user
+        console.log(`setupUser [${user.username}] for ${req.url}`)
+    }
+
+    private trySetupUser: Middleware = async (...args) => {
+        try {
+            await this.setupUser(...args)
+        } catch (err) {
+            console.debug('user not set for ', args[0].url)
+        }
+    }
+
+    private _roleCheckCache: Record<string, Middleware> = {}
     // 该方法用于检查用户角色是否满足要求
     private roleCheck: (allowRoles: string[]) => Middleware
-        = (allowRoles) => async (req) => {
-            console.log('roleCheck for ', req.url)
-            const { user: rawUser } = req
-            if (!rawUser) {
-                throw new UnauthorizedError('not logged in')
-            }
+        = (allowRoles) => {
+            const f: Middleware = async (req) => {
+                console.log('roleCheck for ', req.url)
+                const { user: rawUser } = req
+                if (!rawUser) {
+                    throw new UnauthorizedError('not logged in')
+                }
 
-            const user = rawUser as AuthedUser
+                const user = rawUser as AuthedUser
 
-            if (allowRoles.length > 0) {
-                if (!allowRoles.includes(user.role)) {
-                    throw new Error('Forbidden')
+                if (allowRoles.length > 0) {
+                    if (!allowRoles.includes(user.role)) {
+                        throw new Error('Forbidden')
+                    }
                 }
             }
+
+            const cacheKey = allowRoles.join(',')
+            if (!this._roleCheckCache[cacheKey]) {
+                this._roleCheckCache[cacheKey] = f
+            }
+
+            return this._roleCheckCache[cacheKey]
         }
 
     // 返回中间件数组
@@ -61,7 +79,9 @@ export class RoleAuthMiddleware {
         const middlewares = []
 
         if (requireLogin || allowRoles.length > 0) {
-            middlewares.push(this.setupUser())
+            middlewares.push(this.setupUser)
+        } else {
+            middlewares.push(this.trySetupUser)
         }
 
         if (allowRoles.length > 0) {

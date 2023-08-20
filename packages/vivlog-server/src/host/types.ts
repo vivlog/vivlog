@@ -65,6 +65,23 @@ export interface AuthedUser {
     username: string
     role: string
 }
+
+export enum VirtualUserType {
+    guest = 'guest',
+    user = 'user',
+    system = 'system',
+}
+
+export interface VirtualUser {
+    site: string
+    uuid: string
+    is_local: boolean
+    type: keyof typeof VirtualUserType
+    email?: string
+    username: string
+    role: string
+}
+
 export interface Authenticator {
     verify(token: string): Promise<AuthedUser | null>
 }

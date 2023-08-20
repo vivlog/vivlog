@@ -30,6 +30,11 @@ export const Settings = {
         site: 'site',
         title: 'title',
         initialized: 'initialized',
+    },
+    Comment: {
+        _group: 'comment',
+        enabled: 'enabled',
+        allow_guest: 'allow_guest', // allow guest to comment (without login)
     }
 }
 
@@ -37,5 +42,7 @@ export const defaultSettings = [
     // TODO: add default settings here
     { group: Settings.System._group, name: Settings.System.site, value: 'vivlog.com/x/demo' },
     { group: Settings.System._group, name: Settings.System.title, value: 'Vivlog' },
-    { group: Settings.System._group, name: Settings.System.initialized, value: 'true' },
+    { group: Settings.System._group, name: Settings.System.initialized, value: true },
+    { group: Settings.Comment._group, name: Settings.Comment.enabled, value: true },
+    { group: Settings.Comment._group, name: Settings.Comment.allow_guest, value: true },
 ]

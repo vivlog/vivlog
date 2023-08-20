@@ -30,7 +30,7 @@ describe('testing', () => {
         const s3 = Sinon.spy()
         defer('test', () => {
             s3()
-            throw new Error('deliberate error')
+            throw new Error('deliberate error for testing (ignore me)')
         })
         Sinon.assert.notCalled(s3)
 
