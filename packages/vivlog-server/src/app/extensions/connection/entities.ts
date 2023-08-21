@@ -9,6 +9,9 @@ export class Connection {
     @Column({ unique: true })
     remote_site: string
 
+    @Column({ type: 'simple-json' })
+    options: ConnectionOptions
+
     @Column()
     remote_token: string
 
@@ -25,10 +28,17 @@ export class Connection {
     active_at: Date
 }
 
+export type ConnectionOptions = {
+    api_path?: string
+}
+
 export type ConnectionDto = Connection;
 
 const createConnectionSchemaObj = {
     remote_site: Type.String(),
+    options: Type.Optional(Type.Object({
+        api_path: Type.Optional(Type.String()),
+    })),
 }
 
 export type ConnectionDirection = 'outgoing' | 'incoming' | 'both'
@@ -75,6 +85,7 @@ export type GetConnectionsDto = Static<typeof getConnectionsSchema>
 export const requestConnectionSchema = Type.Object({
     local_site: Type.String(),
     local_token: Type.String(),
+    local_api_path: Type.Optional(Type.String({ default: '/api' })),
     remote_site: Type.String(),
 })
 
@@ -82,8 +93,8 @@ export type RequestConnectionDto = Static<typeof requestConnectionSchema>
 
 export const validateConnectionRequestSchema = Type.Object({
     local_token: Type.String(),
-    remote_token: Type.String(),
     local_site: Type.String(),
+    remote_token: Type.String(),
     remote_site: Type.String(),
 })
 

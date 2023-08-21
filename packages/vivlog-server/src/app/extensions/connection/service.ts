@@ -17,6 +17,7 @@ export class ConnectionService {
     private settingService: SettingService
     // tokens signed for remote_sites. key: remote_site, value: {local_token, expired_at}
     private pendingConnections: Map<string, { local_token: string; remote_token?: string }> = new Map()
+    private defaultRemoteApiPath = '/api'
     get currentSite(): Promise<string> {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
@@ -31,15 +32,17 @@ export class ConnectionService {
     async createConnection(dto: CreateConnectionDto) {
         this.logger.info('[%s] createConnection %o', await this.currentSite, dto)
         const { remote_site } = dto
-        const baseUrl = remote_site + this.config.get('apiPath', '/api')
+        const apiPath = dto.options?.api_path ?? this.defaultRemoteApiPath
+        const baseUrl = remote_site + apiPath
         const request = rpc(baseUrl)
         const secret = this.config.get('jwtSecret', 'secret')!
-        const local_token = jwt.sign({ sub: remote_site, type: AgentType.ConnectionRequest }, secret, { expiresIn: '1h' })
+        const localToken = jwt.sign({ sub: remote_site, type: AgentType.ConnectionRequest }, secret, { expiresIn: '1h' })
         try {
-            this.pendingConnections.set(remote_site, { local_token })
+            this.pendingConnections.set(remote_site, { local_token: localToken })
             const ret = await request<unknown, RequestConnectionDto>('connection', 'requestConnection', {
                 local_site: await this.currentSite,
-                local_token,
+                local_api_path: this.config.get('apiPath', '/api')!,
+                local_token: localToken,
                 remote_site: remote_site
             })
             if (ret != null) {
@@ -69,6 +72,7 @@ export class ConnectionService {
                 existingConnection.direction = ConnectionDirections.Both
             }
             existingConnection.remote_token = remote_token
+            existingConnection.options.api_path = apiPath
             this.logger.info('[%s] upgrade connection %o', await this.currentSite, existingConnection)
             await this.db.getRepository(Connection).update(existingConnection.id, existingConnection)
             this.pendingConnections.delete(remote_site)
@@ -79,6 +83,9 @@ export class ConnectionService {
             const connection = this.db.getRepository(Connection).create({
                 remote_site,
                 remote_token,
+                options: {
+                    api_path: apiPath
+                },
                 active_at: new Date(),
                 direction: ConnectionDirections.Outgoing
             })
@@ -140,16 +147,15 @@ export class ConnectionService {
         }
     }
 
-    async requestConnection(dto: RequestConnectionDto) {
+    async onRequestConnection(dto: RequestConnectionDto) {
         this.logger.info('[%s] requestConnection %o', await this.currentSite, dto)
-        const { local_site, local_token, remote_site } = dto
+        const { local_site, local_token, remote_site, local_api_path } = dto
         if (remote_site != await this.currentSite) {
             throw new BadRequestError('Remote site is not current site')
         }
         const secret = this.config.get('jwtSecret', 'secret')!
         const remote_token = jwt.sign({ sub: local_site, type: AgentType.ConnectionReader }, secret, { expiresIn: '1h' })
-        const apiPath = this.config.get('apiPath', '/api')
-        const baseUrl = local_site + apiPath
+        const baseUrl = local_site + local_api_path
         const request = rpc(baseUrl)
         try {
             await request<unknown, ValidateConnectionRequestDto>('connection', 'validateConnectionRequest', { local_token, remote_token, local_site, remote_site })
@@ -170,6 +176,7 @@ export class ConnectionService {
                 existingConnection.direction = ConnectionDirections.Both
             }
             existingConnection.remote_token = local_token
+            existingConnection.options.api_path = local_api_path
             this.logger.info('[%s] upgrade connection %o', await this.currentSite, existingConnection)
             await this.db.getRepository(Connection).update(existingConnection.id, existingConnection)
         }
@@ -178,6 +185,9 @@ export class ConnectionService {
             const connection = this.db.getRepository(Connection).create({
                 remote_site: local_site,
                 remote_token: local_token,
+                options: {
+                    api_path: local_api_path
+                },
                 direction: ConnectionDirections.Incoming,
                 active_at: new Date()
             })
@@ -186,7 +196,7 @@ export class ConnectionService {
         return null
     }
 
-    async validateConnectionRequest(dto: ValidateConnectionRequestDto) {
+    async onValidateConnectionRequest(dto: ValidateConnectionRequestDto) {
         this.logger.info('[%s] validateConnectionRequest %o', await this.currentSite, dto)
         const { local_token, remote_token, local_site, remote_site } = dto
         const pendingItem = this.pendingConnections.get(remote_site)
@@ -210,6 +220,7 @@ export class ConnectionService {
             throw new BadRequestError('Invalid local token')
         }
 
+        // save for the second half of createConnection
         this.pendingConnections.set(remote_site, { local_token, remote_token })
         return null
     }

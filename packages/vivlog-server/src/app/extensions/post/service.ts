@@ -74,8 +74,8 @@ export class PostService {
             }
         })
 
-        await Promise.all(connections.map(async ({ remote_site, remote_token }: Connection) => {
-            const baseUrl = remote_site + this.config.get('apiPath', '/api')
+        await Promise.all(connections.map(async ({ remote_site, remote_token, options }: Connection) => {
+            const baseUrl = remote_site + options.api_path
 
             const request = rpc(baseUrl)
             let ret: { posts: Post[] } | undefined

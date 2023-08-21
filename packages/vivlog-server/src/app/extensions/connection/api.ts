@@ -32,6 +32,12 @@ export function createConnectionApi(host: Host) {
 
     routes.new().minRole(Roles.Admin).handle(module_, 'createConnection', createConnectionSchema, async (req) => {
         const dto = req.body! as CreateConnectionDto
+        if (!dto.options) {
+            dto.options = {}
+        }
+        if (!dto.options.api_path) {
+            dto.options.api_path = '/api'
+        }
         return await connectionService.createConnection(dto)
     })
 
@@ -53,12 +59,12 @@ export function createConnectionApi(host: Host) {
 
     routes.new().handle(module_, 'requestConnection', requestConnectionSchema, async (req) => {
         const dto = req.body! as RequestConnectionDto
-        return await connectionService.requestConnection(dto)
+        return await connectionService.onRequestConnection(dto)
     })
 
     routes.new().handle(module_, 'validateConnectionRequest', validateConnectionRequestSchema, async (req) => {
         const dto = req.body! as ValidateConnectionRequestDto
-        return await connectionService.validateConnectionRequest(dto)
+        return await connectionService.onValidateConnectionRequest(dto)
     })
 
 }
