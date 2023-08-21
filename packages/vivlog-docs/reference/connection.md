@@ -55,35 +55,20 @@ assert.strictEqual(crRet.statusCode, 200, crRet.body)
 3. `validateConnectionRequest` (Remote Site->Local Site)
     - 远程站点表示收到令牌并同意创建连接，而为了验证此请求来自合法的本地站点，远程站点会调用 `validateConnectionRequest` 验证。参数为远程站点的名称以及为本地站点创建的 JWT 令牌。
 
+```mermaid
+sequenceDiagram
+    actor U as User on A
+    participant A as Site A
+    participant B as Site B
+   
+    U->>A: [request] createConnection args=<br/>remote_site: site_b
+    A->>B: [request] requestConnection args=<br/>remote_site: site_b,<br/>local_site: site_a,<br/>local_token: aaa
+    B->>A: [request] validateConnectionRequest args=<br/>remote_site: site_b,<br/>remote_token: bbb,<br/>local_site: site_a,<br/>local_token: aaa
+    A-->>B: [response] validateConnectionRequest ok
+    B-->>A: [response] requestConnection ok
+    A-->>U: [response] createConnection ok
+```
+
 ### 详细过程
 
-**1. 连接创建：`createConnection`**
-
-`createConnection` 方法用于启动创建与远程站点的连接的过程。此方法遵循一系列步骤来建立连接：
-
-1. 记录意图创建连接，并从提供的数据传输对象（DTO）中检索远程站点信息。
-2. 使用预定义的密钥生成一个称为 `local_token` 的 JSON Web Token (JWT)，表示本地站点建立连接的意图。
-3. 将 `local_token` 存储在名为 `pendingConnections` 的映射中，与远程站点相关联。
-4. 创建一个远程过程调用（RPC）请求，用于向远程站点请求连接（`requestConnection`）。
-5. 如果RPC请求成功（表示远程站点确认连接请求），更新挂起的连接状态并返回连接详细信息。
-6. 如果RPC请求失败，适当地处理错误，并提供错误消息以指示失败原因。
-
-**2. 连接验证：`validateConnectionRequest`**
-
-`validateConnectionRequest` 方法负责验证来自远程站点的连接请求。它确保连接请求是合法的并来自预期的来源：
-
-1. 通过将提供的 `local_token` 和 `remote_token` 与存储在 `pendingConnections` 映射中的预期值进行比较来验证连接请求。
-2. 如果验证成功，使用接收到的 `remote_token` 更新 `pendingConnections` 映射，并指示连接请求已被验证。
-
-**3. 连接请求：`requestConnection`**
-
-当远程站点向本地站点发送连接请求时，将调用 `requestConnection` 方法。该方法处理请求并在继续建立连接之前对其进行验证：
-
-1. 记录意图处理连接请求，并从 DTO 中检索相关信息。
-2. 验证发起连接的远程站点是否为当前站点。
-3. 使用预定义的密钥生成一个称为 `remote_token` 的 JWT，表示远程站点建立连接的意图。
-4. 启动对远程站点的远程过程调用，以验证连接请求（`validateConnectionRequest`）。
-5. 如果远程过程调用的验证成功，则检查是否已存在与远程站点的现有出站连接。
-6. 如果存在出站连接，则将其方向升级为“Both”，表示双向连接。
-7. 如果未找到现有连接，则与远程站点创建新连接，并将方向设置为“Incoming”。
-8. 返回 null，因为该方法的主要目的是验证和处理连接请求。
+请查阅 ConnectionService 的源代码。

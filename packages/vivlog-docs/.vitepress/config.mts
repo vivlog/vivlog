@@ -1,7 +1,8 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from 'vitepress';
+import { withMermaid } from "vitepress-plugin-mermaid";
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default defineConfig(withMermaid({
   title: "Vivlog",
   description: "Where vitality thrives through interconnected blogs",
   themeConfig: {
@@ -58,7 +59,7 @@ export default defineConfig({
             text: '参考手册',
             items: [
               { text: '站点', link: '/reference/site' },
-              { text: '能动体', link: '/reference/agent' },
+              { text: '代理', link: '/reference/agent' },
               { text: '连接', link: '/reference/connection' },
               { text: 'Markdown Examples', link: '/markdown-examples' },
             ]
@@ -74,5 +75,8 @@ export default defineConfig({
       label: 'English',
       lang: 'en',
     },
-  }
-})
+  },
+  mermaid: {
+    // refer https://mermaid.js.org/config/setup/modules/mermaidAPI.html#mermaidapi-configuration-defaults for options
+  },
+}))
