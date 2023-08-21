@@ -58,10 +58,20 @@ export default defineConfig(withMermaid({
           '/reference': [{
             text: '参考手册',
             items: [
-              { text: '站点', link: '/reference/site' },
-              { text: '代理', link: '/reference/agent' },
-              { text: '连接', link: '/reference/connection' },
-              { text: 'Markdown Examples', link: '/markdown-examples' },
+              {
+                text: '基础', items: [
+                  { text: '站点', link: '/reference/site' },
+                  { text: '代理', link: '/reference/agent' },
+                  { text: '设置', link: '/reference/setting' },
+                ]
+              },
+              {
+                text: '实体', items: [
+                  { text: '评论', link: '/reference/comment' },
+                  { text: '连接', link: '/reference/connection' },
+                  { text: '用户', link: '/reference/user' },
+                ]
+              }
             ]
           }]
         },

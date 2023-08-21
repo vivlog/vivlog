@@ -47,3 +47,35 @@ export interface VirtualUser {
 ```
 
 实际上虚拟用户的概念是代理概念的延伸，它是代理在远程站点上的具体表现，也是远程站点的用户、访客或站点在远程站点上执行操作的实体。
+
+## 实例
+
+当本站用户 UserA 在 SiteA 上发表对 PostA 的评论时，请求过程如下：
+
+```mermaid
+flowchart LR
+
+    UserToken -- AuthMiddlewawre --> V["VirtualUser(user,A)"]
+    V["VirtualUser(user,A)"] --> CommentService
+```
+
+当匿名用户在 SiteA 上发表对 PostA 的评论时，由于匿名用户没有 Token，请求过程如下：
+
+```mermaid
+flowchart LR
+
+    G["GuestInfo(email,name,site)"] -- AuthMiddlewawre --> V["VirtualUser(guest,A)"]
+    V["VirtualUser(guest,G)"] --> CommentService
+```
+
+当本站用户 UserA 在 SiteA 上发表对远程文章 PostB 的评论时，请求过程如下：
+
+```mermaid
+flowchart TB
+
+    UserA --> |UserToken|AuthMiddlewawre
+    AuthMiddlewawre --> |VirtualUseruser|ProxyRequestMiddleware
+    ProxyRequestMiddleware --> AgentService
+    AgentService-->|SiteToken+Payload| SiteB
+
+```
