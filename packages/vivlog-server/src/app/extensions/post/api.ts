@@ -2,7 +2,7 @@ import { assert } from 'console'
 import { Host } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { RouteHelper } from '../../helper/route_helper'
-import { Roles, Settings } from '../../types'
+import { Role, Settings } from '../../types'
 import { SettingService } from '../setting/service'
 import { UserService } from '../user/service'
 import { CreatePostDto, browsePostsSchema, createPostSchema, deletePostSchema, getPostSchema, getPostsSchema, syncPostsSchema, updatePostSchema } from './entities'
@@ -24,11 +24,11 @@ export function createPostApi(host: Host) {
         return (await settingService.getItem(index))?.value ?? ''
     })
 
-    routes.new().minRole(Roles.Author)
+    routes.new().minRole(Role.Author)
         .handle('post', 'createPost', createPostSchema, async (req) => {
             const dto = req.body! as CreatePostDto
-            assert(req.vuser?.id, 'user id is not defined')
-            const user = await userService.getUser({ id: parseInt(req.vuser!.id) })
+            assert(req.visitor?.id, 'user id is not defined')
+            const user = await userService.getUser({ id: parseInt(req.visitor!.id) })
             assert(user !== null)
             dto.site = await cachedValues['site'] as string
             assert(dto.site)
@@ -41,12 +41,12 @@ export function createPostApi(host: Host) {
             return await postService.createPost(dto)
         })
 
-    routes.new().minRole(Roles.Author)
+    routes.new().minRole(Role.Author)
         .handle('post', 'updatePost', updatePostSchema, async (req) => {
             return await postService.updatePost(req.body!)
         })
 
-    routes.new().minRole(Roles.Author)
+    routes.new().minRole(Role.Author)
         .handle('post', 'deletePost', deletePostSchema, async (req) => {
             return await postService.deletePost(req.body!)
         })
@@ -61,7 +61,7 @@ export function createPostApi(host: Host) {
             return await postService.getPosts(req.body!)
         })
 
-    routes.new().minRole(Roles.Reader)
+    routes.new().minRole(Role.Reader)
         .handle('post', 'browsePosts', browsePostsSchema, async (req) => {
             return await postService.browsePosts(req.body!)
         })

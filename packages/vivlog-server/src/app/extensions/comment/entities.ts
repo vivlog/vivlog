@@ -1,4 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
+import { TypeCompiler } from '@sinclair/typebox/compiler'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
@@ -36,11 +37,15 @@ export class Comment {
     user_site?: string
 }
 
-export interface GuestInfo {
-    name: string
-    email: string
-    website?: string
-}
+export const guestInfoSchema = Type.Object({
+    name: Type.String(),
+    email: Type.String({ format: 'email' }),
+    site: Type.Optional(Type.String()),
+})
+
+export const guestInfoValidator = TypeCompiler.Compile(guestInfoSchema)
+
+export type GuestInfo = Static<typeof guestInfoSchema>
 
 export type CommentDto = Comment;
 

@@ -76,8 +76,3 @@ export type IUserDto = {
     is_local: boolean
     description?: string
 }
-
-export enum TokenType {
-    User = 'user',
-    Site = 'site',
-}

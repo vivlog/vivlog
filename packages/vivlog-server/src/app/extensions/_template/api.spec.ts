@@ -5,7 +5,7 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { inject } from '../../../utils/testing'
-import { Roles } from '../../types'
+import { Role } from '../../types'
 import { CombinedSession, createNewSession } from '../../util/testing'
 
 describe.skip('Example API', () => {
@@ -23,7 +23,7 @@ describe.skip('Example API', () => {
         assert.strictEqual(ret.statusCode, 401, ret.body)
     })
     step('create a new admin session', async () => {
-        sess = await createNewSession(host, true, [Roles.Admin, Roles.Reader])
+        sess = await createNewSession(host, true, [Role.Admin, Role.Reader])
     })
 
     step('create a example', async () => {

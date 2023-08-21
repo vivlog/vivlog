@@ -6,7 +6,7 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { defer, finalize, getNextAvailablePort, inject, removeFile } from '../../../utils/testing'
-import { Roles, defaultSettings } from '../../types'
+import { Role, defaultSettings } from '../../types'
 import { CombinedSession, createNewSession, createSite } from '../../util/testing'
 import { CreateConnectionDto } from '../connection/entities'
 import { PostDto, PostTypeEnum } from './entities'
@@ -35,7 +35,7 @@ describe('Post API', () => {
     })
 
     step('create a new admin session', async () => {
-        sess = await createNewSession(host, true, [Roles.Admin, Roles.Reader])
+        sess = await createNewSession(host, true, [Role.Admin, Role.Reader])
     })
 
     let postUUID: string
@@ -62,7 +62,7 @@ describe('Post API', () => {
     })
 
     step('get post', async () => {
-        const ret = await sess.injectAs(Roles.Reader, 'post', 'getPost', {
+        const ret = await sess.injectAs(Role.Reader, 'post', 'getPost', {
             uuid: postUUID
         })
         assert.strictEqual(ret.statusCode, 200, ret.body)
@@ -116,8 +116,8 @@ describe('Post + Connection API', () => {
     })
 
     step('create admin sessions', async () => {
-        sess1 = await createNewSession(host1, false, [Roles.Admin, Roles.Reader])
-        sess2 = await createNewSession(host2, false, [Roles.Admin, Roles.Reader])
+        sess1 = await createNewSession(host1, false, [Role.Admin, Role.Reader])
+        sess2 = await createNewSession(host2, false, [Role.Admin, Role.Reader])
     })
 
     step('create a connection from site1 to site 2', async () => {

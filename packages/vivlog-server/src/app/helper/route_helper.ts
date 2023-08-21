@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify'
 import { ConfigProvider } from '../../config'
 import { RpcRequest } from '../../host/host'
 import { Authenticator, Host, Logger } from '../../host/types'
-import { RoleAuthMiddlewareBuilder } from '../../middlewares/role_auth_middleware'
+import { RoleAuthMiddlewareBuilder } from '../../middlewares/role_auth_midware'
 import { lazy } from '../../utils/lazy'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

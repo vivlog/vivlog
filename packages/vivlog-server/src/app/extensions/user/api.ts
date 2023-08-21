@@ -1,6 +1,6 @@
 import { Host } from '../../../host/types'
 import { RouteHelper } from '../../helper/route_helper'
-import { Roles } from '../../types'
+import { Role } from '../../types'
 import { loginSchema, registerSchema, updateUserSchema } from './entities'
 import { UserService } from './service'
 
@@ -17,7 +17,7 @@ export function createUserApi(host: Host) {
         return await userService.loginUser(req.body!)
     })
 
-    routes.new().minRole(Roles.Admin).handle(module_, 'updateUser', updateUserSchema, async (req) => {
+    routes.new().minRole(Role.Admin).handle(module_, 'updateUser', updateUserSchema, async (req) => {
         return await userService.updateUser(req.body!)
     })
 }

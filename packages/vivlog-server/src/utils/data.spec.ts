@@ -1,6 +1,39 @@
 import assert from 'assert'
 import Sinon from 'sinon'
-import { parseBool, toRepeat, toRepeatAsync } from './data'
+import { base64Decode, base64Encode, parseBool, toRepeat, toRepeatAsync } from './data'
+
+describe('base64Encode', () => {
+    it('should encode a string correctly', () => {
+        const input = 'Hello, World!'
+        const encoded = base64Encode(input)
+        assert.strictEqual(encoded, 'SGVsbG8sIFdvcmxkIQ==')
+    })
+
+    it('should encode an object correctly', () => {
+        const input = { key: 'value', num: 42 }
+        const encoded = base64Encode(input)
+        assert.strictEqual(encoded, 'eyJrZXkiOiAidmFsdWUiLCAibnVtIjogNDJ9')
+    })
+})
+
+describe('base64Decode', () => {
+    it('should decode a base64 string correctly', () => {
+        const encoded = 'SGVsbG8sIFdvcmxkIQ=='
+        const decoded = base64Decode(encoded, false)
+        assert.deepStrictEqual(decoded, 'Hello, World!')
+    })
+
+    it('should decode a base64 object correctly', () => {
+        const encoded = 'eyJrZXkiOiAidmFsdWUiLCAibnVtIjogNDJ9'
+        const decoded = base64Decode(encoded)
+        assert.deepStrictEqual(decoded, { key: 'value', num: 42 })
+    })
+
+    it('should return null for invalid base64 input', () => {
+        const decoded = base64Decode('invalidBase64Input')
+        assert.strictEqual(decoded, null)
+    })
+})
 
 describe('parseBool', () => {
 

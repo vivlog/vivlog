@@ -6,15 +6,15 @@ import { bootstrap } from '../../server'
 import { getNextAvailablePort, inject, injectWithAuth, removeAllFiles } from '../../utils/testing'
 import { SettingService } from '../extensions/setting/service'
 import { User } from '../extensions/user/entities'
-import { Role, Roles, Settings } from '../types'
+import { LocalRole, Role, Settings } from '../types'
 
 export type CombinedSession = Awaited<ReturnType<typeof createNewSession>>
 
 const defaultUsers = {
-    [Roles.Admin]: { username: 'admin', password: '12345678', role: Roles.Admin },
-    [Roles.Reader]: { username: 'reader', password: '12345678', role: Roles.Reader },
-    [Roles.Editor]: { username: 'editor', password: '12345678', role: Roles.Editor },
-    [Roles.Author]: { username: 'author', password: '12345678', role: Roles.Author }
+    [Role.Admin]: { username: 'admin', password: '12345678', role: Role.Admin },
+    [Role.Reader]: { username: 'reader', password: '12345678', role: Role.Reader },
+    [Role.Editor]: { username: 'editor', password: '12345678', role: Role.Editor },
+    [Role.Author]: { username: 'author', password: '12345678', role: Role.Author }
 }
 
 
@@ -46,7 +46,7 @@ async function initSiteSettings(host: Host) {
     assert.strictEqual(response.statusCode, 200, response.body)
 }
 
-async function registerUser(host: Host, user: { username: string; password: string; role: Roles }) {
+async function registerUser(host: Host, user: { username: string; password: string; role: Role }) {
     const registerResponse = await inject(host, 'user', 'registerUser', {
         username: user.username,
         email: user.username + '@example.com',
@@ -77,7 +77,7 @@ async function registerUser(host: Host, user: { username: string; password: stri
 
 type UserSession = {
     user: User
-    role: Role
+    role: LocalRole
     token: string
     password: string
 };
@@ -86,14 +86,14 @@ type RoleSessionMap = {
     [role: string]: UserSession
 };
 
-export async function createNewSession(host: Host, initSite = true, rolesToCreate?: Role[]) {
+export async function createNewSession(host: Host, initSite = true, rolesToCreate?: LocalRole[]) {
     const roleSessions: RoleSessionMap = {}
 
     if (initSite) {
         await initSiteSettings(host)
     }
 
-    const createUserByRole = async (role: Role) => {
+    const createUserByRole = async (role: LocalRole) => {
         // skip if already created
         if (roleSessions[role]) {
             return
@@ -102,14 +102,14 @@ export async function createNewSession(host: Host, initSite = true, rolesToCreat
         roleSessions[role] = { ...sess, password: defaultUsers[role].password }
 
         // the first user created will automatically be the admin
-        if (role == Roles.Admin) {
+        if (role == Role.Admin) {
             return
         }
         // update user's role
         const updateResponse = await injectWithAuth(host, 'user', 'updateUser', {
             id: sess.user.id,
             role: sess.role,
-        }, roleSessions[Roles.Admin].token)
+        }, roleSessions[Role.Admin].token)
 
         assert.strictEqual(updateResponse.statusCode, 200, updateResponse.body)
 
@@ -118,23 +118,23 @@ export async function createNewSession(host: Host, initSite = true, rolesToCreat
         roleSessions[role].user.role = jsonData.data.role
     }
 
-    const defaultRoles = [Roles.Admin, Roles.Reader, Roles.Editor, Roles.Author]
+    const defaultRoles = [Role.Admin, Role.Reader, Role.Editor, Role.Author]
     const rolesToCreateOrDefault = rolesToCreate ?? defaultRoles
 
-    assert(rolesToCreateOrDefault[0] === Roles.Admin, 'first role must be admin')
+    assert(rolesToCreateOrDefault[0] === Role.Admin, 'first role must be admin')
 
-    await createUserByRole(Roles.Admin)
+    await createUserByRole(Role.Admin)
     await Promise.all(rolesToCreateOrDefault.map(createUserByRole))
 
     return {
-        admin: roleSessions[Roles.Admin] || undefined,
-        reader: roleSessions[Roles.Reader] || undefined,
-        editor: roleSessions[Roles.Editor] || undefined,
-        author: roleSessions[Roles.Author] || undefined,
+        admin: roleSessions[Role.Admin] || undefined,
+        reader: roleSessions[Role.Reader] || undefined,
+        editor: roleSessions[Role.Editor] || undefined,
+        author: roleSessions[Role.Author] || undefined,
         inject: (api: string, method: string, payload: InjectPayload) => {
-            return injectWithAuth(host, api, method, payload, roleSessions[Roles.Admin].token)
+            return injectWithAuth(host, api, method, payload, roleSessions[Role.Admin].token)
         },
-        injectAs: (role: Roles, api: string, method: string, payload: InjectPayload) => {
+        injectAs: (role: Role, api: string, method: string, payload: InjectPayload) => {
             if (!roleSessions[role]) {
                 throw new Error(`role ${role} not initialized for this session`)
             }

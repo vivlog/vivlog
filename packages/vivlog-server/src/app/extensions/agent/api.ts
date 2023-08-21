@@ -2,7 +2,7 @@ import { assert } from 'console'
 import { Host } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { RouteHelper } from '../../helper/route_helper'
-import { Roles, Settings } from '../../types'
+import { Role, Settings } from '../../types'
 import { SettingService } from '../setting/service'
 import { UserService } from '../user/service'
 import { CreateAgentDto, ProxyRequestQueryDto, createAgentSchema, deleteAgentSchema, getAgentSchema, getAgentsSchema, proxyRequestQuerySchema, updateAgentSchema } from './entities'
@@ -24,10 +24,10 @@ export function createAgentApi(host: Host) {
         return (await settingService.getItem(index))?.value ?? ''
     })
 
-    routes.new().minRole(Roles.Author).handle('agent', 'createAgent', createAgentSchema, async (req) => {
+    routes.new().minRole(Role.Author).handle('agent', 'createAgent', createAgentSchema, async (req) => {
         const dto = req.body! as CreateAgentDto
-        assert(req.user?.id, 'user id is not defined')
-        const user = await userService.getUser({ id: parseInt(req.user!.id) })
+        assert(req.visitor?.id, 'user id is not defined')
+        const user = await userService.getUser({ id: parseInt(req.visitor!.id) })
         assert(user !== null)
         dto.site = await cachedValues['site'] as string
         assert(dto.site)
@@ -37,11 +37,11 @@ export function createAgentApi(host: Host) {
         return await agentService.createAgent(dto)
     })
 
-    routes.new().minRole(Roles.Author).handle('agent', 'updateAgent', updateAgentSchema, async (req) => {
+    routes.new().minRole(Role.Author).handle('agent', 'updateAgent', updateAgentSchema, async (req) => {
         return await agentService.updateAgent(req.body!)
     })
 
-    routes.new().minRole(Roles.Author).handle('agent', 'deleteAgent', deleteAgentSchema, async (req) => {
+    routes.new().minRole(Role.Author).handle('agent', 'deleteAgent', deleteAgentSchema, async (req) => {
         return await agentService.deleteAgent(req.body!)
     })
 
@@ -53,7 +53,7 @@ export function createAgentApi(host: Host) {
         return await agentService.getAgents(req.body!)
     })
 
-    routes.new().minRole(Roles.Author).handleWithQuery('agent', 'proxyRequest', proxyRequestQuerySchema, updateAgentSchema, async (req) => {
+    routes.new().minRole(Role.Author).handleWithQuery('agent', 'proxyRequest', proxyRequestQuerySchema, updateAgentSchema, async (req) => {
         const { endpoint, site } = (req.query as ProxyRequestQueryDto)
         console.log('endpoint', endpoint, site)
 

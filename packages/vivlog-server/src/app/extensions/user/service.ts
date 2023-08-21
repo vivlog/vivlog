@@ -6,9 +6,8 @@ import { ConfigProvider } from '../../../config'
 import { Container } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
-import { Roles } from '../../types'
+import { PayloadBuilder, Role } from '../../types'
 import { gravatarFromEmail } from '../../util/gravatar'
-import { AppPayload } from './authenticator'
 import { LoginDto, UserLoginResponse as LoginRes, RegisterDto, UpdateUserDto, User, UserDto } from './entities'
 
 
@@ -23,7 +22,7 @@ export class UserService {
     }
 
     signJwt(userId: User['id']) {
-        return jwt.sign(AppPayload.ofUser(userId), this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
+        return jwt.sign(PayloadBuilder.ofUser(userId), this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
     }
     async createUser(userData: RegisterDto) {
         // hash password
@@ -39,9 +38,9 @@ export class UserService {
         // if first user, set as admin
         const userCount = await this.db.manager.count(User)
         if (userCount === 0) {
-            user.role = Roles.Admin
+            user.role = Role.Admin
         } else {
-            user.role = Roles.Reader
+            user.role = Role.Reader
         }
 
         return this.db.manager.save(user)

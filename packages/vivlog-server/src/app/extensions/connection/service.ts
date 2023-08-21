@@ -7,7 +7,6 @@ import { lazy } from '../../../utils/lazy'
 import { rpc } from '../../../utils/rpc'
 import { Settings } from '../../types'
 import { SettingService } from '../setting/service'
-import { AppPayload } from '../user/authenticator'
 import { Connection, ConnectionDirections, CreateConnectionDto, DeleteConnectionDto, GetConnectionDto, GetConnectionsDto, RequestConnectionDto, ValidateConnectionRequestDto } from './entities'
 
 export class ConnectionService {
@@ -36,7 +35,7 @@ export class ConnectionService {
         const baseUrl = remote_site + apiPath
         const request = rpc(baseUrl)
         const secret = this.config.get('jwtSecret', 'secret')!
-        const localToken = jwt.sign(AppPayload.ofSite(remote_site), secret, { expiresIn: '1h' })
+        const localToken = jwt.sign(Payload.ofSite(remote_site), secret, { expiresIn: '1h' })
         try {
             this.pendingConnections.set(remote_site, { local_token: localToken })
             const ret = await request<unknown, RequestConnectionDto>('connection', 'requestConnection', {
@@ -154,7 +153,7 @@ export class ConnectionService {
             throw new BadRequestError('Remote site is not current site')
         }
         const secret = this.config.get('jwtSecret', 'secret')!
-        const remote_token = jwt.sign(AppPayload.ofSite(local_site), secret, { expiresIn: '1h' })
+        const remote_token = jwt.sign(Payload.ofSite(local_site), secret, { expiresIn: '1h' })
         const baseUrl = local_site + local_api_path
         const request = rpc(baseUrl)
         try {

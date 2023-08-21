@@ -1,6 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { Role } from '../app/types'
 import { Container } from '../container'
+declare module 'fastify' {
+    interface FastifyRequest {
+        visitor?: Visitor
+    }
+}
+
+export type Done = (err?: Error) => void
+export type Middleware = (req: FastifyRequest, res: FastifyReply, done: Done) => void
 
 export interface Host {
     container: Container
@@ -60,23 +70,23 @@ export class NotFoundError extends Error {
     }
 }
 
-export enum VirtualUserType {
-    guest = 'guest',
-    user = 'user',
-    system = 'system',
+export enum VisitorType {
+    Guest = 'guest',
+    User = 'user',
+    Site = 'site',
 }
 
-export interface VirtualUser {
+export interface Visitor {
+    type: `${VisitorType}`
+    role: `${Role}`
     id?: string
-    site: string
+    site?: string
     uuid?: string
-    is_local: boolean
-    type: `${VirtualUserType}`
+    local: boolean
     email?: string
-    username: string
-    role: string
+    username?: string
 }
 
 export interface Authenticator {
-    verify(token: string): Promise<VirtualUser | null>
+    verify(token: string): Promise<Visitor | null>
 }

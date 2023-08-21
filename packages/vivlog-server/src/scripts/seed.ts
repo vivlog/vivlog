@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { loremIpsum } from 'lorem-ipsum'
 import { CreateConnectionDto } from '../app/extensions/connection/entities'
-import { Roles } from '../app/types'
+import { Role } from '../app/types'
 import { CombinedSession, createNewSession, createSite } from '../app/util/testing'
 import { toRepeatAsync } from '../utils/data'
 import { defer, finalize, removeFile } from '../utils/testing'
@@ -17,7 +17,7 @@ const seed = (async (opts: Options) => {
 
     const createPost = (sess: CombinedSession) => {
         const content = loremIpsum({ count: 1, units: 'paragraphs' })
-        return sess.injectAs(Roles.Admin, 'post', 'createPost', { content })
+        return sess.injectAs(Role.Admin, 'post', 'createPost', { content })
     }
 
     removeFile('db.sqlite')

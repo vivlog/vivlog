@@ -6,7 +6,7 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { inject } from '../../../utils/testing'
-import { Roles } from '../../types'
+import { Role } from '../../types'
 import { AppJwtPayload, UserDto } from './entities'
 
 describe('Users API', () => {
@@ -29,7 +29,7 @@ describe('Users API', () => {
         const user = data.data.user as UserDto
         assert(user.id > 0)
         assert.strictEqual(user.username, 'test')
-        assert.strictEqual(user.role, Roles.Admin)
+        assert.strictEqual(user.role, Role.Admin)
     })
 
     step('register another user, should be non-admin', async () => {
@@ -45,7 +45,7 @@ describe('Users API', () => {
         const user = data.data.user as UserDto
         assert(user.id > 0)
         assert.strictEqual(user.username, 'test2')
-        assert.notEqual(user.role, Roles.Admin)
+        assert.notEqual(user.role, Role.Admin)
 
         const decoded = jwt.verify(token, defaultRawConfig.jwtSecret) as AppJwtPayload
         assert.strictEqual(decoded.sub, user.id.toString())
