@@ -6,6 +6,8 @@ import { Authenticator, Host, Logger } from '../../host/types'
 import { RoleAuthMiddleware } from '../../middlewares/role_auth_middleware'
 import { lazy } from '../../utils/lazy'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type RpcHandler<T extends TSchema> = (req: RpcRequest<T>) => any
 class RoleBasedRpcRouteBuilder {
     private allowRoles_: string[] = []
     private requireLogin_: boolean = false
@@ -57,16 +59,30 @@ class RoleBasedRpcRouteBuilder {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    handle<T extends TSchema>(module_: string, action: string, schema: T, handler: (req: RpcRequest<T>) => any) {
-        const route = `${this.sitePath}${this.apiPath}/${module_}/${action}`
-        this.logger.debug('add route %s', route)
+    handle<T extends TSchema>(module_: string, action: string, bodySchema: T, handler: (req: RpcRequest<T>) => any) {
+        this.handleWithQuery(module_, action, bodySchema, undefined, handler)
+    }
+
+
+
+
+    handleWithQuery<T extends TSchema>(
+        module_: string,
+        action: string,
+        bodySchema: TSchema | undefined,
+        querySchema: TSchema | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        handler: RpcHandler<T>) {
+        const url = `${this.sitePath}${this.apiPath}/${module_}/${action}`
         this.app.route({
             method: 'POST',
             schema: {
-                body: schema
+                ...(bodySchema ? { body: bodySchema } : {}),
+                ...(querySchema ? { querystring: querySchema } : {})
             },
-            url: route,
-            preHandler: this.roleAuth.getMiddlewares(this.requireLogin_, this.allowRoles_),
+            url,
+            preHandler: this.roleAuth.getMiddlewares(this.requireLogin_,
+                this.allowRoles_),
             handler: async (req: RpcRequest<T>, res) => {
                 this.logger.info('rpc %s.%s', module_, action)
                 const ret = await handler(req)
