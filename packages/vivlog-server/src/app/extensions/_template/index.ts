@@ -1,5 +1,5 @@
 import { Extension, Host, Logger } from '../../../host/types'
-import { createPostApi } from './api'
+import { createExampleApi } from './api'
 import { Example } from './entities'
 import { ExampleService } from './service'
 
@@ -9,12 +9,12 @@ function onActivate(host: Host) {
 
 function onAllActivated(host: Host) {
     const logger = host.container.resolve('logger') as Logger
-    createPostApi(host)
-    logger.info('Post module activated')
+    createExampleApi(host)
+    logger.info('Example module activated')
 }
 
 const meta = {
-    name: 'post-module',
+    name: 'example-module',
     version: '0.0.1-alpha',
     depends: {
         'core': '^0.0.1',
