@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function rpc(site: string, https?: boolean) {
+export function rpc(baseUrl: string, https?: boolean) {
     const protocol = https ? 'https' : 'http'
-    if (!site.startsWith('http')) {
-        site = `${protocol}://${site}`
+    if (!baseUrl.startsWith('http')) {
+        baseUrl = `${protocol}://${baseUrl}`
     }
     return async function <TRes, TReq>(method: string, action: string, payload: TReq, options?: any) {
         if (!options) {
             options = {}
         }
         const { token } = options
-        const url = `${site}/api/v1/${method}/${action}`
+        const url = `${baseUrl}/${method}/${action}`
         const headers = {
             'Content-Type': 'application/json',
         } as Record<string, string>

@@ -31,7 +31,8 @@ export class ConnectionService {
     async createConnection(dto: CreateConnectionDto) {
         this.logger.info('[%s] createConnection %o', await this.currentSite, dto)
         const { remote_site } = dto
-        const request = rpc(remote_site)
+        const baseUrl = remote_site + this.config.get('apiPath', '/api')
+        const request = rpc(baseUrl)
         const secret = this.config.get('jwtSecret', 'secret')!
         const local_token = jwt.sign({ sub: remote_site, type: AgentType.ConnectionRequest }, secret, { expiresIn: '1h' })
         try {
@@ -147,7 +148,9 @@ export class ConnectionService {
         }
         const secret = this.config.get('jwtSecret', 'secret')!
         const remote_token = jwt.sign({ sub: local_site, type: AgentType.ConnectionReader }, secret, { expiresIn: '1h' })
-        const request = rpc(local_site)
+        const apiPath = this.config.get('apiPath', '/api')
+        const baseUrl = local_site + apiPath
+        const request = rpc(baseUrl)
         try {
             await request<unknown, ValidateConnectionRequestDto>('connection', 'validateConnectionRequest', { local_token, remote_token, local_site, remote_site })
         } catch (error) {

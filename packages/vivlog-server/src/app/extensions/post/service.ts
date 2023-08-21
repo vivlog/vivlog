@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
+import { ConfigProvider } from '../../../config'
 import { Container } from '../../../container'
 import { Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { rpc } from '../../../utils/rpc'
 import { Settings } from '../../types'
 import { Masker } from '../../util/mask'
-import { ConnectionDirections } from '../connection/entities'
+import { Connection, ConnectionDirections } from '../connection/entities'
 import { ConnectionService } from '../connection/service'
 import { SettingService } from '../setting/service'
 import { UserMaskFields } from '../user/entities'
@@ -20,6 +21,7 @@ export class PostService {
     private settingService: SettingService
     private connectionService: ConnectionService
     private userService: UserService
+    private config: ConfigProvider
     get defaultSite() {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
@@ -30,6 +32,7 @@ export class PostService {
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
         lazy(this, 'userService', () => container.resolve(UserService.name) as UserService)
         lazy(this, 'connectionService', () => container.resolve(ConnectionService.name) as ConnectionService)
+        lazy(this, 'config', () => container.resolve('config') as ConfigProvider)
     }
 
     async createPost(dto: CreatePostDto) {
@@ -71,8 +74,10 @@ export class PostService {
             }
         })
 
-        await Promise.all(connections.map(connection => async () => {
-            const request = rpc(connection.remote_site)
+        await Promise.all(connections.map(async ({ remote_site, remote_token }: Connection) => {
+            const baseUrl = remote_site + this.config.get('apiPath', '/api')
+
+            const request = rpc(baseUrl)
             let ret: { posts: Post[] } | undefined
             try {
                 ret = await request<ReturnType<typeof this.getPosts>, GetPostsDto>('post', 'getPosts', {
@@ -80,23 +85,23 @@ export class PostService {
                         after_time
                     },
                     limit
-                }, { token: connection.remote_token })
+                }, { token: remote_token })
             } catch (error) {
-                this.logger.error('failed to sync posts from %s: %o', connection.remote_site, error)
+                this.logger.error('failed to sync posts from %s: %o', remote_site, error)
             }
             if (!ret) {
                 return
             }
             ret.posts.forEach(post => {
                 try {
-                    this.validateRemotePost(connection.remote_site, post)
+                    this.validateRemotePost(remote_site, post)
                     remotePosts.push(post)
                 } catch (error) {
-                    this.logger.error('failed to validate remote post %s from %s: %o', post.uuid, connection.remote_site, error)
+                    this.logger.error('failed to validate remote post %s from %s: %o', post.uuid, remote_site, error)
                 }
             })
 
-        }).map(fn => fn()))
+        }))
 
         // sync remote posts to database
         remotePosts.forEach(async post => {

@@ -4,6 +4,7 @@ export const defaultRawConfig = {
     dbPath: '',
     jwtSecret: 'secret',
     sitePath: '',
+    apiPath: '/api',
     logger: 'pino',
     logLevel: 'info',
     logQuery: 'false',

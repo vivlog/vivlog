@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export let baseUrl = 'http://192.168.1.2:9000/api/v1'
+export let baseUrl = 'http://192.168.1.2:9000/api'
 export let token = ''
 
 export function setBaseUrl(url: string) {

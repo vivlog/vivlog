@@ -16,7 +16,7 @@ And the like, remote comment refers to one posted under a remote resource.
 
 ## Commenting on a Local Resource
 
-The endpoint for commenting on a resource is `/api/v1/comment/createComment`.
+The endpoint for commenting on a resource is `/api/comment/createComment`.
 
 The request body should be a JSON object with the following properties:
 
@@ -38,7 +38,7 @@ NOTE: if the site disabled guest comment, the request will be rejected if `is_gu
 
 To comment on a remote resource, the agent api should be used.
 
-The endpoint for commenting on a resource is `/agent?action=/api/v1/comment/createComment`.
+The endpoint for commenting on a resource is `/agent?action=/api/comment/createComment`.
 
 The request body should be a JSON object with the following properties:
 
@@ -58,7 +58,7 @@ An outgoing [connection](https://todo) from local site to remote site is require
 
 When a request is made to the agent api, the server will first check if the remote site has a connection to the local site. If not, the request will be rejected.
 
-If the remote site has a connection to the local site, the server will use the token signed by the remote site to make a request to the remote site. For example, if the agent api is used to create a comment, the server will make a request to the remote site's `/api/v1/comment/createComment` endpoint.
+If the remote site has a connection to the local site, the server will use the token signed by the remote site to make a request to the remote site. For example, if the agent api is used to create a comment, the server will make a request to the remote site's `/api/comment/createComment` endpoint.
 
 To create a comment, the remote endpoint need to know the author of the comment, but the author is not really exist on the remote site. So actually, the local site will attach a virtual author to the request body (as field `_agent`), and the virtual user middleware on the remote site will setup the virtual user.
 

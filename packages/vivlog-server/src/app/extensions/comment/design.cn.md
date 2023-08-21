@@ -16,7 +16,7 @@
 
 ## 对本地资源进行评论
 
-评论资源的终端点为 `/api/v1/comment/createComment`。
+评论资源的终端点为 `/api/comment/createComment`。
 
 请求体应该是一个 JSON 对象，具有以下属性：
 
@@ -38,7 +38,7 @@
 
 要对远程资源进行评论，应使用代理 API。
 
-评论资源的终端点为 `/agent?endpoint=/api/v1/comment/createComment&remote_site=example.com/x/site1`。
+评论资源的终端点为 `/agent?endpoint=/api/comment/createComment&remote_site=example.com/x/site1`。
 
 请求体应该是一个 JSON 对象，属性同上。
 
@@ -46,7 +46,7 @@
 
 ## 代理 API
 
-代理 API 是一种特殊的 API，其端点为 `/api/v1/agent/proxyRequest`，允许代理在远程站点上执行操作，而不是默认服务器上执行。
+代理 API 是一种特殊的 API，其端点为 `/api/agent/proxyRequest`，允许代理在远程站点上执行操作，而不是默认服务器上执行。
 
 使用代理 API 需要一条已经存在的从本地站点到远程站点的出站连接。一旦建立连接，将使用远程站点签名的令牌将其存储在数据库中，同时存储远程站点的 URL。
 
@@ -56,7 +56,7 @@
 
 > 关于如何建立连接，请参阅 [连接](https://todo)。
 
-如果远程站点与本地站点建立了连接，服务器将使用远程站点签名的令牌向远程站点发出请求。例如，如果使用代理 API 创建评论，服务器将向远程站点的 `/api/v1/comment/createComment` 终端点发出请求。
+如果远程站点与本地站点建立了连接，服务器将使用远程站点签名的令牌向远程站点发出请求。例如，如果使用代理 API 创建评论，服务器将向远程站点的 `/api/comment/createComment` 终端点发出请求。
 
 要创建评论，远程端点需要知道评论的作者，但实际上，作者在远程站点上并不存在。因此，本地站点实际上会将虚拟作者附加到请求体中（作为字段 `_agent`），远程站点上的虚拟用户中间件将设置虚拟用户。
 

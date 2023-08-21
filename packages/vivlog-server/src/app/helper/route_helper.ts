@@ -15,6 +15,7 @@ class RoleBasedRpcRouteBuilder {
     private roleAuth: RoleAuthMiddleware
     private config: ConfigProvider
     private sitePath: string = '' // for site that is not running at root path
+    private apiPath: string = '' // for site that is not running at root path
 
     constructor(private host: Host, private rolePriorityMap: { [role: string]: number }) {
         lazy(this, 'logger', () => this.host.container.resolve('logger') as Logger)
@@ -22,7 +23,8 @@ class RoleBasedRpcRouteBuilder {
         lazy(this, 'authenticator', () => this.host.container.resolve('authenticator') as Authenticator)
         lazy(this, 'roleAuth', () => new RoleAuthMiddleware(this.authenticator))
         lazy(this, 'config', () => this.host.container.resolve('config') as ConfigProvider)
-        lazy(this, 'sitePath', () => this.config.get('sitePath', '') as string)
+        lazy(this, 'sitePath', () => this.config.get('sitePath') as string)
+        lazy(this, 'apiPath', () => this.config.get('apiPath') as string)
     }
 
     allowRoles(roles: string[]) {
@@ -56,7 +58,7 @@ class RoleBasedRpcRouteBuilder {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handle<T extends TSchema>(module_: string, action: string, schema: T, handler: (req: RpcRequest<T>) => any) {
-        const route = `${this.sitePath}/api/v1/${module_}/${action}`
+        const route = `${this.sitePath}${this.apiPath}/${module_}/${action}`
         this.logger.debug('add route %s', route)
         this.app.route({
             method: 'POST',

@@ -11,7 +11,7 @@ export class ConfigProvider {
     constructor(private config: ConfigType) {
     }
 
-    get(key: keyof ConfigType, defaultValue: ConfigType[keyof ConfigType] | undefined = undefined) {
+    get(key: keyof ConfigType, defaultValue?: ConfigType[keyof ConfigType] | undefined) {
         return this.config[key] || defaultValue
     }
 

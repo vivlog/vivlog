@@ -9,7 +9,7 @@ import { Host, Logger } from '../host/types'
 export async function inject(s: Host, module_: string, action: string, payload: InjectPayload, options?: any) {
     const configProvider = s.container.resolve<ConfigProvider>('config')
     const sitePath = configProvider.get('sitePath', '') as string
-    const url = `${sitePath}/api/v1/${module_}/${action}`
+    const url = `${sitePath}/api/${module_}/${action}`
     const logger = s.container.resolve('logger') as Logger
     logger.debug('inject %s', url)
     return await s.container.resolve<FastifyInstance>('app').inject({

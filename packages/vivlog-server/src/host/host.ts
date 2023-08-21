@@ -19,6 +19,7 @@ export class ServerHost implements Host {
 
     public extensions: Extension[]
     public sitePath: string
+    public apiPath: string
     constructor(
         extensions: Extension[],
         public db: DataSource,
@@ -37,10 +38,11 @@ export class ServerHost implements Host {
         this.container.register('authenticator', new JwtAuthenticator(this))
 
         this.extensions = this.setupExtensions(extensions)
-        this.sitePath = this.config.get('sitePath', '')!
+        this.sitePath = this.config.get('sitePath')!
+        this.apiPath = this.config.get('apiPath')!
         this.logger.info('sitePath: %s', this.sitePath)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        this.app.post(`${this.sitePath}/api/v1/status/ready`, (_req, _res) => {
+        this.app.post(`${this.sitePath}${this.apiPath}/status/ready`, (_req, _res) => {
             return { data: true }
         })
 
