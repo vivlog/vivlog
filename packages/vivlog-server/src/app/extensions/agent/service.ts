@@ -5,9 +5,9 @@ import { Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Settings } from '../../types'
 import { SettingService } from '../setting/service'
-import { CreateExampleDto, DeleteExampleDto, Example, GetExampleDto, GetExamplesDto, UpdateExampleDto } from './entities'
+import { Agent, CreateAgentDto, DeleteAgentDto, GetAgentDto, GetAgentsDto, UpdateAgentDto } from './entities'
 
-export class ExampleService {
+export class AgentService {
     public db: DataSource
     public logger: Logger
     public settingService: SettingService
@@ -21,43 +21,43 @@ export class ExampleService {
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
     }
 
-    async createExample(dto: CreateExampleDto) {
-        const example = this.db.getRepository(Example).create(dto)
-        example.uuid = randomUUID()
-        await this.db.getRepository(Example).save(example)
-        return example
+    async createAgent(dto: CreateAgentDto) {
+        const agent = this.db.getRepository(Agent).create(dto)
+        agent.uuid = randomUUID()
+        await this.db.getRepository(Agent).save(agent)
+        return agent
     }
 
-    async updateExample(dto: UpdateExampleDto) {
-        const example = await this.db.getRepository(Example).findOneBy({ uuid: dto.uuid })
-        if (!example) {
-            throw new Error('Example not found')
+    async updateAgent(dto: UpdateAgentDto) {
+        const agent = await this.db.getRepository(Agent).findOneBy({ uuid: dto.uuid })
+        if (!agent) {
+            throw new Error('Agent not found')
         }
-        return this.getExample({ site: dto.site ?? await this.defaultSite, uuid: dto.uuid })
+        return this.getAgent({ site: dto.site ?? await this.defaultSite, uuid: dto.uuid })
     }
 
-    async deleteExample(dto: DeleteExampleDto) {
-        await this.db.getRepository(Example).delete(dto.uuid)
+    async deleteAgent(dto: DeleteAgentDto) {
+        await this.db.getRepository(Agent).delete(dto.uuid)
         return { deleted: true }
     }
 
-    async getExample(dto: GetExampleDto) {
+    async getAgent(dto: GetAgentDto) {
         if (!dto.site) {
             dto.site = await this.defaultSite
         }
-        return this.db.getRepository(Example).findOneBy(dto)
+        return this.db.getRepository(Agent).findOneBy(dto)
     }
 
-    async getExamples(dto: GetExamplesDto) {
+    async getAgents(dto: GetAgentsDto) {
 
         const { filters, limit, offset, with_total } = dto
 
-        const query = this.db.getRepository(Example)
-            .createQueryBuilder('example')
+        const query = this.db.getRepository(Agent)
+            .createQueryBuilder('agent')
 
         if (filters) {
             if (filters.title) {
-                query.andWhere('example.title like :title', { title: `%${filters.title}%` })
+                query.andWhere('agent.title like :title', { title: `%${filters.title}%` })
             }
         }
 
@@ -70,16 +70,16 @@ export class ExampleService {
         }
 
         if (with_total) {
-            const [examples, total] = await query.getManyAndCount()
+            const [agents, total] = await query.getManyAndCount()
             return {
-                examples,
+                agents,
                 total
             }
         }
 
-        const examples = await query.getMany()
+        const agents = await query.getMany()
         return {
-            examples
+            agents
         }
     }
 }

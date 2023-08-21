@@ -1,17 +1,17 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { AuthedUser, Authenticator, UnauthorizedError } from '../host/types'
+import { Authenticator, UnauthorizedError, VirtualUser } from '../host/types'
 
 type Done = (err?: Error) => void
 type Middleware = (req: FastifyRequest, res: FastifyReply, done: Done) => void
 
 declare module 'fastify' {
     interface FastifyRequest {
-        user?: AuthedUser
+        user?: VirtualUser
     }
 }
 
 
-export class RoleAuthMiddleware {
+export class RoleAuthMiddlewareBuilder {
 
     constructor(private authenticator: Authenticator) {
     }
@@ -57,7 +57,7 @@ export class RoleAuthMiddleware {
                     throw new UnauthorizedError('not logged in')
                 }
 
-                const user = rawUser as AuthedUser
+                const user = rawUser as VirtualUser
 
                 if (allowRoles.length > 0) {
                     if (!allowRoles.includes(user.role)) {

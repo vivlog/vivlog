@@ -16,12 +16,12 @@ import { UserService } from '../user/service'
 import { BrowsePostsDto, CreatePostDto, DeletePostDto, GetPostDto, GetPostsDto, Post, SyncPostsDto, UpdatePostDto } from './entities'
 
 export class PostService {
-    private db: DataSource
-    private logger: Logger
-    private settingService: SettingService
-    private connectionService: ConnectionService
-    private userService: UserService
-    private config: ConfigProvider
+    public db: DataSource
+    public logger: Logger
+    public settingService: SettingService
+    public connectionService: ConnectionService
+    public userService: UserService
+    public config: ConfigProvider
     get defaultSite() {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }

@@ -3,27 +3,27 @@ import { FastifyInstance } from 'fastify'
 import { ConfigProvider } from '../../config'
 import { RpcRequest } from '../../host/host'
 import { Authenticator, Host, Logger } from '../../host/types'
-import { RoleAuthMiddleware } from '../../middlewares/role_auth_middleware'
+import { RoleAuthMiddlewareBuilder } from '../../middlewares/role_auth_middleware'
 import { lazy } from '../../utils/lazy'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RpcHandler<T extends TSchema> = (req: RpcRequest<T>) => any
 class RoleBasedRpcRouteBuilder {
-    private allowRoles_: string[] = []
-    private requireLogin_: boolean = false
-    private logger: Logger
-    private app: FastifyInstance
-    private authenticator: Authenticator
-    private roleAuth: RoleAuthMiddleware
-    private config: ConfigProvider
-    private sitePath: string = '' // for site that is not running at root path
-    private apiPath: string = '' // for site that is not running at root path
+    public allowRoles_: string[] = []
+    public requireLogin_: boolean = false
+    public logger: Logger
+    public app: FastifyInstance
+    public authenticator: Authenticator
+    public roleAuth: RoleAuthMiddlewareBuilder
+    public config: ConfigProvider
+    public sitePath: string = '' // for site that is not running at root path
+    public apiPath: string = '' // for site that is not running at root path
 
     constructor(private host: Host, private rolePriorityMap: { [role: string]: number }) {
         lazy(this, 'logger', () => this.host.container.resolve('logger') as Logger)
         lazy(this, 'app', () => this.host.container.resolve('app') as FastifyInstance)
         lazy(this, 'authenticator', () => this.host.container.resolve('authenticator') as Authenticator)
-        lazy(this, 'roleAuth', () => new RoleAuthMiddleware(this.authenticator))
+        lazy(this, 'roleAuth', () => new RoleAuthMiddlewareBuilder(this.authenticator))
         lazy(this, 'config', () => this.host.container.resolve('config') as ConfigProvider)
         lazy(this, 'sitePath', () => this.config.get('sitePath') as string)
         lazy(this, 'apiPath', () => this.config.get('apiPath') as string)

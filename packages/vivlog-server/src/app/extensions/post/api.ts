@@ -27,8 +27,8 @@ export function createPostApi(host: Host) {
     routes.new().minRole(Roles.Author)
         .handle('post', 'createPost', createPostSchema, async (req) => {
             const dto = req.body! as CreatePostDto
-            assert(req.user?.id, 'user id is not defined')
-            const user = await userService.getUser({ id: parseInt(req.user!.id) })
+            assert(req.vuser?.id, 'user id is not defined')
+            const user = await userService.getUser({ id: parseInt(req.vuser!.id) })
             assert(user !== null)
             dto.site = await cachedValues['site'] as string
             assert(dto.site)

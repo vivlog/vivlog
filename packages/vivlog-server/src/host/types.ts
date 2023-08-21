@@ -60,12 +60,6 @@ export class NotFoundError extends Error {
     }
 }
 
-export interface AuthedUser {
-    id: string
-    username: string
-    role: string
-}
-
 export enum VirtualUserType {
     guest = 'guest',
     user = 'user',
@@ -73,15 +67,16 @@ export enum VirtualUserType {
 }
 
 export interface VirtualUser {
+    id?: string
     site: string
-    uuid: string
+    uuid?: string
     is_local: boolean
-    type: keyof typeof VirtualUserType
+    type: `${VirtualUserType}`
     email?: string
     username: string
     role: string
 }
 
 export interface Authenticator {
-    verify(token: string): Promise<AuthedUser | null>
+    verify(token: string): Promise<VirtualUser | null>
 }

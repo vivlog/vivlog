@@ -1,22 +1,59 @@
 import jwt from 'jsonwebtoken'
 import { ConfigProvider } from '../../../config'
-import { AuthedUser, Authenticator, Host, Logger } from '../../../host/types'
+import { Authenticator, Host, Logger, VirtualUser } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
+import { TokenType, User } from './entities'
 import { UserService } from './service'
+
+export type Payload = {
+    sub: string // user id, site name
+    type: TokenType
+}
+
+export class AppPayload {
+    private payload: Partial<Payload>
+    private constructor() {
+    }
+
+    static ofUser(uid: User['id']) {
+        const builder = new AppPayload()
+        builder.payload = {
+            type: TokenType.User,
+            sub: uid.toString()
+        }
+        return this
+    }
+
+    static ofSite(site: string) {
+        const builder = new AppPayload()
+        builder.payload = {
+            type: TokenType.Site,
+            sub: site
+        }
+        return this
+    }
+
+    build() {
+        return this.payload as Payload
+    }
+}
+
 export class JwtAuthenticator implements Authenticator {
 
-    private userService: UserService
-    private config: ConfigProvider
-    private logger: Logger
+    public userService: UserService
+    public config: ConfigProvider
+    public logger: Logger
+    public secret: string
     constructor(host: Host) {
         lazy(this, 'userService', () => host.container.resolve(UserService.name) as UserService)
         lazy(this, 'config', () => host.container.resolve('config') as ConfigProvider)
         lazy(this, 'logger', () => host.container.resolve('logger') as Logger)
+        lazy(this, 'secret', () => this.config.get('jwtSecret') as string)
     }
 
-    async verify(token: string): Promise<AuthedUser | null> {
+    async verify(token: string): Promise<VirtualUser | null> {
         try {
-            const decoded = jwt.verify(token, this.config.get('jwtSecret', 'secret')!)
+            const decoded = jwt.verify(token, this.secret)
 
             if (!decoded || !decoded.sub || typeof decoded.sub !== 'string') {
                 throw new Error('invalid token')

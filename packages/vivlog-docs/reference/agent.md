@@ -55,8 +55,8 @@ export interface VirtualUser {
 ```mermaid
 flowchart LR
 
-    UserToken -- AuthMiddlewawre --> V["VirtualUser(user,A)"]
-    V["VirtualUser(user,A)"] --> CommentService
+    UserToken -- AuthMidware --> V["VirtualUser(user,A)"]
+    V["VirtualUser(user,A)"] --> CommentSvc
 ```
 
 当匿名用户在 SiteA 上发表对 PostA 的评论时，由于匿名用户没有 Token，请求过程如下：
@@ -64,18 +64,34 @@ flowchart LR
 ```mermaid
 flowchart LR
 
-    G["GuestInfo(email,name,site)"] -- AuthMiddlewawre --> V["VirtualUser(guest,A)"]
-    V["VirtualUser(guest,G)"] --> CommentService
+    GuestInfo -- AuthMidware --> VirtUser(Guest)
+    VirtUser(Guest) --> CommentSvc
 ```
 
 当本站用户 UserA 在 SiteA 上发表对远程文章 PostB 的评论时，请求过程如下：
 
 ```mermaid
-flowchart TB
+flowchart LR
 
-    UserA --> |UserToken|AuthMiddlewawre
-    AuthMiddlewawre --> |VirtualUseruser|ProxyRequestMiddleware
-    ProxyRequestMiddleware --> AgentService
+    UserA --> |UserToken|AuthMidware
+    AuthMidware --> |VirtUser|ReqProxier
+    subgraph proxy
+    ReqProxier --> AgentService
+    end
+    AgentService-->|SiteToken+Payload| SiteB
+
+```
+
+当本站游客在 SiteA 上发表对远程文章 PostB 的评论时，请求过程如下：
+
+```mermaid
+flowchart LR
+
+    UserA --> |UserToken|AuthMidware
+    AuthMidware --> |VirtUser|ReqProxier
+    subgraph proxy
+    ReqProxier --> AgentService
+    end
     AgentService-->|SiteToken+Payload| SiteB
 
 ```

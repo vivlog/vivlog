@@ -8,13 +8,14 @@ import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Roles } from '../../types'
 import { gravatarFromEmail } from '../../util/gravatar'
-import { AgentType, AppJwtPayload, LoginDto, UserLoginResponse as LoginRes, RegisterDto, UpdateUserDto, User, UserDto } from './entities'
+import { AppPayload } from './authenticator'
+import { LoginDto, UserLoginResponse as LoginRes, RegisterDto, UpdateUserDto, User, UserDto } from './entities'
 
 
 export class UserService {
-    private db: DataSource
-    private logger: Logger
-    private config: ConfigProvider
+    public db: DataSource
+    public logger: Logger
+    public config: ConfigProvider
     constructor(container: Container) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
@@ -22,7 +23,7 @@ export class UserService {
     }
 
     signJwt(userId: User['id']) {
-        return jwt.sign({ sub: userId.toString(), type: AgentType.User } as AppJwtPayload, this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
+        return jwt.sign(AppPayload.ofUser(userId), this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
     }
     async createUser(userData: RegisterDto) {
         // hash password
