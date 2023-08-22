@@ -2,7 +2,7 @@
 
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { Payload, Role } from '../app/types'
-import { Container } from '../container'
+import { DefaultContainer } from '../container'
 declare module 'fastify' {
     interface FastifyRequest {
         source?: Payload
@@ -15,7 +15,7 @@ export type Done = (err?: Error) => void
 export type Middleware = (req: FastifyRequest, res: FastifyReply, done: Done) => void
 
 export interface Host {
-    container: Container
+    container: DefaultContainer
 }
 
 export type Logger = {

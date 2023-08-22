@@ -1,8 +1,9 @@
 import { ConnectionService } from '../app/extensions/connection/service'
-import { Container } from '../container'
+import { DefaultContainer } from '../container'
 import { BadRequestError, ExHeaders, Middleware } from '../host/types'
+import { isLocalhost } from '../utils/network'
 
-export const verifyTarget: (container: Container) => Middleware = (container: Container) => {
+export const verifyTarget: (container: DefaultContainer) => Middleware = (container: DefaultContainer) => {
     const connectionService = container.resolve(ConnectionService.name) as ConnectionService
     return async (req) => {
         let targetSite = req.headers[ExHeaders.TargetSite]
@@ -26,6 +27,10 @@ export const verifyTarget: (container: Container) => Middleware = (container: Co
             throw new BadRequestError('connection not found')
         }
 
-        req.target = targetSite
+        req.target = {
+            schema: isLocalhost(targetSite) ? 'http' : 'https',
+            site: targetSite,
+            apiPath: connection.options.api_path ?? '/api',
+        }
     }
 }

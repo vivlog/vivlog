@@ -1,7 +1,7 @@
 import { UserService } from '../app/extensions/user/service'
-import { GuestInfo, Role, SourceType, guestInfoValidator, roleList } from '../app/types'
+import { GuestInfo, Role, SourceType, ajv, guestInfoValidator, roleList } from '../app/types'
 import { Container } from '../container'
-import { AgentInfo, AgentType, ExHeaders, Middleware, UnauthorizedError } from '../host/types'
+import { AgentInfo, AgentType, BadRequestError, ExHeaders, Middleware, UnauthorizedError } from '../host/types'
 import { base64Decode } from '../utils/data'
 
 export const inflateAgent: (container: Container) => Middleware = (container: Container) => {
@@ -86,16 +86,16 @@ export const guestAgentInflator: Middleware = async (req) => {
         return
     }
     if (typeof guestBase64 !== 'string') {
-        throw new Error('invalid guest info, not a string')
+        throw new BadRequestError('invalid guest info, not a string')
     }
 
     const guest = base64Decode<GuestInfo>(guestBase64)
     if (!guest) {
-        throw new Error('invalid guest info, not base64')
+        throw new BadRequestError('invalid guest info, not base64')
     }
-
-    if (!guestInfoValidator.Check(guest)) {
-        throw new Error('invalid guest info')
+    if (!guestInfoValidator(guest)) {
+        const errors = ajv.errorsText(guestInfoValidator.errors)
+        throw new BadRequestError('invalid guest info: ' + errors)
     }
     req.agent = {
         email: guest.email,

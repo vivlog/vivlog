@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm'
-import { Container } from '../../../container'
+import { DefaultContainer } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Settings, defaultSettings } from '../../types'
@@ -9,7 +9,7 @@ import { DeleteItemDto, DeleteItemsDto, GetItemDto, GetItemsDto, SetItemDto, Set
 export class SettingService {
     private db: DataSource
     private logger: Logger
-    constructor(container: Container) {
+    constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
     }

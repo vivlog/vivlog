@@ -1,6 +1,8 @@
 import { ConfigProvider } from '../config'
 import { Container } from '../container'
-import { Logger, Middleware, targetBaseUrl as createTargetBaseUrl } from '../host/types'
+import { Logger, Middleware, createTargetBaseUrl } from '../host/types'
+import { removePrefix } from '../utils/data'
+import { removeHostFromUrl, rpc } from '../utils/network'
 
 export const proxyRequest: (container: Container) => Middleware = (container: Container) => {
     const logger = container.resolve('logger') as Logger
@@ -13,11 +15,12 @@ export const proxyRequest: (container: Container) => Middleware = (container: Co
 
         const baseUrl = createTargetBaseUrl(req.target)
         const sitePath = config.get('sitePath', '') as string
+        const apiPath = config.get('apiPath', '') as string
+        const apiUrl = removePrefix(removeHostFromUrl(req.url), sitePath + apiPath)
         const url = `${baseUrl}/${apiUrl}/`
 
-        logger.debug('proxy request %s', url)
-
-        const response = await container.resolve('app').inject({
+        const request = rpc(baseUrl)
+        const response = await request({
             method: req.method,
             url: url,
             payload: req.body,

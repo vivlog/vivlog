@@ -8,10 +8,10 @@ import { JwtAuthenticator } from '../app/extensions/user/authenticator'
 import { RouteHelper } from '../app/helper/route_helper'
 import { rolePriorities } from '../app/types'
 import { ConfigProvider } from '../config'
-import { Container } from '../container'
+import { DefaultContainer } from '../container'
 import { transformBodyOptions } from '../middlewares/handle_body_options'
-import { validateRequestId } from '../middlewares/validate_request_id'
-import { checkEndpointVersionCompat } from '../middlewares/version_compat_checker'
+import { handleRequestId } from '../middlewares/handle_request_id'
+import { verifyVersionCompat } from '../middlewares/verify_version_compat'
 import { Extension, Host, Logger } from './types'
 
 export type RpcRequest<T extends TSchema> = FastifyRequest<{
@@ -29,7 +29,7 @@ export class ServerHost implements Host {
         public app: FastifyInstance,
         public logger: Logger,
         public config: ConfigProvider,
-        public container: Container
+        public container: DefaultContainer
     ) {
 
         this.container.register('host', this)
@@ -65,8 +65,8 @@ export class ServerHost implements Host {
 
     private setupPrehandlers() {
         const prehandlers = [
-            validateRequestId,
-            checkEndpointVersionCompat,
+            handleRequestId,
+            verifyVersionCompat,
             transformBodyOptions,
         ]
 

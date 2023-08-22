@@ -30,3 +30,11 @@ export function rpc(baseUrl: string, https?: boolean) {
         return body.data as TRes
     }
 }
+
+export function isLocalhost(site: string) {
+    return site === 'localhost' || site.startsWith('localhost:')
+}
+
+export function removeHostFromUrl(url: string) {
+    return url.replace(/^https?:\/\/[^/]+/, '')
+}

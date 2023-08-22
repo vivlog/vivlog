@@ -27,8 +27,13 @@ export function createPostApi(host: Host) {
     routes.new().minRole(Role.Author)
         .handle('post', 'createPost', createPostSchema, async (req) => {
             const dto = req.body! as CreatePostDto
-            assert(req.visitor?.id, 'user id is not defined')
-            const user = await userService.getUser({ id: parseInt(req.visitor!.id) })
+            if (!req.agent) {
+                throw new Error('user is not defined')
+            }
+            if (!req.agent.id) {
+                throw new Error('user id is not defined')
+            }
+            const user = await userService.getUser({ id: parseInt(req.agent.id) })
             assert(user !== null)
             dto.site = await cachedValues['site'] as string
             assert(dto.site)

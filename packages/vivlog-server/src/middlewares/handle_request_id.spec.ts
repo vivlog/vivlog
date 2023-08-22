@@ -2,9 +2,9 @@
 import assert from 'assert'
 import { describe, it } from 'mocha'
 import sinon from 'sinon'
-import { validateRequestId } from './validate_request_id'
+import { handleRequestId } from './handle_request_id'
 
-describe('validateRequestId middleware', () => {
+describe('handleRequestId middleware', () => {
   it('should set x-vivlog-request-id header if it is valid', async () => {
     const req = {
       headers: {
@@ -15,7 +15,7 @@ describe('validateRequestId middleware', () => {
       header: sinon.stub(),
     } as any
 
-    await validateRequestId(req, res, () => { })
+    await handleRequestId(req, res, () => { })
 
     assert(res.header.calledWith('x-vivlog-request-id', '12345678-1234-4123-8123-123456789012'))
   })
@@ -30,7 +30,7 @@ describe('validateRequestId middleware', () => {
       header: sinon.stub(),
     } as any
 
-    await validateRequestId(req, res, () => { })
+    await handleRequestId(req, res, () => { })
 
     assert(res.header.calledWith('x-forwarded-request-id', '12345678-1234-4123-8123-123456789012'))
   })
@@ -46,7 +46,7 @@ describe('validateRequestId middleware', () => {
       header: sinon.stub(),
     } as any
 
-    await validateRequestId(req, res, () => { })
+    await handleRequestId(req, res, () => { })
 
     assert(res.header.notCalled)
   })

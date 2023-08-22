@@ -44,9 +44,16 @@ export function base64Decode<T>(str: string, isObject = true): T | null {
     }
 
     try {
-        return JSON.parse(decoded)
+        return JSON.parse(decoded) as T
     }
     catch (error) {
         return null
     }
+}
+
+export function removePrefix(str: string, prefix: string) {
+    if (str.startsWith(prefix)) {
+        return str.slice(prefix.length)
+    }
+    return str
 }

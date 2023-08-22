@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto'
 import * as jwt from 'jsonwebtoken'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../../../config'
-import { Container } from '../../../container'
+import { DefaultContainer } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { PayloadBuilder, Role } from '../../types'
@@ -15,7 +15,7 @@ export class UserService {
     public db: DataSource
     public logger: Logger
     public config: ConfigProvider
-    constructor(container: Container) {
+    constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'config', () => container.resolve('config') as ConfigProvider)

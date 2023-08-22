@@ -2,10 +2,10 @@
 import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../../../config'
-import { Container } from '../../../container'
+import { DefaultContainer } from '../../../container'
 import { Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
-import { rpc } from '../../../utils/rpc'
+import { rpc } from '../../../utils/network'
 import { Settings } from '../../types'
 import { Masker } from '../../util/mask'
 import { Connection, ConnectionDirections } from '../connection/entities'
@@ -26,7 +26,7 @@ export class PostService {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
 
-    constructor(container: Container) {
+    constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)

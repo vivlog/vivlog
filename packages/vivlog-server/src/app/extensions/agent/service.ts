@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
-import { Container } from '../../../container'
+import { DefaultContainer } from '../../../container'
 import { Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Settings } from '../../types'
@@ -15,7 +15,7 @@ export class AgentService {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
 
-    constructor(container: Container) {
+    constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)

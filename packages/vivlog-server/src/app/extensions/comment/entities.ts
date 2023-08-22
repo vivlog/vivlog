@@ -1,5 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { AgentInfo } from '../../../host/types'
 
 @Entity()
 export class Comment {
@@ -13,6 +14,9 @@ export class Comment {
     uuid: string
 
     @Column()
+    site: string
+
+    @Column()
     resource_uuid: string
 
     @Column()
@@ -21,12 +25,9 @@ export class Comment {
     @Column()
     content: string
 
-    @Column()
-    guest: boolean // guest or user
-
     // -- for guest
-    @Column()
-    guest_info?: GuestInfo
+    @Column({ type: 'simple-json', nullable: true })
+    agent?: AgentInfo
 
     // -- for user
     @Column()

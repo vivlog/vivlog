@@ -10,7 +10,7 @@ import { builtinExtensions } from './app/extensions'
 import { ConfigProvider, validateConfig } from './config'
 import { loadRawConfig } from './config/loader'
 import { configKeys, defaultRawConfig } from './config/types'
-import { Container } from './container'
+import { DefaultContainer } from './container'
 import { loadExtensions } from './host/extension'
 import { ServerHost } from './host/host'
 import { Extension, Logger } from './host/types'
@@ -61,7 +61,7 @@ export async function bootstrap() {
             logging: parseBool(config.get('logQuery', 'false')) ? ['query', 'error'] : [],
             synchronize: true
         })
-        const container = new Container()
+        const container = new DefaultContainer()
         const server = new ServerHost(
             exts,
             db,

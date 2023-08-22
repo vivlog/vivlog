@@ -1,10 +1,9 @@
-import { BadRequestError, Middleware } from '../host/types'
+import { BadRequestError, ExHeaders, Middleware } from '../host/types'
 
-export const checkEndpointVersionCompat: Middleware = (req, res, done) => {
-    const clientVersion = req.headers['x-vivlog-version']
+export const verifyVersionCompat: Middleware = (req) => {
+    const clientVersion = req.headers[ExHeaders.Version]
 
     if (!clientVersion || typeof clientVersion !== 'string') {
-        done()
         return
     }
 
@@ -14,6 +13,4 @@ export const checkEndpointVersionCompat: Middleware = (req, res, done) => {
     if (clientMajorVersion !== serverMajorVersion) {
         throw new BadRequestError(`Version mismatch, client version is v${clientMajorVersion} but server version is v${serverMajorVersion}`)
     }
-
-    done()
 }

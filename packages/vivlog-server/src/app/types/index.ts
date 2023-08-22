@@ -1,6 +1,30 @@
 import { Static, Type } from '@sinclair/typebox'
 import { TypeCompiler } from '@sinclair/typebox/compiler'
 
+import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
+
+export const ajv = addFormats(new Ajv({
+    removeAdditional: false,
+    coerceTypes: true,
+    allErrors: true
+}), [
+    'date-time',
+    'time',
+    'date',
+    'email',
+    'hostname',
+    'ipv4',
+    'ipv6',
+    'uri',
+    'uri-reference',
+    'uuid',
+    'uri-template',
+    'json-pointer',
+    'relative-json-pointer',
+    'regex'
+])
+
 export const localRoleSchema = Type.Union([
     Type.Literal('admin'),
     Type.Literal('editor'),
@@ -72,7 +96,8 @@ export const guestInfoSchema = Type.Object({
     site: Type.Optional(Type.String()),
 })
 
-export const guestInfoValidator = TypeCompiler.Compile(guestInfoSchema)
+
+export const guestInfoValidator = ajv.compile(guestInfoSchema)
 
 export type GuestInfo = Static<typeof guestInfoSchema>
 
@@ -87,7 +112,7 @@ export class PayloadBuilder {
             type: SourceType.User,
             sub: uid.toString()
         }
-        return builder
+        return builder.build()
     }
 
     static ofSite(site: string) {
@@ -96,7 +121,7 @@ export class PayloadBuilder {
             type: SourceType.Site,
             sub: site
         }
-        return builder
+        return builder.build()
     }
 
     public build() {

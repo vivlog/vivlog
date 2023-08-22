@@ -1,11 +1,11 @@
 import * as jwt from 'jsonwebtoken'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../../../config'
-import { Container } from '../../../container'
+import { DefaultContainer } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
-import { rpc } from '../../../utils/rpc'
-import { Settings } from '../../types'
+import { rpc } from '../../../utils/network'
+import { PayloadBuilder, Settings } from '../../types'
 import { SettingService } from '../setting/service'
 import { Connection, ConnectionDirections, CreateConnectionDto, DeleteConnectionDto, GetConnectionDto, GetConnectionsDto, RequestConnectionDto, ValidateConnectionRequestDto } from './entities'
 
@@ -21,7 +21,7 @@ export class ConnectionService {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
 
-    constructor(container: Container) {
+    constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'config', () => container.resolve('config') as ConfigProvider)
@@ -35,7 +35,7 @@ export class ConnectionService {
         const baseUrl = remote_site + apiPath
         const request = rpc(baseUrl)
         const secret = this.config.get('jwtSecret', 'secret')!
-        const localToken = jwt.sign(Payload.ofSite(remote_site), secret, { expiresIn: '1h' })
+        const localToken = jwt.sign(PayloadBuilder.ofSite(remote_site), secret, { expiresIn: '1h' })
         try {
             this.pendingConnections.set(remote_site, { local_token: localToken })
             const ret = await request<unknown, RequestConnectionDto>('connection', 'requestConnection', {
@@ -153,7 +153,7 @@ export class ConnectionService {
             throw new BadRequestError('Remote site is not current site')
         }
         const secret = this.config.get('jwtSecret', 'secret')!
-        const remote_token = jwt.sign(Payload.ofSite(local_site), secret, { expiresIn: '1h' })
+        const remote_token = jwt.sign(PayloadBuilder.ofSite(local_site), secret, { expiresIn: '1h' })
         const baseUrl = local_site + local_api_path
         const request = rpc(baseUrl)
         try {
