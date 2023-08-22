@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken'
 import { ConfigProvider } from '../../../config'
-import { Authenticator, Host, Logger, Visitor, VisitorType } from '../../../host/types'
+import { AgentInfo, AgentType, Authenticator, Host, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
-import { Payload, Role, Settings, TokenType, payloadValidator, rolePriorities } from '../../types'
+import { Payload, Role, Settings, SourceType, payloadValidator, rolePriorities } from '../../types'
 import { SettingService } from '../setting/service'
 import { UserService } from './service'
 
@@ -16,8 +16,8 @@ export class JwtAuthenticator implements Authenticator {
     public secret: string
 
     // TODO: this should be implemented outside of this class
-    private payloadHandlers: Record<TokenType, (payload: Payload) => Promise<Visitor | null>> = {
-        [TokenType.User]: async (payload) => {
+    private payloadHandlers: Record<SourceType, (payload: Payload) => Promise<AgentInfo | null>> = {
+        [SourceType.User]: async (payload) => {
             const uid = parseInt(payload.sub)
             const user = await this.userService.getUser({ id: uid })
             if (!user) {
@@ -28,7 +28,7 @@ export class JwtAuthenticator implements Authenticator {
                 throw new Error('invalid role')
             }
             return {
-                type: VisitorType.User,
+                type: AgentType.User,
                 id: user.id.toString(),
                 site: site,
                 uuid: user.uuid,
@@ -38,10 +38,10 @@ export class JwtAuthenticator implements Authenticator {
                 role: user.role as Role,
             }
         },
-        [TokenType.Site]: async (payload) => {
+        [SourceType.Site]: async (payload) => {
             const site = payload.sub
             return {
-                type: VisitorType.Site,
+                type: AgentType.Site,
                 site: site,
                 uuid: site,
                 local: true,
@@ -57,11 +57,11 @@ export class JwtAuthenticator implements Authenticator {
         lazy(this, 'secret', () => this.config.get('jwtSecret') as string)
     }
 
-    async setPayloadHandler(type: TokenType, handler: (payload: Payload) => Promise<Visitor | null>) {
+    async setPayloadHandler(type: SourceType, handler: (payload: Payload) => Promise<AgentInfo | null>) {
         this.payloadHandlers[type] = handler
     }
 
-    async verify(token: string): Promise<Visitor | null> {
+    async verify(token: string): Promise<AgentInfo | null> {
         try {
             const decoded = jwt.verify(token, this.secret)
             if (!payloadValidator.Check(decoded)) {

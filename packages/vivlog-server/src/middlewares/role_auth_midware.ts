@@ -1,7 +1,7 @@
 import { FastifyRequest } from 'fastify'
 import { GuestInfo, guestInfoValidator } from '../app/extensions/comment/entities'
 import { Role } from '../app/types'
-import { Authenticator, Middleware, UnauthorizedError, Visitor, VisitorType } from '../host/types'
+import { AgentInfo, AgentType, Authenticator, Middleware, UnauthorizedError } from '../host/types'
 import { base64Decode } from '../utils/data'
 
 
@@ -65,7 +65,7 @@ export class RoleAuthMiddlewareBuilder {
                 throw new Error('invalid guest info')
             }
             req.visitor = {
-                type: VisitorType.Guest,
+                type: AgentType.Guest,
                 role: Role.Agent,
                 id: '',
                 email: guest.email,
@@ -86,7 +86,7 @@ export class RoleAuthMiddlewareBuilder {
                     throw new UnauthorizedError('not logged in')
                 }
 
-                const user = rawUser as Visitor
+                const user = rawUser as AgentInfo
 
                 if (allowRoles.length > 0) {
                     if (!allowRoles.includes(user.role)) {

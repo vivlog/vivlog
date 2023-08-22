@@ -9,6 +9,9 @@ import { RouteHelper } from '../app/helper/route_helper'
 import { rolePriorities } from '../app/types'
 import { ConfigProvider } from '../config'
 import { Container } from '../container'
+import { transformBodyOptions } from '../middlewares/handle_body_options'
+import { validateRequestId } from '../middlewares/validate_request_id'
+import { checkEndpointVersionCompat } from '../middlewares/version_compat_checker'
 import { Extension, Host, Logger } from './types'
 
 export type RpcRequest<T extends TSchema> = FastifyRequest<{
@@ -45,6 +48,7 @@ export class ServerHost implements Host {
         this.app.post(`${this.sitePath}${this.apiPath}/status/ready`, (_req, _res) => {
             return { data: true }
         })
+        this.setupPrehandlers()
 
         // access log
         this.app.addHook('onRequest', (request, reply, done) => {
@@ -56,6 +60,18 @@ export class ServerHost implements Host {
                 this.logger.error('error: %o', error)
             }
             reply.send(error)
+        })
+    }
+
+    private setupPrehandlers() {
+        const prehandlers = [
+            validateRequestId,
+            checkEndpointVersionCompat,
+            transformBodyOptions,
+        ]
+
+        prehandlers.forEach((prehandler) => {
+            this.app.addHook('preHandler', prehandler)
         })
     }
 

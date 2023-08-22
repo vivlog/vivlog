@@ -61,6 +61,7 @@ export default defineConfig(withMermaid({
               {
                 text: '基础', items: [
                   { text: '站点', link: '/reference/site' },
+                  { text: 'RPC', link: '/reference/rpc' },
                   { text: '代理', link: '/reference/agent' },
                   { text: '设置', link: '/reference/setting' },
                 ]

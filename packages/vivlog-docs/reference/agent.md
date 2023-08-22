@@ -21,46 +21,47 @@
 
 3. UserA 在 SiteA 上发表了对 PostB 的评论。
 
-    此情况下，SiteA 从提取 UserA 信息，然后通过调用AgentService向远程的SiteB发出/comment/createComment请求。为了验证请求的合法性，SiteB需要由SiteA提供的签名令牌，并且为了创建评论，SiteB还需要UserA的信息。尽管UserA不在SiteB的本地数据库中，但SiteB信任UserA的身份，因此会将评论标记为用户评论，但不会与具体用户关联。
+    此情况下，SiteA 从提取 UserA 信息，然后通过调用 AgentService 向远程的 SiteB 发出/comment/createComment 请求。为了验证请求的合法性，SiteB 需要由 SiteA 提供的签名令牌，并且为了创建评论，SiteB 还需要 UserA 的信息。尽管 UserA 不在 SiteB 的本地数据库中，但 SiteB 信任 UserA 的身份，因此会将评论标记为用户评论，但不会与具体用户关联。
 
 4. GuestA 在 SiteA 上发表了对 PostB 的评论。
 
-    此情况类似上一种，但是SiteB会将评论标记为访客评论，并且并不信任GuestA的身份。
+    此情况类似上一种，但是 SiteB 会将评论标记为访客评论，并且并不信任 GuestA 的身份。
 
-上述情况看起来略显复杂，为了简化逻辑，我们这样实现：
+上述情况看起来略显复杂，如按字面逻辑实现，则需要所有接口都判断当前登录的是哪种类型用户，判断是否需要远程执行，逻辑较为复杂，因此最好能将逻辑前置到 PreHandler，因此简单地按照如下方式处理：
 
-1. `TrustLevelInflator`: 解析请求中携带的 Token，将其中的 TokenType 转换为可信级别（Trust Level），存放到 `req.trust_level`。同时，如果 TokenType 为 User，通过 req.user_id 将用户 id 传递给下一个中间件。
-    1. 如果 TokenType 为 User，则可信级别为 User。表示用户，则意味着访问者来自本站。
-    2. 如果 TokenType 为 Site，则可信级别为 Site。表示站点，则意味着访问者（Visitor）来自可信的网站，但非本站用户。
-    3. 如果请求中没有 Token，则可信级别为 null。表示不可信。
+1. 看是否传入了 `X-Vivlog-Token` 标头，若是，则尝试解析出用户或站点信息。
+2. 看是否传入了 `X-Vivlog-Target-Site` 标头，且此 Site 非本站。若是，则代理到远程站点。
+3. 看是否传入了 `X-Vivlog-Guest` 标头，若是，则尝试解析出访客信息。并且根据 Guest 中的 Trusted 字段，判断是否是可信访客。（例如来自 SiteA 的正规用户在 SiteA 上的 PostB 发表的评论，代理到 SiteB 时，会被视作可信访客）
 
-2. `VisitorInitializer` 检查 `req.user_id` 是否为 null。
-    - 如果不为 null，说明 TokenType 为 User，这意味着请求来自本站用户。通过 UserService 填充 `req.visitor`。
-    - 如果为 null，说明 TokenType 为 Site 或 null，这意味着请求来自站点或者不可信的来源。则尝试根据请求头的 `x-vivlog-visitor` 字段填充 `req.visitor`。
-        - 如果 `x-vivlog-visitor` 字段不存在，则说明请求来自不可信的来源，因此将 `req.visitor` 初始化为 null。
-        - 如果 `x-vivlog-visitor` 字段存在，则说明请求来自可信的来源，但不是本站用户，因此将 `req.visitor` 初始化为此访问者的信息。
+相关中间件如下：
 
-3. `ActionDispatcher` 根据 `req.trust_level` 和 `req.visitor` 和 `req.body.is_local` 判断此行为需要在本地执行还是代理到远程站点执行。
-    - 如果 `req.trust_level` 为 null，则说明请求来自不可信的来源，因此将此行为代理到远程站点执行。
-    - 如果 `req.trust_level` 为 User，则说明请求来自本站用户，因此将此行为在本地执行。
-    - 如果 `req.trust_level` 为 Site，则说明请求来自可信的来源，但不是本站用户，因此将此行为代理到远程站点执行。
+1. `verifySource`: 用于验证请求来源的身份，包括本站用户、站点。
 
-`req.visitor`: 用于存放访问者尽可能全面的基本信息，此信息通用于一切访问者，包括用户、访客和站点。因此对于所有请求，几乎总是会被尝试填充。
+    - 输入：`X-Vivlog-Token` 标头或 `Authorization` 标头
+    - 输出：`req.source = { sub, type }`
 
-`req.trust_level`：用于表示此行为的代理。
+2. `inflateAgent`: 用于通过 `req.source` 获取当前用户并设置 `req.agent`。
 
-1. UserA 在 SiteA 上发表了对 PostA 的评论。则：
-    - SiteA 根据携带的 Token 将 `trust_level` 初始化为 UserA
-    - 则 `visitor` 初始化为 UserA，`trust_level` 初始化为 null。
-2. GuestA 在 SiteA 上发表了对 PostA 的评论。
-    - SiteA 根据携带的 Token 将 `trust_level` 初始化为 UserA
-    - 则 `visitor` 初始化为 GuestA，`trust_level` 初始化为 null。
-3. UserA 在 SiteA 上发表了对 PostB 的评论。则：
-    - 在 UserA -> SiteA 过程，SiteA 根据携带的 Token 将 `trust_level` 初始化为 UserA。
-    - 在 SiteA -> SiteB 过程，SiteB 根据携带的 Token 将 `trust_level` 初始化为 SiteA，然后根据携带的 AgentInfo 将 `visitor` 初始化为 User A。最后，SiteB 的 CommentService 通过 `visitor` 创建评论，由于 `trust_level` 为 SiteA，因此将评论标记为用户评论，但不会与具体用户关联。
-4. GuestA 在 SiteA 上发表了对 PostB 的评论。则：
-    - 在 UserA -> SiteA 过程，SiteA 根据携带的 Token 将 `trust_level` 初始化为 UserA。
-    - 在 SiteA -> SiteB 过程，SiteB 根据携带的 Token 将 `agency` 初始化为 SiteA，然后根据携带的 AgentInfo 将 `visitor` 初始化为 User A。最后，SiteB 的 CommentService 通过 `visitor` 创建评论，由于 `agency` 为 SiteA，因此将评论标记为用户评论，但不会与具体用户关联。
+    - 输入：`req.source`
+    - 输出：`req.agent = { type, role, id, local ... }`
+
+3. `verifyTarget`: 用于验证请求目标的身份，包括本站用户、站点。
+
+    - 输入：`X-Vivlog-Target-Site` 标头
+    - 输出：无。若验证失败，则抛出异常，以免用户利用本站将请求代理到未知站点。
+
+3. `proxyRequest`: 用于代理请求到远程站点。
+
+    - 输入：`X-Vivlog-Target-Site` 标头
+    - 输出：无。若验证失败，则抛出异常，以免用户利用本站将请求代理到未知站点。
+
+再考虑上述情况：
+
+
+1. UserA 在 SiteA 上发表了对 PostA 的评论。则 `req.agent = userA`，CommentService 将会关联评论到 UserA。
+2. GuestA 在 SiteA 上发表了对 PostA 的评论。则 `req.agent = guestA`，CommentService 发现 `agent.trusted` 为 false，因此知道非本站用户评论。且根据 `agent.role` 为 Guest 将会标记评论为访客评论。
+3. UserA 在 SiteA 上发表了对 PostB 的评论。则 `req.agent = userA`，AgentService 发现 `req.agent.local` 为 false，因此知道非本站用户评论，且根据 `agent.role` 为 User 将会标记评论为用户评论。
+4. GuestA 在 SiteA 上发表了对 PostB 的评论。则 `req.agent = guestA`，AgentService 发现 `req.agent.local` 为 false，因此知道非本站用户评论，且根据 `agent.role` 为 Guest 将会标记评论为访客评论。
 
 ## 代理的类型
 

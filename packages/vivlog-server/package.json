@@ -32,6 +32,7 @@
     "start:seed": "nodemon --exec ts-node src/scripts/seed.ts"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.5",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/md5": "^2.3.2",
     "@types/mocha": "^10.0.1",
@@ -40,6 +41,7 @@
     "@types/sinon": "^10.0.16",
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.2.1",
+    "chai": "^4.3.7",
     "eslint": "^8.46.0",
     "lorem-ipsum": "^2.0.8",
     "mocha": "^10.2.0",

@@ -64,8 +64,6 @@ class RoleBasedRpcRouteBuilder {
     }
 
 
-
-
     handleWithQuery<T extends TSchema>(
         module_: string,
         action: string,

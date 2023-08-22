@@ -15,8 +15,11 @@ export enum Role {
     Editor = 'editor',
     Author = 'author',
     Reader = 'reader',
-    Agent = 'agent', // not a real role, just a placeholder for non-user visitor
+    Agent = 'agent', // requests has this role if it comes from a connection
+    Guest = 'guest', // requests has this role if it comes from a guest or a guest over a connection
 }
+
+export const roleList = Object.values(Role)
 
 export const rolePriorities = {
     [Role.Admin]: 4,
@@ -49,19 +52,29 @@ export const defaultSettings = [
     { group: Settings.Comment._group, name: Settings.Comment.allow_guest, value: true },
 ]
 
-export enum TokenType {
+export enum SourceType {
     User = 'user',
     Site = 'site',
 }
 
 export const payloadSchema = Type.Object({
     sub: Type.String(),
-    type: Type.Enum(TokenType),
+    type: Type.Enum(SourceType),
 })
 
 export type Payload = Static<typeof payloadSchema>
 
 export const payloadValidator = TypeCompiler.Compile(payloadSchema)
+
+export const guestInfoSchema = Type.Object({
+    name: Type.String(),
+    email: Type.String({ format: 'email' }),
+    site: Type.Optional(Type.String()),
+})
+
+export const guestInfoValidator = TypeCompiler.Compile(guestInfoSchema)
+
+export type GuestInfo = Static<typeof guestInfoSchema>
 
 export class PayloadBuilder {
     private payload: Partial<Payload>
@@ -71,22 +84,22 @@ export class PayloadBuilder {
     static ofUser(uid: string | number) {
         const builder = new PayloadBuilder()
         builder.payload = {
-            type: TokenType.User,
+            type: SourceType.User,
             sub: uid.toString()
         }
-        return this
+        return builder
     }
 
     static ofSite(site: string) {
         const builder = new PayloadBuilder()
         builder.payload = {
-            type: TokenType.Site,
+            type: SourceType.Site,
             sub: site
         }
-        return this
+        return builder
     }
 
-    build() {
+    public build() {
         return this.payload as Payload
     }
 }

@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { Role } from '../app/types'
+import { Payload, Role } from '../app/types'
 import { Container } from '../container'
 declare module 'fastify' {
     interface FastifyRequest {
-        visitor?: Visitor
+        source?: Payload
+        agent?: AgentInfo
+        target?: Target // target site to forward request
     }
 }
 
@@ -70,23 +72,49 @@ export class NotFoundError extends Error {
     }
 }
 
-export enum VisitorType {
+export enum AgentType {
     Guest = 'guest',
     User = 'user',
     Site = 'site',
 }
 
-export interface Visitor {
-    type: `${VisitorType}`
-    role: `${Role}`
-    id?: string
-    site?: string
-    uuid?: string
-    local: boolean
+export interface AgentInfo {
     email?: string
+    id?: string
+    local: boolean
+    role: `${Role}`
+    site?: string
+    trusted?: boolean
+    type: `${AgentType}`
     username?: string
+    uuid?: string
+}
+
+export interface Target {
+    schema: string
+    site: string
+    apiPath: string
+}
+
+export function createTargetBaseUrl(target: Target) {
+    return `${target.schema}://${target.site}${target.apiPath}`
 }
 
 export interface Authenticator {
-    verify(token: string): Promise<Visitor | null>
+    verify(token: string): Promise<AgentInfo | null>
 }
+
+export const exHeaderPrefix = 'x-vivlog'
+
+export enum ExHeaders {
+    Token = `${exHeaderPrefix}-token`,
+    Version = `${exHeaderPrefix}-version`,
+    RequestId = `${exHeaderPrefix}-request-id`,
+    ForwardedRequestId = `${exHeaderPrefix}-forwarded-request-id`,
+    TargetSite = `${exHeaderPrefix}-target-site`,
+    ForwardedTargetSite = `${exHeaderPrefix}-forwarded-target-site`,
+    Guest = `${exHeaderPrefix}-guest`,
+    ForwardedGuest = `${exHeaderPrefix}-forwarded-guest`,
+}
+
+export const exHeadersList = Object.values(ExHeaders)
