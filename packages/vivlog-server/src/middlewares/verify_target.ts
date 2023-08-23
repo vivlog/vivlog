@@ -31,6 +31,7 @@ export const verifyTarget: (container: DefaultContainer) => Middleware = (contai
             schema: isLocalhost(targetSite) ? 'http' : 'https',
             site: targetSite,
             apiPath: connection.options.api_path ?? '/api',
+            token: connection.remote_token
         }
     }
 }

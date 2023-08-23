@@ -32,8 +32,6 @@ export const localRoleSchema = Type.Union([
     Type.Literal('reader'),
 ])
 
-export type LocalRole = Static<typeof localRoleSchema>
-
 export enum Role {
     Admin = 'admin',
     Editor = 'editor',

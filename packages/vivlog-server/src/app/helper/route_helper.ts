@@ -2,8 +2,8 @@ import { TSchema } from '@sinclair/typebox'
 import { FastifyInstance } from 'fastify'
 import { ConfigProvider } from '../../config'
 import { RpcRequest } from '../../host/host'
-import { Authenticator, Host, Logger } from '../../host/types'
-import { RoleAuthMiddlewareBuilder } from '../../middlewares/role_auth_midware'
+import { Host, Logger } from '../../host/types'
+import { verifyRole } from '../../middlewares/verify_role'
 import { lazy } from '../../utils/lazy'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,8 +13,6 @@ class RoleBasedRpcRouteBuilder {
     public requireLogin_: boolean = false
     public logger: Logger
     public app: FastifyInstance
-    public authenticator: Authenticator
-    public roleAuth: RoleAuthMiddlewareBuilder
     public config: ConfigProvider
     public sitePath: string = '' // for site that is not running at root path
     public apiPath: string = '' // for site that is not running at root path
@@ -22,8 +20,6 @@ class RoleBasedRpcRouteBuilder {
     constructor(private host: Host, private rolePriorityMap: { [role: string]: number }) {
         lazy(this, 'logger', () => this.host.container.resolve('logger') as Logger)
         lazy(this, 'app', () => this.host.container.resolve('app') as FastifyInstance)
-        lazy(this, 'authenticator', () => this.host.container.resolve('authenticator') as Authenticator)
-        lazy(this, 'roleAuth', () => new RoleAuthMiddlewareBuilder(this.authenticator))
         lazy(this, 'config', () => this.host.container.resolve('config') as ConfigProvider)
         lazy(this, 'sitePath', () => this.config.get('sitePath') as string)
         lazy(this, 'apiPath', () => this.config.get('apiPath') as string)
@@ -53,11 +49,6 @@ class RoleBasedRpcRouteBuilder {
         return this
     }
 
-    requireLogin() {
-        this.requireLogin_ = true
-        return this
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handle<T extends TSchema>(module_: string, action: string, bodySchema: T, handler: (req: RpcRequest<T>) => any) {
         this.handleWithQuery(module_, action, bodySchema, undefined, handler)
@@ -79,8 +70,7 @@ class RoleBasedRpcRouteBuilder {
                 ...(querySchema ? { querystring: querySchema } : {})
             },
             url,
-            preHandler: this.roleAuth.getMiddlewares(this.requireLogin_,
-                this.allowRoles_),
+            preHandler: this.allowRoles_.length > 0 ? verifyRole(this.allowRoles_) : [],
             handler: async (req: RpcRequest<T>, res) => {
                 this.logger.info('rpc %s.%s', module_, action)
                 const ret = await handler(req)

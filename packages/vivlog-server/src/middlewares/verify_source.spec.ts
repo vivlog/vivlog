@@ -7,7 +7,7 @@ import { extractAppToken, extractBearerToken, verifySource } from './verify_sour
 
 describe('verifySource', () => {
     const secret = 'testSecret'
-    const validToken = jwt.sign(PayloadBuilder.ofUser(1).build(), secret)
+    const validToken = jwt.sign(PayloadBuilder.ofUser(1), secret)
     const invalidToken = jwt.sign({ foo: 'bar' }, 'wrongSecret')
 
     it('should set source to decoded token if token is valid', async () => {

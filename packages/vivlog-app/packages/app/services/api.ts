@@ -42,7 +42,7 @@ export async function fetchApi(url, options) {
     }
 
     if (token) {
-        options.headers['Authorization'] = token
+        options.headers['authorization'] = token
     }
 
     let resp

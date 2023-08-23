@@ -26,8 +26,7 @@ export function createAgentApi(host: Host) {
 
     routes.new().minRole(Role.Author).handle('agent', 'createAgent', createAgentSchema, async (req) => {
         const dto = req.body! as CreateAgentDto
-        assert(req.visitor?.id, 'user id is not defined')
-        const user = await userService.getUser({ id: parseInt(req.visitor!.id) })
+        const user = await userService.getUser({ id: parseInt(req.agent!.id!) })
         assert(user !== null)
         dto.site = await cachedValues['site'] as string
         assert(dto.site)

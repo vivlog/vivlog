@@ -94,6 +94,7 @@ export interface Target {
     schema: string
     site: string
     apiPath: string
+    token: string
 }
 
 export function createTargetBaseUrl(target: Target) {

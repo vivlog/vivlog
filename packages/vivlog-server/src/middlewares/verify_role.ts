@@ -1,13 +1,13 @@
 import { Middleware, UnauthorizedError } from '../host/types'
 
-const roleCheckCache: Record<string, Middleware> = {}
+const verifier: Record<string, Middleware> = {}
 // 该方法用于检查用户角色是否满足要求
-export const roleCheck: (allowRoles: string[]) => Middleware = (allowRoles: string[]) => {
+export const verifyRole: (allowRoles: string[]) => Middleware = (allowRoles: string[]) => {
     const cacheKey = allowRoles.join(',')
-    if (roleCheckCache[cacheKey]) {
-        return roleCheckCache[cacheKey]
+    if (verifier[cacheKey]) {
+        return verifier[cacheKey]
     }
-    roleCheckCache[cacheKey] = async (req) => {
+    verifier[cacheKey] = async (req) => {
         const { agent } = req
         if (!agent) {
             throw new UnauthorizedError('not logged in')
@@ -20,5 +20,5 @@ export const roleCheck: (allowRoles: string[]) => Middleware = (allowRoles: stri
         }
     }
 
-    return roleCheckCache[cacheKey]
+    return verifier[cacheKey]
 }

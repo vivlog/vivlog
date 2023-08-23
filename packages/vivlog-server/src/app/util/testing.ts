@@ -6,7 +6,7 @@ import { bootstrap } from '../../server'
 import { getNextAvailablePort, inject, injectWithAuth, removeAllFiles } from '../../utils/testing'
 import { SettingService } from '../extensions/setting/service'
 import { User } from '../extensions/user/entities'
-import { LocalRole, Role, Settings } from '../types'
+import { Role, Settings } from '../types'
 
 export type CombinedSession = Awaited<ReturnType<typeof createNewSession>>
 
@@ -15,7 +15,7 @@ const defaultUsers = {
     [Role.Reader]: { username: 'reader', password: '12345678', role: Role.Reader },
     [Role.Editor]: { username: 'editor', password: '12345678', role: Role.Editor },
     [Role.Author]: { username: 'author', password: '12345678', role: Role.Author }
-}
+} as Record<Role, { username: string; password: string; role: Role }>
 
 
 type CreateSiteOptions = {
@@ -77,7 +77,7 @@ async function registerUser(host: Host, user: { username: string; password: stri
 
 type UserSession = {
     user: User
-    role: LocalRole
+    role: Role
     token: string
     password: string
 };
@@ -86,17 +86,20 @@ type RoleSessionMap = {
     [role: string]: UserSession
 };
 
-export async function createNewSession(host: Host, initSite = true, rolesToCreate?: LocalRole[]) {
+export async function createNewSession(host: Host, initSite = true, rolesToCreate?: Role[]) {
     const roleSessions: RoleSessionMap = {}
 
     if (initSite) {
         await initSiteSettings(host)
     }
 
-    const createUserByRole = async (role: LocalRole) => {
+    const createUserByRole = async (role: Role) => {
         // skip if already created
         if (roleSessions[role]) {
             return
+        }
+        if (!defaultUsers[role]) {
+            throw new Error(`role ${role} not found in defaultUsers`)
         }
         const sess = await registerUser(host, defaultUsers[role])
         roleSessions[role] = { ...sess, password: defaultUsers[role].password }

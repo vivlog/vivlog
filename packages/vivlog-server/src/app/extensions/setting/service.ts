@@ -7,8 +7,8 @@ import { DeleteItemDto, DeleteItemsDto, GetItemDto, GetItemsDto, SetItemDto, Set
 
 
 export class SettingService {
-    private db: DataSource
-    private logger: Logger
+    public db: DataSource
+    public logger: Logger
     constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)

@@ -23,7 +23,7 @@ export async function inject(s: Host, module_: string, action: string, payload: 
 export async function injectWithAuth(s: Host, module_: string, action: string, payload: InjectPayload, token: string) {
     return inject(s, module_, action, payload, {
         headers: {
-            Authorization: `Bearer ${token}`
+            'authorization': `Bearer ${token}`
         }
     })
 }
