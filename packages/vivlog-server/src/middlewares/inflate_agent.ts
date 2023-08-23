@@ -16,7 +16,7 @@ export const inflateAgent: (container: Container) => Middleware = (container: Co
 
 export const userAgentInflator: (container: Container) => Middleware = (container: Container) => {
 
-    const userService = container.resolve('userService') as UserService
+    const userService = container.resolve(UserService.name) as UserService
 
     return async (req) => {
         if (!req.source) {

@@ -1,6 +1,6 @@
 import { BadRequestError, ExHeaders, Middleware } from '../host/types'
 
-export const verifyVersionCompat: Middleware = (req) => {
+export const verifyVersionCompat: Middleware = async (req) => {
     const clientVersion = req.headers[ExHeaders.Version]
 
     if (!clientVersion || typeof clientVersion !== 'string') {

@@ -24,6 +24,16 @@ export type Logger = {
     warn: (...args: any[]) => void
     error: (...args: any[]) => void
     trace: (...args: any[]) => void
+    child: (options: Record<string, unknown>) => Logger
+}
+
+export const consoleLogger: Logger = {
+    debug: console.debug,
+    info: console.info,
+    warn: console.warn,
+    error: console.error,
+    trace: console.trace,
+    child: () => consoleLogger,
 }
 
 export interface Extension {
@@ -118,4 +128,11 @@ export enum ExHeaders {
     ForwardedGuest = `${exHeaderPrefix}-forwarded-guest`,
 }
 
-export const exHeadersList = Object.values(ExHeaders)
+export const exHeadersMap = (() => {
+    const map = new Map<string, ExHeaders>()
+    for (const key in ExHeaders) {
+        const value = ExHeaders[key as keyof typeof ExHeaders]
+        map.set(key, value)
+    }
+    return map
+})()

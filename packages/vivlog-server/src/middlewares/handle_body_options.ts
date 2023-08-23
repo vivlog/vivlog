@@ -1,9 +1,10 @@
 // NOTE: this is a preValidation hook
 
 import { camelCase } from 'change-case'
-import { Middleware, exHeaderPrefix, exHeadersList } from '../host/types'
+import { Middleware, exHeadersMap } from '../host/types'
 
 export const transformBodyOptions: Middleware = async (req) => {
+
     if (!req.body) {
         return
     }
@@ -14,13 +15,13 @@ export const transformBodyOptions: Middleware = async (req) => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options = (req.body as any)['__vivlog_options']
-    for (const headerRaw of exHeadersList) {
-        const prop = camelCase(headerRaw)
-        if (options[prop]) {
+    for (const [propName, header] of exHeadersMap) {
+        const prop = camelCase(propName)
+        if (options[prop] !== undefined) {
             if (typeof options[prop] !== 'string') {
                 options[prop] = Buffer.from(JSON.stringify(options[prop])).toString('base64')
             }
-            req.headers[`${exHeaderPrefix}-${headerRaw}`] = options[prop]
+            req.headers[header] = options[prop]
         }
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

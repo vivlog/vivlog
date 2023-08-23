@@ -21,19 +21,18 @@ describe('versionCompatChecker middleware', () => {
         done = sinon.spy()
     })
 
-    it('should call done() if no client version is provided', () => {
+    it('should no error if no client version is provided', async () => {
         delete req.headers['x-vivlog-version']
-        verifyVersionCompat(req, res, done)
-        assert(done.calledOnce)
+        await verifyVersionCompat(req, res, done)
     })
 
     it('should throw BadRequestError if client version does not match server version', () => {
         process.env.npm_package_version = '2.0.0'
-        assert.throws(() => verifyVersionCompat(req, res, done), BadRequestError)
+        assert.rejects(async () => await verifyVersionCompat(req, res, done), BadRequestError)
     })
 
-    it('should no execption if client version matches server version', () => {
+    it('should no execption if client version matches server version', async () => {
         process.env.npm_package_version = '1.0.0'
-        verifyVersionCompat(req, res, done)
+        await verifyVersionCompat(req, res, done)
     })
 })

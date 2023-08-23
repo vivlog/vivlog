@@ -11,8 +11,12 @@ import { ConfigProvider } from '../config'
 import { DefaultContainer } from '../container'
 import { transformBodyOptions } from '../middlewares/handle_body_options'
 import { handleRequestId } from '../middlewares/handle_request_id'
+import { inflateAgent } from '../middlewares/inflate_agent'
+import { proxyRequest } from '../middlewares/proxy_request'
+import { verifySource } from '../middlewares/verify_source'
+import { verifyTarget } from '../middlewares/verify_target'
 import { verifyVersionCompat } from '../middlewares/verify_version_compat'
-import { Extension, Host, Logger } from './types'
+import { Extension, Host, Logger, Middleware } from './types'
 
 export type RpcRequest<T extends TSchema> = FastifyRequest<{
     Body?: Static<T>
@@ -64,15 +68,24 @@ export class ServerHost implements Host {
     }
 
     private setupPrehandlers() {
-        const prehandlers = [
-            handleRequestId,
-            verifyVersionCompat,
-            transformBodyOptions,
-        ]
+        const prehandlers = {
+            'handleRequestId': handleRequestId,
+            'verifyVersionCompat': verifyVersionCompat,
+            'transformBodyOptions': transformBodyOptions,
+            'verifySource': verifySource(this.config.get('jwtSecret')!),
+            'verifyTarget': verifyTarget(this.container),
+            'inflateAgent': inflateAgent(this.container),
+            'proxyRequest': proxyRequest(this.container),
+        } as Record<string, Middleware>
 
-        prehandlers.forEach((prehandler) => {
-            this.app.addHook('preHandler', prehandler)
-        })
+        for (const name in prehandlers) {
+            const handler = prehandlers[name]
+            this.logger.debug('register prehandler %s', name)
+            this.app.addHook('preHandler', (...args) => {
+                this.logger.debug('prehandler %s', name)
+                return handler(...args)
+            })
+        }
     }
 
     setupExtensions(extensions: Extension[]): Extension[] {

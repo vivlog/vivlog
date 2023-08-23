@@ -12,7 +12,7 @@ describe('base64Encode', () => {
     it('should encode an object correctly', () => {
         const input = { key: 'value', num: 42 }
         const encoded = base64Encode(input)
-        assert.strictEqual(encoded, 'eyJrZXkiOiAidmFsdWUiLCAibnVtIjogNDJ9')
+        assert.strictEqual(encoded, 'eyJrZXkiOiJ2YWx1ZSIsIm51bSI6NDJ9')
     })
 })
 
@@ -24,7 +24,7 @@ describe('base64Decode', () => {
     })
 
     it('should decode a base64 object correctly', () => {
-        const encoded = 'eyJrZXkiOiAidmFsdWUiLCAibnVtIjogNDJ9'
+        const encoded = 'eyJrZXkiOiJ2YWx1ZSIsIm51bSI6NDJ9'
         const decoded = base64Decode(encoded)
         assert.deepStrictEqual(decoded, { key: 'value', num: 42 })
     })
