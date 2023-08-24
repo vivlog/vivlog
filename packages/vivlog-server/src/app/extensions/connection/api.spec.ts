@@ -3,7 +3,7 @@ import { describe } from 'mocha'
 import { step } from 'mocha-steps'
 import { ServerHost } from '../../../host/host'
 import { defer, finalize, getNextAvailablePort, removeFile } from '../../../utils/testing'
-import { Roles } from '../../types'
+import { Role } from '../../types'
 import { CombinedSession, createNewSession, createSite } from '../../util/testing'
 import { ConnectionDirections, ConnectionDto, CreateConnectionDto } from './entities'
 
@@ -38,8 +38,8 @@ describe('Connection API', () => {
     })
 
     step('create admin sessions', async () => {
-        sess1 = await createNewSession(host1, false, [Roles.Admin, Roles.Reader])
-        sess2 = await createNewSession(host2, false, [Roles.Admin, Roles.Reader])
+        sess1 = await createNewSession(host1, false, [Role.Admin, Role.Reader])
+        sess2 = await createNewSession(host2, false, [Role.Admin, Role.Reader])
     })
 
     step('create a connection from site1 to site 2', async () => {

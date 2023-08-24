@@ -1,29 +1,35 @@
 import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
-import { Container } from '../../../container'
-import { Logger } from '../../../host/types'
+import { DefaultContainer } from '../../../container'
+import { AgentInfo, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Settings } from '../../types'
 import { SettingService } from '../setting/service'
-import { CreateCommentDto, DeleteCommentDto, Comment, GetCommentsDto, GetCommentDto, UpdateCommentDto } from './entities'
+import { Comment, CreateCommentDto, DeleteCommentDto, GetCommentDto, GetCommentsDto, UpdateCommentDto } from './entities'
 
 export class CommentService {
-    private db: DataSource
-    private logger: Logger
-    private settingService: SettingService
+    public db: DataSource
+    public logger: Logger
+    public settingService: SettingService
     get defaultSite() {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
 
-    constructor(container: Container) {
+    constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
     }
 
-    async createComment(dto: CreateCommentDto) {
+    async createComment(dto: CreateCommentDto, agent: AgentInfo) {
         const comment = this.db.getRepository(Comment).create(dto)
         comment.uuid = randomUUID()
+        comment.site = await this.defaultSite
+        comment.agent = agent
+        comment.resource_site = comment.site
+        // make sure resource with uuid exists
+        const resource = comment.resource_type
+        const resource = await this.db.createQueryBuilder().select(resource).where(`${resource}.uuid = :uuid`, { uuid: comment.resource_uuid }).getOne()
         await this.db.getRepository(Comment).save(comment)
         return comment
     }

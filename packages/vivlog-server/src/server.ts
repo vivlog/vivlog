@@ -5,15 +5,15 @@ import 'reflect-metadata'
 import pino from 'pino'
 
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
-import { DataSource } from 'typeorm'
+import { DataSource, LogLevel } from 'typeorm'
 import { builtinExtensions } from './app/extensions'
 import { ConfigProvider, validateConfig } from './config'
 import { loadRawConfig } from './config/loader'
 import { configKeys, defaultRawConfig } from './config/types'
-import { Container } from './container'
+import { DefaultContainer } from './container'
 import { loadExtensions } from './host/extension'
 import { ServerHost } from './host/host'
-import { Extension, Logger } from './host/types'
+import { Extension, Logger, consoleLogger } from './host/types'
 import { parseBool } from './utils/data'
 
 // set backtrace size
@@ -30,8 +30,9 @@ export function createLogger(config: ConfigProvider): Logger {
             level: config.get('logLevel'),
             sync: true
         })
+    } else {
+        return consoleLogger
     }
-    return console
 }
 
 
@@ -54,14 +55,16 @@ export async function bootstrap() {
         })
         const entities = exts.map(i => i.entities || []).flat()
         console.info('entities', entities)
+        const logQuery = parseBool(config.get('logQuery')) ? ['query', 'error'] : []
+        logger.info('logQuery %o', logQuery)
         const db = new DataSource({
             type: 'sqlite',
             database: config.get('dbPath', 'db.sqlite')!,
             entities,
-            logging: parseBool(config.get('logQuery', 'false')) ? ['query', 'error'] : [],
+            logging: logQuery as LogLevel[],
             synchronize: true
         })
-        const container = new Container()
+        const container = new DefaultContainer()
         const server = new ServerHost(
             exts,
             db,

@@ -44,10 +44,6 @@ export type UserLoginResponse = {
     user: UserDto
 }
 
-export type AppJwtPayload = {
-    sub: string // user id
-}
-
 export const registerSchema = Type.Object({
     username: Type.String(),
     email: Type.String({ format: 'email' }),
@@ -79,10 +75,4 @@ export type IUserDto = {
     site: string
     is_local: boolean
     description?: string
-}
-
-export enum AgentType {
-    User = 'user',
-    ConnectionReader = 'conn_reader',
-    ConnectionRequest = 'conn_req',
 }

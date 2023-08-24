@@ -12,7 +12,8 @@ export class ConfigProvider {
     }
 
     get(key: keyof ConfigType, defaultValue?: ConfigType[keyof ConfigType] | undefined) {
-        return this.config[key] || defaultValue
+        const value = this.config[key]
+        return value !== undefined ? value : defaultValue
     }
 
 }

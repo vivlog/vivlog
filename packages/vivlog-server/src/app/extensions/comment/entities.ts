@@ -1,5 +1,6 @@
 import { Static, Type } from '@sinclair/typebox'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { AgentInfo } from '../../../host/types'
 
 @Entity()
 export class Comment {
@@ -7,10 +8,13 @@ export class Comment {
     id: number
 
     @Column()
-    resource_site: string
+    uuid: string
 
     @Column()
-    uuid: string
+    site: string
+
+    @Column()
+    resource_site: string
 
     @Column()
     resource_uuid: string
@@ -21,14 +25,9 @@ export class Comment {
     @Column()
     content: string
 
-    @Column()
-    guest: boolean // guest or user
+    @Column({ type: 'simple-json', nullable: true })
+    agent?: AgentInfo
 
-    // -- for guest
-    @Column()
-    guest_info?: GuestInfo
-
-    // -- for user
     @Column()
     user_uuid?: string
 
@@ -36,20 +35,14 @@ export class Comment {
     user_site?: string
 }
 
-export interface GuestInfo {
-    name: string
-    email: string
-    website?: string
-}
-
 export type CommentDto = Comment;
 
 const createCommentSchemaObj = {
-    site: Type.Optional(Type.String()),
-    title: Type.Optional(Type.String()),
-    content: Type.Optional(Type.Unknown()),
-    author_uuid: Type.Optional(Type.String()),
-    author_site: Type.Optional(Type.String()),
+    site: Type.String(),
+    resource_site: Type.String(),
+    resource_uuid: Type.String(),
+    resource_type: Type.String(),
+    content: Type.String(),
 }
 
 export const createCommentSchema = Type.Object(createCommentSchemaObj)

@@ -1,9 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Container } from '../container'
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { Payload, Role } from '../app/types'
+import { DefaultContainer } from '../container'
+declare module 'fastify' {
+    interface FastifyRequest {
+        source?: Payload
+        agent?: AgentInfo
+        target?: Target // target site to forward request
+        requestId?: string
+    }
+}
+
+export type Done = (err?: Error) => void
+export type Middleware = (req: FastifyRequest, res: FastifyReply, done: Done) => Promise<void>
 
 export interface Host {
-    container: Container
+    container: DefaultContainer
 }
 
 export type Logger = {
@@ -12,6 +25,16 @@ export type Logger = {
     warn: (...args: any[]) => void
     error: (...args: any[]) => void
     trace: (...args: any[]) => void
+    child: (options: Record<string, unknown>) => Logger
+}
+
+export const consoleLogger: Logger = {
+    debug: console.debug,
+    info: console.info,
+    warn: console.warn,
+    error: console.error,
+    trace: console.trace,
+    child: () => consoleLogger,
 }
 
 export interface Extension {
@@ -26,6 +49,8 @@ export interface Extension {
     onAllDeactivated?: (host: Host) => void
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     entities?: any[]
+    // allow for query entities from other extensions
+    exposedEntities?: string[]
 }
 
 export class BadRequestError extends Error {
@@ -60,28 +85,57 @@ export class NotFoundError extends Error {
     }
 }
 
-export interface AuthedUser {
-    id: string
-    username: string
-    role: string
+export enum AgentType {
+    Guest = 'guest',
+    User = 'user',
+    Site = 'site',
 }
 
-export enum VirtualUserType {
-    guest = 'guest',
-    user = 'user',
-    system = 'system',
-}
-
-export interface VirtualUser {
-    site: string
-    uuid: string
-    is_local: boolean
-    type: keyof typeof VirtualUserType
+export interface AgentInfo {
     email?: string
-    username: string
-    role: string
+    id?: string
+    local: boolean
+    role: `${Role}`
+    site?: string
+    trusted?: boolean // trusted always means the agent is a logged in user from the same site
+    type: `${AgentType}`
+    username?: string
+    uuid?: string
+}
+
+export interface Target {
+    schema: string
+    site: string
+    apiPath: string
+    token: string
+}
+
+export function createTargetBaseUrl(target: Target) {
+    return `${target.schema}://${target.site}${target.apiPath}`
 }
 
 export interface Authenticator {
-    verify(token: string): Promise<AuthedUser | null>
+    verify(token: string): Promise<AgentInfo | null>
 }
+
+export const exHeaderPrefix = 'x-vivlog'
+
+export enum ExHeaders {
+    Token = `${exHeaderPrefix}-token`,
+    Version = `${exHeaderPrefix}-version`,
+    RequestId = `${exHeaderPrefix}-request-id`,
+    ForwardedRequestId = `${exHeaderPrefix}-forwarded-request-id`,
+    TargetSite = `${exHeaderPrefix}-target-site`,
+    ForwardedTargetSite = `${exHeaderPrefix}-forwarded-target-site`,
+    Guest = `${exHeaderPrefix}-guest`,
+    ForwardedGuest = `${exHeaderPrefix}-forwarded-guest`,
+}
+
+export const exHeadersMap = (() => {
+    const map = new Map<string, ExHeaders>()
+    for (const key in ExHeaders) {
+        const value = ExHeaders[key as keyof typeof ExHeaders]
+        map.set(key, value)
+    }
+    return map
+})()

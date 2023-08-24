@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export class Container {
+export class DefaultContainer {
     items: Map<any, any>
 
     constructor() {
@@ -24,4 +24,9 @@ export class Container {
         }
         return r as T
     }
+}
+
+export interface Container {
+    register<T>(token: string, item: T): void
+    resolve<T>(key: any): T
 }

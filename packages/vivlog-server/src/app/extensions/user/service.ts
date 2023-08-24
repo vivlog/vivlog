@@ -3,26 +3,26 @@ import { randomUUID } from 'crypto'
 import * as jwt from 'jsonwebtoken'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../../../config'
-import { Container } from '../../../container'
+import { DefaultContainer } from '../../../container'
 import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
-import { Roles } from '../../types'
+import { PayloadBuilder, Role } from '../../types'
 import { gravatarFromEmail } from '../../util/gravatar'
-import { AgentType, AppJwtPayload, LoginDto, UserLoginResponse as LoginRes, RegisterDto, UpdateUserDto, User, UserDto } from './entities'
+import { LoginDto, UserLoginResponse as LoginRes, RegisterDto, UpdateUserDto, User, UserDto } from './entities'
 
 
 export class UserService {
-    private db: DataSource
-    private logger: Logger
-    private config: ConfigProvider
-    constructor(container: Container) {
+    public db: DataSource
+    public logger: Logger
+    public config: ConfigProvider
+    constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'config', () => container.resolve('config') as ConfigProvider)
     }
 
     signJwt(userId: User['id']) {
-        return jwt.sign({ sub: userId.toString(), type: AgentType.User } as AppJwtPayload, this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
+        return jwt.sign(PayloadBuilder.ofUser(userId), this.config.get('jwtSecret', 'secret')!, { expiresIn: '1h' })
     }
     async createUser(userData: RegisterDto) {
         // hash password
@@ -38,9 +38,9 @@ export class UserService {
         // if first user, set as admin
         const userCount = await this.db.manager.count(User)
         if (userCount === 0) {
-            user.role = Roles.Admin
+            user.role = Role.Admin
         } else {
-            user.role = Roles.Reader
+            user.role = Role.Reader
         }
 
         return this.db.manager.save(user)

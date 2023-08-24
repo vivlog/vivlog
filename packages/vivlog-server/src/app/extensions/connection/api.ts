@@ -1,7 +1,7 @@
 import { Host } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { RouteHelper } from '../../helper/route_helper'
-import { Roles, Settings } from '../../types'
+import { Role, Settings } from '../../types'
 import { SettingService } from '../setting/service'
 import { CreateConnectionDto, RequestConnectionDto, ValidateConnectionRequestDto, createConnectionSchema, deleteConnectionSchema, getConnectionSchema, getConnectionsSchema, requestConnectionSchema, validateConnectionRequestSchema } from './entities'
 import { ConnectionService } from './service'
@@ -30,7 +30,7 @@ export function createConnectionApi(host: Host) {
         return (await settingService.getItem(index))?.value ?? ''
     })
 
-    routes.new().minRole(Roles.Admin).handle(module_, 'createConnection', createConnectionSchema, async (req) => {
+    routes.new().minRole(Role.Admin).handle(module_, 'createConnection', createConnectionSchema, async (req) => {
         const dto = req.body! as CreateConnectionDto
         if (!dto.options) {
             dto.options = {}
@@ -45,7 +45,7 @@ export function createConnectionApi(host: Host) {
     //     return await connectionService.updateConnection(req.body!)
     // })
 
-    routes.new().minRole(Roles.Admin).handle(module_, 'deleteConnection', deleteConnectionSchema, async (req) => {
+    routes.new().minRole(Role.Admin).handle(module_, 'deleteConnection', deleteConnectionSchema, async (req) => {
         return await connectionService.deleteConnection(req.body!)
     })
 

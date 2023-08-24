@@ -5,7 +5,7 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { inject } from '../../../utils/testing'
-import { Roles } from '../../types'
+import { Role } from '../../types'
 import { CombinedSession, createNewSession } from '../../util/testing'
 import { Setting } from './entities'
 
@@ -38,7 +38,7 @@ describe('Settings API', () => {
         })
 
         step('create a new admin session', async () => {
-            sess = await createNewSession(host, false, [Roles.Admin])
+            sess = await createNewSession(host, false, [Role.Admin])
         })
 
         step('get initialized item', async () => {
@@ -68,7 +68,7 @@ describe('Settings API', () => {
         })
 
         step('create a new admin session', async () => {
-            sess = await createNewSession(host, true, [Roles.Admin])
+            sess = await createNewSession(host, true, [Role.Admin])
         })
 
         step('get items from settings', async () => {

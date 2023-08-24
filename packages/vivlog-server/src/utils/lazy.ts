@@ -4,8 +4,8 @@
  * @param key  the name of the property
  * @param initializer  the function that initializes the property
  */
-export function lazy<T>(target: unknown, key: string, initializer: () => T): void {
-    let value: T
+export function lazy<TVal, TTar>(target: TTar, key: keyof typeof target, initializer: () => TVal): void {
+    let value: TVal
 
     Object.defineProperty(target, key, {
         get() {

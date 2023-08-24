@@ -2,7 +2,7 @@ import { assert } from 'console'
 import { Host } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { RouteHelper } from '../../helper/route_helper'
-import { Roles, Settings } from '../../types'
+import { Role, Settings } from '../../types'
 import { SettingService } from '../setting/service'
 import { UserService } from '../user/service'
 import { CreateExampleDto, createExampleSchema, deleteExampleSchema, getExampleSchema, getExamplesSchema, updateExampleSchema } from './entities'
@@ -24,10 +24,10 @@ export function createExampleApi(host: Host) {
         return (await settingService.getItem(index))?.value ?? ''
     })
 
-    routes.new().minRole(Roles.Author).handle('example', 'createExample', createExampleSchema, async (req) => {
+    routes.new().minRole(Role.Author).handle('example', 'createExample', createExampleSchema, async (req) => {
         const dto = req.body! as CreateExampleDto
-        assert(req.user?.id, 'user id is not defined')
-        const user = await userService.getUser({ id: parseInt(req.user!.id) })
+        assert(req.visitor?.id, 'user id is not defined')
+        const user = await userService.getUser({ id: parseInt(req.visitor!.id) })
         assert(user !== null)
         dto.site = await cachedValues['site'] as string
         assert(dto.site)
@@ -37,11 +37,11 @@ export function createExampleApi(host: Host) {
         return await exampleService.createExample(dto)
     })
 
-    routes.new().minRole(Roles.Author).handle('example', 'updateExample', updateExampleSchema, async (req) => {
+    routes.new().minRole(Role.Author).handle('example', 'updateExample', updateExampleSchema, async (req) => {
         return await exampleService.updateExample(req.body!)
     })
 
-    routes.new().minRole(Roles.Author).handle('example', 'deleteExample', deleteExampleSchema, async (req) => {
+    routes.new().minRole(Role.Author).handle('example', 'deleteExample', deleteExampleSchema, async (req) => {
         return await exampleService.deleteExample(req.body!)
     })
 

@@ -8,8 +8,15 @@ import { JwtAuthenticator } from '../app/extensions/user/authenticator'
 import { RouteHelper } from '../app/helper/route_helper'
 import { rolePriorities } from '../app/types'
 import { ConfigProvider } from '../config'
-import { Container } from '../container'
-import { Extension, Host, Logger } from './types'
+import { DefaultContainer } from '../container'
+import { transformBodyOptions } from '../middlewares/handle_body_options'
+import { handleRequestId } from '../middlewares/handle_request_id'
+import { inflateAgent } from '../middlewares/inflate_agent'
+import { proxyRequest } from '../middlewares/proxy_request'
+import { verifySource } from '../middlewares/verify_source'
+import { verifyTarget } from '../middlewares/verify_target'
+import { verifyVersionCompat } from '../middlewares/verify_version_compat'
+import { Extension, Host, Logger, Middleware } from './types'
 
 export type RpcRequest<T extends TSchema> = FastifyRequest<{
     Body?: Static<T>
@@ -26,7 +33,7 @@ export class ServerHost implements Host {
         public app: FastifyInstance,
         public logger: Logger,
         public config: ConfigProvider,
-        public container: Container
+        public container: DefaultContainer
     ) {
 
         this.container.register('host', this)
@@ -45,6 +52,7 @@ export class ServerHost implements Host {
         this.app.post(`${this.sitePath}${this.apiPath}/status/ready`, (_req, _res) => {
             return { data: true }
         })
+        this.setupPrehandlers()
 
         // access log
         this.app.addHook('onRequest', (request, reply, done) => {
@@ -57,6 +65,27 @@ export class ServerHost implements Host {
             }
             reply.send(error)
         })
+    }
+
+    private setupPrehandlers() {
+        const prehandlers = {
+            'handleRequestId': handleRequestId,
+            'verifyVersionCompat': verifyVersionCompat,
+            'transformBodyOptions': transformBodyOptions,
+            'verifySource': verifySource(this.config.get('jwtSecret')!),
+            'verifyTarget': verifyTarget(this.container),
+            'inflateAgent': inflateAgent(this.container),
+            'proxyRequest': proxyRequest(this.container),
+        } as Record<string, Middleware>
+
+        for (const name in prehandlers) {
+            const handler = prehandlers[name]
+            this.logger.debug('register prehandler %s', name)
+            this.app.addHook('preHandler', (...args) => {
+                this.logger.child({ requestId: args[0].requestId }).debug('prehandler %s', name)
+                return handler(...args)
+            })
+        }
     }
 
     setupExtensions(extensions: Extension[]): Extension[] {

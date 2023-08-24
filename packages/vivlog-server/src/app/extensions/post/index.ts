@@ -24,11 +24,13 @@ const meta = {
 }
 
 const entities = [Post]
+const exposedEntities = ['post']
 
 export default {
     onActivate,
     onAllActivated,
     entities,
+    exposedEntities,
     meta
 } as Extension
 

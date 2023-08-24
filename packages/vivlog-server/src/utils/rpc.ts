@@ -15,7 +15,7 @@ export function rpc(baseUrl: string, https?: boolean) {
         } as Record<string, string>
 
         if (token) {
-            headers['Authorization'] = `Bearer ${token}`
+            headers['authorization'] = `Bearer ${token}`
         }
         const response = await fetch(url, {
             method: 'POST',
