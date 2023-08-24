@@ -1,3 +1,4 @@
+import { ConnectionDirections } from '../app/extensions/connection/entities'
 import { ConnectionService } from '../app/extensions/connection/service'
 import { DefaultContainer } from '../container'
 import { BadRequestError, ExHeaders, Middleware } from '../host/types'
@@ -25,6 +26,10 @@ export const verifyTarget: (container: DefaultContainer) => Middleware = (contai
 
         if (!connection) {
             throw new BadRequestError('connection not found')
+        }
+
+        if (connection.direction === ConnectionDirections.Incoming) {
+            throw new BadRequestError('connection is incoming, cannot be used as target')
         }
 
         req.target = {

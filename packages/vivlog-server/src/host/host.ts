@@ -82,7 +82,7 @@ export class ServerHost implements Host {
             const handler = prehandlers[name]
             this.logger.debug('register prehandler %s', name)
             this.app.addHook('preHandler', (...args) => {
-                this.logger.debug('prehandler %s', name)
+                this.logger.child({ requestId: args[0].requestId }).debug('prehandler %s', name)
                 return handler(...args)
             })
         }

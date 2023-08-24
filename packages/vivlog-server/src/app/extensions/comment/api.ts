@@ -1,4 +1,3 @@
-import { assert } from 'console'
 import { ForbiddenError, Host } from '../../../host/types'
 import { RouteHelper } from '../../helper/route_helper'
 import { Role, Settings } from '../../types'
@@ -16,20 +15,12 @@ export function createCommentApi(host: Host) {
     const routes = host.container.resolve('routes') as RouteHelper
 
     routes.new().minRole(Role.Author).handle('comment', 'createComment', createCommentSchema, async (req) => {
-        const site = await settingService.getValueOrDefault(Settings.System._group, Settings.System.site, '')
-        const allowGuest = await settingService.getValueOrDefault(Settings.Comment._group, Settings.Comment.allow_guest, false)
+        // const allowGuest = await settingService.getValueOrDefault(Settings.Comment._group, Settings.Comment.allow_guest, false)
         const dto = req.body! as CreateCommentDto
-        if (req.visitor === undefined && !allowGuest) {
+        if (req.agent === undefined) {
             throw new ForbiddenError('Guest comment is not allowed')
         }
-        const user = await userService.getUser({ id: parseInt(req.visitor!.id) })
-        assert(user !== null)
-        dto.site = site as string
-        assert(dto.site)
-        dto.author_site = site as string
-        assert(dto.author_site)
-        dto.author_uuid = user!.uuid
-        return await commentService.createComment(dto)
+        return await commentService.createComment(dto, req.agent)
     })
 
     routes.new().minRole(Role.Author).handle('comment', 'updateComment', updateCommentSchema, async (req) => {

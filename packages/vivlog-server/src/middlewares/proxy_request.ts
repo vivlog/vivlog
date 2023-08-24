@@ -4,10 +4,12 @@ import { Logger, Middleware, createTargetBaseUrl } from '../host/types'
 import { removePrefix } from '../utils/data'
 import { removeHostFromUrl, rpcRaw } from '../utils/network'
 
-export const proxyRequest: (container: Container) => Middleware = (container: Container) => {
+export type ProxyRequestType = (container: Container, rpcFn?: typeof rpcRaw) => Middleware
+
+export const proxyRequest: ProxyRequestType = (container, rpcFn) => {
     const logger = container.resolve('logger') as Logger
     const config = container.resolve('config') as ConfigProvider
-
+    const rpc = rpcFn ?? rpcRaw
     return async (req, res) => {
         if (!req.target) {
             return
@@ -23,7 +25,7 @@ export const proxyRequest: (container: Container) => Middleware = (container: Co
         const module_ = apiUrl.split('/', 2)[1]
         // createPost?p1=1&p2=2
         const action = apiUrl.substring(module_.length + 1)
-        const request = rpcRaw(baseUrl)
+        const request = rpc(baseUrl)
         logger.debug('proxyRequest %s %s %s', req.target, module_, action)
         const response = await request(module_, action, req.body, {
             headers: {

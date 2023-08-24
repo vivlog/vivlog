@@ -8,11 +8,12 @@ declare module 'fastify' {
         source?: Payload
         agent?: AgentInfo
         target?: Target // target site to forward request
+        requestId?: string
     }
 }
 
 export type Done = (err?: Error) => void
-export type Middleware = (req: FastifyRequest, res: FastifyReply, done: Done) => void
+export type Middleware = (req: FastifyRequest, res: FastifyReply, done: Done) => Promise<void>
 
 export interface Host {
     container: DefaultContainer
@@ -48,6 +49,8 @@ export interface Extension {
     onAllDeactivated?: (host: Host) => void
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     entities?: any[]
+    // allow for query entities from other extensions
+    exposedEntities?: string[]
 }
 
 export class BadRequestError extends Error {
@@ -94,7 +97,7 @@ export interface AgentInfo {
     local: boolean
     role: `${Role}`
     site?: string
-    trusted?: boolean
+    trusted?: boolean // trusted always means the agent is a logged in user from the same site
     type: `${AgentType}`
     username?: string
     uuid?: string

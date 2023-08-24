@@ -8,13 +8,13 @@ export class Comment {
     id: number
 
     @Column()
-    resource_site: string
-
-    @Column()
     uuid: string
 
     @Column()
     site: string
+
+    @Column()
+    resource_site: string
 
     @Column()
     resource_uuid: string
@@ -25,11 +25,9 @@ export class Comment {
     @Column()
     content: string
 
-    // -- for guest
     @Column({ type: 'simple-json', nullable: true })
     agent?: AgentInfo
 
-    // -- for user
     @Column()
     user_uuid?: string
 
@@ -40,11 +38,11 @@ export class Comment {
 export type CommentDto = Comment;
 
 const createCommentSchemaObj = {
-    site: Type.Optional(Type.String()),
-    title: Type.Optional(Type.String()),
-    content: Type.Optional(Type.Unknown()),
-    author_uuid: Type.Optional(Type.String()),
-    author_site: Type.Optional(Type.String()),
+    site: Type.String(),
+    resource_site: Type.String(),
+    resource_uuid: Type.String(),
+    resource_type: Type.String(),
+    content: Type.String(),
 }
 
 export const createCommentSchema = Type.Object(createCommentSchemaObj)

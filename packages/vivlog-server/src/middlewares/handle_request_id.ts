@@ -6,6 +6,7 @@ export const handleRequestId: Middleware = async (req, res) => {
   const requestId = req.headers['x-vivlog-request-id']
   if (requestId && typeof requestId === 'string' && re.test(requestId)) {
     res.header('x-vivlog-request-id', requestId)
+    req.requestId = requestId
   }
 
   const forwardedRequestId = req.headers['x-forwarded-request-id']

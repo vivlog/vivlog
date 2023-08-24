@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
 import { DefaultContainer } from '../../../container'
-import { Logger } from '../../../host/types'
+import { AgentInfo, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Settings } from '../../types'
 import { SettingService } from '../setting/service'
@@ -21,9 +21,15 @@ export class CommentService {
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
     }
 
-    async createComment(dto: CreateCommentDto) {
+    async createComment(dto: CreateCommentDto, agent: AgentInfo) {
         const comment = this.db.getRepository(Comment).create(dto)
         comment.uuid = randomUUID()
+        comment.site = await this.defaultSite
+        comment.agent = agent
+        comment.resource_site = comment.site
+        // make sure resource with uuid exists
+        const resource = comment.resource_type
+        const resource = await this.db.createQueryBuilder().select(resource).where(`${resource}.uuid = :uuid`, { uuid: comment.resource_uuid }).getOne()
         await this.db.getRepository(Comment).save(comment)
         return comment
     }
