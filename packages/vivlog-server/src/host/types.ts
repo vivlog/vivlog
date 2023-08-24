@@ -50,7 +50,6 @@ export interface Extension {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     entities?: any[]
     // allow for query entities from other extensions
-    exposedEntities?: string[]
 }
 
 export class BadRequestError extends Error {

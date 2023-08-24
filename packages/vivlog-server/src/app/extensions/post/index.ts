@@ -5,6 +5,7 @@ import { PostService } from './service'
 
 function onActivate(host: Host) {
     host.container.register(PostService.name, new PostService(host.container))
+    host.container.resolve<string[]>('commentable_entities').push('post')
 }
 
 function onAllActivated(host: Host) {
@@ -24,13 +25,11 @@ const meta = {
 }
 
 const entities = [Post]
-const exposedEntities = ['post']
 
 export default {
     onActivate,
     onAllActivated,
     entities,
-    exposedEntities,
     meta
 } as Extension
 
