@@ -3,7 +3,10 @@ import { loremIpsum } from 'lorem-ipsum'
 import { describe } from 'mocha'
 import { step } from 'mocha-steps'
 import { ServerHost } from '../../../host/host'
-import { defer, finalize, getNextAvailablePort, removeFile } from '../../../utils/testing'
+import { ExHeaders } from '../../../host/types'
+import { base64Encode } from '../../../utils/data'
+import { rpcRaw } from '../../../utils/network'
+import { defer, finalize, getNextAvailablePort, removeFile, sleep } from '../../../utils/testing'
 import { Role } from '../../types'
 import { CombinedSession, createNewSession, createSite } from '../../util/testing'
 import { CreateConnectionDto } from '../connection/entities'
@@ -15,6 +18,7 @@ describe('Post + Connection + Comment API', () => {
     let siteName1: string, siteName2: string
     let host1: ServerHost, host2: ServerHost
     let sess1: CombinedSession, sess2: CombinedSession
+    let token1to2: string, token2to1: string
     const N = 5
 
     before(async () => {
@@ -50,6 +54,17 @@ describe('Post + Connection + Comment API', () => {
         } as CreateConnectionDto)
 
         assert.strictEqual(crRet.statusCode, 200, crRet.body)
+        const jsonRet = crRet.json()
+        token1to2 = jsonRet.data.token
+
+        const ret = await sess2.injectAs(Role.Admin, 'connection', 'getConnections', {})
+        assert.strictEqual(ret.statusCode, 200, ret.body)
+        const data = ret.json()
+        assert.strictEqual(data.data.connections.length, 1)
+
+        const conn = data.data.connections[0]
+        assert.strictEqual(conn.remote_site, siteName1)
+        token2to1 = conn.token
     })
     let site1Posts: Resource[]
     let site2Posts: Resource[]
@@ -108,17 +123,28 @@ describe('Post + Connection + Comment API', () => {
     })
 
     step('on site1, create comments on posts from site2', async () => {
+        const request = rpcRaw(`${siteName1}/api`)
         for (const post of site2Posts) {
-            const res = await sess1.inject('comment', 'createComment', {
+            const res = await request('comment', 'createComment', {
                 resource: {
                     type: 'post',
                     uuid: post.uuid,
                     site: post.site
                 },
                 content: loremIpsum({ count: 1, units: 'paragraphs' })
+            }, {
+                token: token2to1,
+                headers: {
+                    [ExHeaders.Guest]: base64Encode({
+                        email: 'guest@example.com',
+                        name: 'guest11',
+                        site: 'example.com/guest'
+                    })
+                }
             })
-            assert.strictEqual(res.statusCode, 200, res.body)
+            assert.strictEqual(res.status, 200, await res.json())
         }
+        await sleep(20000)
     })
 
     // step('browsePosts on site1, expect 2*N posts', async () => {

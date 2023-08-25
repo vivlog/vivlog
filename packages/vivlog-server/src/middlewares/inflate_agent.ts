@@ -1,11 +1,12 @@
+import { SettingService } from '../app/extensions/setting/service'
 import { UserService } from '../app/extensions/user/service'
-import { GuestInfo, Role, SourceType, ajv, guestInfoValidator, roleList } from '../app/types'
+import { GuestInfo, Role, Settings, SourceType, ajv, guestInfoValidator, roleList } from '../app/types'
 import { Container } from '../container'
 import { AgentInfo, AgentType, BadRequestError, ExHeaders, Middleware, UnauthorizedError } from '../host/types'
 import { base64Decode } from '../utils/data'
 
-export const inflateAgent: (container: Container) => Middleware = (container: Container) => {
-    const userAgentInflatorInstance = userAgentInflator(container)
+export const inflateAgent: (container: Container) => Promise<Middleware> = async (container: Container) => {
+    const userAgentInflatorInstance = await userAgentInflator(container)
     return async (...args) => {
         const inflators = [userAgentInflatorInstance, siteAgentInflator, guestAgentInflator]
         for (const inflator of inflators) {
@@ -14,10 +15,11 @@ export const inflateAgent: (container: Container) => Middleware = (container: Co
     }
 }
 
-export const userAgentInflator: (container: Container) => Middleware = (container: Container) => {
+export const userAgentInflator: (container: Container) => Promise<Middleware> = async (container: Container) => {
 
     const userService = container.resolve(UserService.name) as UserService
-
+    const settingService = container.resolve(SettingService.name) as SettingService
+    const site = await settingService.getValue<string>(Settings.System._group, Settings.System.site)
     return async (req) => {
         if (!req.source) {
             return
@@ -50,6 +52,7 @@ export const userAgentInflator: (container: Container) => Middleware = (containe
             email: user.email,
             username: user.username,
             role: user.role as Role,
+            site,
         }
 
         req.agent = agent

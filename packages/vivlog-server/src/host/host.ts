@@ -67,14 +67,14 @@ export class ServerHost implements Host {
         })
     }
 
-    private setupPrehandlers() {
+    private async setupPrehandlers() {
         const prehandlers = {
             'handleRequestId': handleRequestId,
             'verifyVersionCompat': verifyVersionCompat,
             'transformBodyOptions': transformBodyOptions,
             'verifySource': verifySource(this.config.get('jwtSecret')!),
             'verifyTarget': verifyTarget(this.container),
-            'inflateAgent': inflateAgent(this.container),
+            'inflateAgent': await inflateAgent(this.container),
             'proxyRequest': proxyRequest(this.container),
         } as Record<string, Middleware>
 
