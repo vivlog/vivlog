@@ -5,10 +5,10 @@ import { PostService } from './service'
 
 function onActivate(host: Host) {
     host.container.register(PostService.name, new PostService(host.container))
-    host.container.resolve<string[]>('commentable_entities').push('post')
 }
 
 function onAllActivated(host: Host) {
+    host.container.resolve<string[]>('commentableEntities').push('post')
     const logger = host.container.resolve('logger') as Logger
     createPostApi(host)
     logger.info('Post module activated')
