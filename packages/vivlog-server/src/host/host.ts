@@ -43,8 +43,11 @@ export class ServerHost implements Host {
         this.container.register('logger', this.logger)
         this.container.register('config', this.config)
         this.container.register('authenticator', new JwtAuthenticator(this))
+        this.extensions = extensions
+    }
 
-        this.extensions = this.setupExtensions(extensions)
+    public async setup() {
+        this.setupExtensions(this.extensions)
         this.sitePath = this.config.get('sitePath')!
         this.apiPath = this.config.get('apiPath')!
         this.logger.info('sitePath: %s', this.sitePath)
@@ -67,14 +70,14 @@ export class ServerHost implements Host {
         })
     }
 
-    private async setupPrehandlers() {
+    private setupPrehandlers() {
         const prehandlers = {
             'handleRequestId': handleRequestId,
             'verifyVersionCompat': verifyVersionCompat,
             'transformBodyOptions': transformBodyOptions,
             'verifySource': verifySource(this.config.get('jwtSecret')!),
             'verifyTarget': verifyTarget(this.container),
-            'inflateAgent': await inflateAgent(this.container),
+            'inflateAgent': inflateAgent(this.container),
             'proxyRequest': proxyRequest(this.container),
         } as Record<string, Middleware>
 

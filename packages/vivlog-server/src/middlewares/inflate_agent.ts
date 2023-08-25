@@ -4,9 +4,10 @@ import { GuestInfo, Role, Settings, SourceType, ajv, guestInfoValidator, roleLis
 import { Container } from '../container'
 import { AgentInfo, AgentType, BadRequestError, ExHeaders, Middleware, UnauthorizedError } from '../host/types'
 import { base64Decode } from '../utils/data'
+import { lazy } from '../utils/lazy'
 
-export const inflateAgent: (container: Container) => Promise<Middleware> = async (container: Container) => {
-    const userAgentInflatorInstance = await userAgentInflator(container)
+export const inflateAgent: (container: Container) => Middleware = (container: Container) => {
+    const userAgentInflatorInstance = userAgentInflator(container)
     return async (...args) => {
         const inflators = [userAgentInflatorInstance, siteAgentInflator, guestAgentInflator]
         for (const inflator of inflators) {
@@ -15,11 +16,16 @@ export const inflateAgent: (container: Container) => Promise<Middleware> = async
     }
 }
 
-export const userAgentInflator: (container: Container) => Promise<Middleware> = async (container: Container) => {
+export const userAgentInflator: (container: Container) => Middleware = (container: Container) => {
 
     const userService = container.resolve(UserService.name) as UserService
     const settingService = container.resolve(SettingService.name) as SettingService
-    const site = await settingService.getValue<string>(Settings.System._group, Settings.System.site)
+    // const site = await settingService.getValue<string>(Settings.System._group, Settings.System.site)
+    const cachedValues = {
+        site: undefined as string | undefined,
+    }
+    lazy(cachedValues, 'site', async () => await settingService.getValue<string>(Settings.System._group, Settings.System.site))
+
     return async (req) => {
         if (!req.source) {
             return
@@ -52,7 +58,7 @@ export const userAgentInflator: (container: Container) => Promise<Middleware> = 
             email: user.email,
             username: user.username,
             role: user.role as Role,
-            site,
+            site: cachedValues.site,
         }
 
         req.agent = agent

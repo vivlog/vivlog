@@ -6,7 +6,7 @@ import { ServerHost } from '../../../host/host'
 import { ExHeaders } from '../../../host/types'
 import { base64Encode } from '../../../utils/data'
 import { rpcRaw } from '../../../utils/network'
-import { defer, finalize, getNextAvailablePort, removeFile, sleep } from '../../../utils/testing'
+import { defer, finalize, getNextAvailablePort, removeFile } from '../../../utils/testing'
 import { Role } from '../../types'
 import { CombinedSession, createNewSession, createSite } from '../../util/testing'
 import { CreateConnectionDto } from '../connection/entities'
@@ -144,7 +144,30 @@ describe('Post + Connection + Comment API', () => {
             })
             assert.strictEqual(res.status, 200, await res.json())
         }
-        await sleep(20000)
+    })
+
+    step('on site2, create comments on posts from site1', async () => {
+        const request = rpcRaw(`${siteName1}/api`)
+        for (const post of site1Posts) {
+            const res = await request('comment', 'createComment', {
+                resource: {
+                    type: 'post',
+                    uuid: post.uuid,
+                    site: post.site
+                },
+                content: loremIpsum({ count: 1, units: 'paragraphs' })
+            }, {
+                token: token1to2,
+                headers: {
+                    [ExHeaders.Guest]: base64Encode({
+                        email: 'guest@example.com',
+                        name: 'guest11',
+                        site: 'example.com/guest'
+                    })
+                }
+            })
+            assert.strictEqual(res.status, 200, await res.json())
+        }
     })
 
     // step('browsePosts on site1, expect 2*N posts', async () => {

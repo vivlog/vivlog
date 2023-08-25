@@ -73,6 +73,7 @@ export async function bootstrap() {
             config,
             container
         )
+        await server.setup()
         await server.start()
         return server
     } catch (e) {

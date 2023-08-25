@@ -23,7 +23,7 @@ describe('userAgentInflator', () => {
         })
 
         const container = { resolve: sinon.stub().returns(userService), register: sinon.stub() }
-        const middleware = await userAgentInflator(container)
+        const middleware = userAgentInflator(container)
 
         const req = {
             source: { type: SourceType.User, sub: '1' },
