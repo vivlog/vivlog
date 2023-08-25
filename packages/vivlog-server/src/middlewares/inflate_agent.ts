@@ -58,7 +58,7 @@ export const userAgentInflator: (container: Container) => Middleware = (containe
             email: user.email,
             username: user.username,
             role: user.role as Role,
-            site: cachedValues.site,
+            site: await cachedValues.site,
         }
 
         req.agent = agent
