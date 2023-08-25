@@ -8,6 +8,7 @@ function onActivate(host: Host) {
 }
 
 function onAllActivated(host: Host) {
+    host.container.resolve<string[]>('commentableEntities').push('post')
     const logger = host.container.resolve('logger') as Logger
     createPostApi(host)
     logger.info('Post module activated')
@@ -24,13 +25,11 @@ const meta = {
 }
 
 const entities = [Post]
-const exposedEntities = ['post']
 
 export default {
     onActivate,
     onAllActivated,
     entities,
-    exposedEntities,
     meta
 } as Extension
 

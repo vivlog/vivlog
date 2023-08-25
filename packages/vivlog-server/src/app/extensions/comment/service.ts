@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
 import { DefaultContainer } from '../../../container'
-import { AgentInfo, Logger } from '../../../host/types'
+import { AgentInfo, BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Settings } from '../../types'
 import { SettingService } from '../setting/service'
@@ -11,6 +11,7 @@ export class CommentService {
     public db: DataSource
     public logger: Logger
     public settingService: SettingService
+    public commentableEntities: string[]
     get defaultSite() {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
@@ -19,17 +20,32 @@ export class CommentService {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
+        lazy(this, 'commentableEntities', () => container.resolve<string[]>('commentableEntities'))
     }
 
     async createComment(dto: CreateCommentDto, agent: AgentInfo) {
         const comment = this.db.getRepository(Comment).create(dto)
         comment.uuid = randomUUID()
         comment.site = await this.defaultSite
+        comment.resource_site = dto.resource.site
+        comment.resource_type = dto.resource.type
+        comment.resource_uuid = dto.resource.uuid
+        comment.content = dto.content
         comment.agent = agent
-        comment.resource_site = comment.site
+        comment.user_uuid = agent.uuid
+        comment.user_site = agent.site
+        if (!this.commentableEntities.includes(comment.resource_type)) {
+            throw new BadRequestError('Resource type not supported')
+        }
         // make sure resource with uuid exists
-        const resource = comment.resource_type
-        const resource = await this.db.createQueryBuilder().select(resource).where(`${resource}.uuid = :uuid`, { uuid: comment.resource_uuid }).getOne()
+        const resource = await this.db.createQueryBuilder()
+            .select(comment.resource_type)
+            .from(comment.resource_type, comment.resource_type)
+            .where('uuid = :uuid', { uuid: comment.resource_uuid })
+            .getRawOne()
+        if (!resource) {
+            throw new BadRequestError('Resource with given uuid not found')
+        }
         await this.db.getRepository(Comment).save(comment)
         return comment
     }
@@ -39,7 +55,7 @@ export class CommentService {
         if (!comment) {
             throw new Error('Comment not found')
         }
-        return this.getComment({ site: dto.site ?? await this.defaultSite, uuid: dto.uuid })
+        return this.getComment({ site: dto.resource.site ?? await this.defaultSite, uuid: dto.uuid })
     }
 
     async deleteComment(dto: DeleteCommentDto) {

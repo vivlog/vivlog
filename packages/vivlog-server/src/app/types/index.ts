@@ -44,10 +44,12 @@ export enum Role {
 export const roleList = Object.values(Role)
 
 export const rolePriorities = {
-    [Role.Admin]: 4,
-    [Role.Editor]: 3,
-    [Role.Author]: 2,
-    [Role.Reader]: 1,
+    [Role.Admin]: 5,
+    [Role.Editor]: 4,
+    [Role.Author]: 3,
+    [Role.Reader]: 2,
+    [Role.Agent]: 1,
+    [Role.Guest]: 0,
 }
 
 export const Settings = {

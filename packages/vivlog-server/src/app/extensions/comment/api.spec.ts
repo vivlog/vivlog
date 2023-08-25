@@ -10,7 +10,7 @@ import { CreateConnectionDto } from '../connection/entities'
 import { PostTypeEnum } from '../post/entities'
 import { Resource } from './entities'
 
-describe.skip('Post + Connection + Comment API', () => {
+describe('Post + Connection + Comment API', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let siteName1: string, siteName2: string
     let host1: ServerHost, host2: ServerHost

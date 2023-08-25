@@ -28,20 +28,21 @@ export class Comment {
     @Column({ type: 'simple-json', nullable: true })
     agent?: AgentInfo
 
-    @Column()
+    @Column({ nullable: true})
     user_uuid?: string
 
-    @Column()
+    @Column({ nullable: true})
     user_site?: string
 }
 
 export type CommentDto = Comment;
 
 const createCommentSchemaObj = {
-    site: Type.String(),
-    resource_site: Type.String(),
-    resource_uuid: Type.String(),
-    resource_type: Type.String(),
+    resource: Type.Object({
+        site: Type.String(),
+        uuid: Type.String(),
+        type: Type.String(),
+    }),
     content: Type.String(),
 }
 
