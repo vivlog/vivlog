@@ -13,8 +13,8 @@ import {
 
 describe('userAgentInflator', () => {
     it('should set req.agent for user source type', async () => {
-        const userService = { getUser: sinon.stub() }
-        userService.getUser.resolves({
+        const service = { getUser: sinon.stub(), getValue: sinon.stub() }
+        service.getUser.resolves({
             id: 1,
             role: Role.Reader,
             uuid: 'user-uuid',
@@ -22,7 +22,9 @@ describe('userAgentInflator', () => {
             username: 'user123',
         })
 
-        const container = { resolve: sinon.stub().returns(userService), register: sinon.stub() }
+        service.getValue.resolves('site-id')
+
+        const container = { resolve: sinon.stub().returns(service), register: sinon.stub() }
         const middleware = userAgentInflator(container)
 
         const req = {
@@ -41,6 +43,7 @@ describe('userAgentInflator', () => {
             email: 'user@example.com',
             username: 'user123',
             role: Role.Reader,
+            site: 'site-id',
         })
     })
 
