@@ -48,16 +48,16 @@ export function removeFile(path: string) {
 
 const finalizeStack: (() => void)[] = []
 
-export function defer<T>(resource: T, finalizer: (v: T) => void) {
-    finalizeStack.push(() => finalizer(resource))
+export function defer<T>(resource: T, finalizer: (v: T) => void, stack: (() => void)[] = finalizeStack) {
+    stack.push(() => finalizer(resource))
     return resource
 }
 
-export async function finalize() {
+export async function finalize(stack: (() => void)[] = finalizeStack) {
     console.log('finalize')
 
-    while (finalizeStack.length > 0) {
-        const finalizer = finalizeStack.pop()
+    while (stack.length > 0) {
+        const finalizer = stack.pop()
         if (!finalizer) {
             continue
         }

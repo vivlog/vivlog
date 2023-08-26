@@ -29,7 +29,7 @@ const seed = (async (opts: Options) => {
         sitePath: ''
     })
     defer(host1, h => stop && h.stop())
-    const sess1 = await createNewSession(host1, false, ['admin'])
+    const sess1 = await createNewSession(host1, false, [Role.Admin])
 
     await Promise.all(toRepeatAsync(5, () => createPost(sess1)))
     host1.logger.info('password for admin:' + sess1.admin.password)
@@ -48,7 +48,7 @@ const seed = (async (opts: Options) => {
         sitePath: ''
     })
     defer(host2, h => stop && h.stop())
-    const sess2 = await createNewSession(host2, false, ['admin'])
+    const sess2 = await createNewSession(host2, false, [Role.Admin])
     await Promise.all(toRepeatAsync(5, () => createPost(sess2)))
 
     host1.logger.info(`password for ${siteName1} demo-admin: ${sess1.admin.password}`)
