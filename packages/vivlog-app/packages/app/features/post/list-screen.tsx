@@ -27,7 +27,7 @@ export function PostListPart() {
                                 <Text flex={1}>{post.author.username}</Text>
                                 <Text color="$gray10"> @{post.author.site}</Text>
                             </View>
-                            <Text color="$gray11"> {post.author.descritpion ?? 'nothing to say'}</Text>
+                            <Text color="$gray11"> {post.author.description ?? 'nothing to say'}</Text>
                         </YStack>
                     </View>
                     <View borderTopWidth={1} borderColor="$gray5">

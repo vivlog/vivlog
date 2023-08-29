@@ -1,3 +1,5 @@
+import { Post } from 'app/typing/entities'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export let baseUrl = 'http://192.168.1.2:9000/api'
 export let token = ''
@@ -67,7 +69,7 @@ export async function fetchApi(url, options) {
 }
 
 
-export async function rpcRequest(module_: string, action: string, payload, options) {
+export async function rpcRequest(module_: string, action: string, payload, options?: any) {
     if (!options) {
         options = {}
     }
@@ -125,15 +127,18 @@ export const auth = {
     loginUser: (dto: LoginDto, options?) => rpcRequest('user', 'loginUser', dto, options),
 }
 
-export type Post = any
-
 export type PostsResp = {
     posts: Post[]
     total?: number
 }
 
 export const post = {
-    getPosts: (options?) => rpcRequest('post', 'getPosts', {}, options),
-    browsePosts: (options?) => rpcRequest('post', 'browsePosts', {}, options),
+    getPosts: (options?) => rpcRequest('post', 'getPosts', {}, options) as Promise<PostsResp>,
+    getPost: (id: number, options?) => rpcRequest('post', 'getPost', { id }, options) as Promise<Post>,
+    browsePosts: (options?) => rpcRequest('post', 'browsePosts', {}, options) as Promise<PostsResp>,
     syncPosts: (options?) => rpcRequest('post', 'syncPosts', {}, options),
+}
+
+export const comment = {
+    getComment: ({ type, uuid }: { type: string; uuid: string }, options?) => rpcRequest('comment', 'getComment', { type, uuid }, options),
 }

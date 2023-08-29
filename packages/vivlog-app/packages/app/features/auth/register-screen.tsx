@@ -2,7 +2,7 @@ import { Button, Input, Paragraph, Spacer, YStack, useToastController } from '@m
 import { ChevronLeft } from '@tamagui/lucide-icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { RegisterDto, RegisterRes, auth, setToken } from 'app/services/api'
-import { setLocalToken, setLocalUser } from 'app/services/local'
+import { clearLocalToken, setLocalToken, setLocalUser } from 'app/services/local'
 import { useFormik } from 'formik'
 import { GestureResponderEvent } from 'react-native'
 import { useLink } from 'solito/link'
@@ -75,7 +75,11 @@ export function RegisterScreen() {
   })
   const toast = useToastController()
   const { replace } = useRouter()
-  const registerMutation = useMutation(auth.registerUser)
+  const registerMutation = useMutation<RegisterRes, Error, RegisterDto>(async (dto) => {
+    await setToken('')
+    await clearLocalToken()
+    return await auth.registerUser(dto)
+  })
   const queryClient = useQueryClient()
   const handleSubmit = (values) => {
     registerMutation.mutate(values, {

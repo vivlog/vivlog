@@ -3,6 +3,7 @@ import { ChevronLeft, RefreshCcw } from '@tamagui/lucide-icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { post } from 'app/services/api'
 import { useLink } from 'solito/link'
+import { useRouter } from 'solito/router'
 
 export function PostBrowsePart() {
     // const tokenQuery = useQuery<null | LoginRes['token']>(['token'], fetchLocalToken)
@@ -14,20 +15,32 @@ export function PostBrowsePart() {
     if (browsePostsQuery.isSuccess) {
         console.log(browsePostsQuery.data)
     }
+
+    const { push } = useRouter()
+
+    const handleTouch = () => {
+        console.log('touch')
+        push('/post/detail/1')
+    }
+
     return (<YStack space>
         {browsePostsQuery.isLoading && <Paragraph>Loading...</Paragraph>}
         {browsePostsQuery.isError && <View><Paragraph>Unable to fetch posts: {(browsePostsQuery.error as Error).message}</Paragraph></View>}
         {browsePostsQuery.isSuccess &&
             browsePostsQuery.data?.posts.map((post) => {
-                return <ListItem maw={400} bg="$color1" p="$3" key={post.id} borderRadius="$3">
-                    <YStack>
+                return <ListItem maw={400} bg="$color1" p="$3" key={post.id} borderRadius="$3" hoverStyle={
+                    {
+                        bg: '$color3',
+                    }
+                }>
+                    <YStack fs={1}>
                         <View display='flex' flexDirection='row' ai='center' marginBottom={8}>
-                            <Image mr={8} borderRadius={99} source={{ uri: post.author.avatarUrl, width: 32, height: 32 }}></Image>
+                            <Image mr={8} borderRadius={99} source={{ uri: post.author?.avatarUrl, width: 32, height: 32 }}></Image>
                             <View display='flex' flexDirection='row'>
-                                <Text >{post.author.username}</Text>
+                                <Text >{post.author?.username}</Text>
                             </View>
                         </View>
-                        <View borderTopWidth={1} paddingTop={8} borderColor="$gray5">
+                        <View borderTopWidth={1} paddingTop={8} borderColor="$gray5" onPress={handleTouch} onTouchEnd={handleTouch}>
                             <Paragraph fontSize={13} lineHeight={14}>{post.content}</Paragraph>
                         </View>
                     </YStack>
