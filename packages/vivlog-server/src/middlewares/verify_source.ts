@@ -1,7 +1,7 @@
 import { FastifyRequest } from 'fastify'
 import jwt from 'jsonwebtoken'
 import { payloadValidator } from '../app/types'
-import { ExHeaders, Middleware } from '../host/types'
+import { BadRequestError, ExHeaders, Middleware, UnauthorizedError } from '../host/types'
 
 export const verifySource: (secret: string) => Middleware
     = (jwtSecret: string) => async (req) => {
@@ -19,10 +19,16 @@ export const verifySource: (secret: string) => Middleware
             return
         }
 
-        const decoded = jwt.verify(token, jwtSecret)
+        let decoded
+
+        try {
+            decoded = jwt.verify(token, jwtSecret)
+        } catch (error ) {
+            throw new UnauthorizedError('invalid token: ' + (error as Error).message)
+        }
 
         if (!payloadValidator.Check(decoded)) {
-            throw new Error('invalid token, payload is bad format')
+            throw new BadRequestError('invalid token, payload is bad format')
         }
 
         req.source = decoded
