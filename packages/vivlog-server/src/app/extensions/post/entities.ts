@@ -63,12 +63,12 @@ export class Post {
 
     // TODO: 圈子？
     author?: IUserDto
-    
+
     @Column('simple-json', { nullable: true })
     remote_author?: IUserDto
 }
 
-export type PostDto = Post;
+export type PostDto = Pick<Post, keyof Post>
 
 const createPostSchemaObj = {
     site: Type.Optional(Type.String()),
@@ -119,7 +119,7 @@ export const createPostSchema = Type.Object(createPostSchemaObj)
 export type CreatePostDto = Static<typeof createPostSchema>
 
 export const updatePostSchema = Type.Object({
-    uuid: Type.String(),
+    id: Type.Number(),
     ...createPostSchemaObj,
 })
 
@@ -127,14 +127,14 @@ export type UpdatePostDto = Static<typeof updatePostSchema>
 
 export const deletePostSchema = Type.Object({
     site: Type.Optional(Type.String()),
-    uuid: Type.String(),
+    id: Type.Number(),
 })
 
 export type DeletePostDto = Static<typeof deletePostSchema>
 
 export const getPostSchema = Type.Object({
     site: Type.Optional(Type.String()),
-    uuid: Type.String(),
+    id: Type.Number(),
 })
 
 export type GetPostDto = Static<typeof getPostSchema>

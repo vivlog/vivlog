@@ -1,4 +1,4 @@
-import { assert } from 'console'
+import assert from 'assert'
 import { Host } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { RouteHelper } from '../../helper/route_helper'
@@ -26,8 +26,8 @@ export function createExampleApi(host: Host) {
 
     routes.new().minRole(Role.Author).handle('example', 'createExample', createExampleSchema, async (req) => {
         const dto = req.body! as CreateExampleDto
-        assert(req.visitor?.id, 'user id is not defined')
-        const user = await userService.getUser({ id: parseInt(req.visitor!.id) })
+        assert(req.agent?.id, 'user id is not defined')
+        const user = await userService.getUser({ id: parseInt(req.agent!.id) })
         assert(user !== null)
         dto.site = await cachedValues['site'] as string
         assert(dto.site)

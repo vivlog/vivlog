@@ -35,7 +35,7 @@ export class Comment {
     user_site?: string
 }
 
-export type CommentDto = Comment;
+export type CommentDto = Pick<Comment, keyof Comment>
 
 const createCommentSchemaObj = {
     resource: Type.Object({

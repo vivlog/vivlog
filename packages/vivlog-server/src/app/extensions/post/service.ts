@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../../../config'
 import { DefaultContainer } from '../../../container'
-import { Logger } from '../../../host/types'
+import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { rpc } from '../../../utils/network'
 import { Settings } from '../../types'
@@ -13,7 +13,7 @@ import { ConnectionService } from '../connection/service'
 import { SettingService } from '../setting/service'
 import { UserMaskFields } from '../user/entities'
 import { UserService } from '../user/service'
-import { BrowsePostsDto, CreatePostDto, DeletePostDto, GetPostDto, GetPostsDto, Post, SyncPostsDto, UpdatePostDto } from './entities'
+import { BrowsePostsDto, CreatePostDto, DeletePostDto, GetPostDto, GetPostsDto, Post, PostDto, SyncPostsDto, UpdatePostDto } from './entities'
 
 export class PostService {
     public db: DataSource
@@ -46,15 +46,15 @@ export class PostService {
     }
 
     async updatePost(dto: UpdatePostDto) {
-        const post = await this.db.getRepository(Post).findOneBy({ uuid: dto.uuid })
+        const post = await this.db.getRepository(Post).findOneBy({ id: dto.id })
         if (!post) {
             throw new Error('Post not found')
         }
-        return this.getPost({ site: dto.site ?? await this.defaultSite, uuid: dto.uuid })
+        return this.getPost({ site: dto.site ?? await this.defaultSite, id: dto.id })
     }
 
     async deletePost(dto: DeletePostDto) {
-        await this.db.getRepository(Post).delete(dto.uuid)
+        await this.db.getRepository(Post).delete(dto.id)
         return { deleted: true }
     }
 
@@ -62,7 +62,18 @@ export class PostService {
         if (!dto.site) {
             dto.site = await this.defaultSite
         }
-        return this.db.getRepository(Post).findOneBy(dto)
+
+        // const ret = await this.db.getRepository(Post).findOneBy(dto)
+        const ret = await this.db.getRepository(Post).createQueryBuilder('post')
+            .leftJoinAndMapOne('post.author', 'user', 'author', 'author.uuid = post.author_uuid')
+            .where(dto)
+            .getOne()
+
+        if (!ret) {
+            throw new BadRequestError('Post not found')
+        }
+
+        return this.postPostProcess(ret)
     }
 
     async syncPosts({ site, limit, after_time }: SyncPostsDto): Promise<{ posts: Post[] }> {
@@ -143,6 +154,20 @@ export class PostService {
         return this.getPosts(dto, dto.filters?.site ?? '*')
     }
 
+    postPostProcess = (post: Post) => {
+        if (post.author) {
+            post.author.is_local = true
+            post.author.site = post.author_site
+        } else {
+            post.author = post.remote_author
+            if (post.author) {
+                post.author.is_local = false
+            }
+        }
+        delete post.remote_author
+        return post as PostDto
+    }
+
     async getPosts(dto: GetPostsDto, site?: Post['site']): Promise<{ posts: Post[]; total?: number }> {
 
         const { filters, limit, offset, with_total, with_author } = dto
@@ -192,19 +217,7 @@ export class PostService {
             .of(await query.getMany())
             .mask('author', UserMaskFields)
             .get()
-            .map(post => {
-                if (post.author) {
-                    post.author.is_local = true
-                    post.author.site = post.author_site
-                } else {
-                    post.author = post.remote_author
-                    if (post.author) {
-                        post.author.is_local = false
-                    }
-                }
-                delete post.remote_author
-                return post
-            })
+            .map(this.postPostProcess)
 
         return {
             posts
