@@ -1,6 +1,7 @@
 import assert from 'assert'
 import { loremIpsum } from 'lorem-ipsum'
 import { CreateConnectionDto } from '../app/extensions/connection/entities'
+import { PostDto } from '../app/extensions/post/entities'
 import { Role } from '../app/types'
 import { CombinedSession, createNewSession, createSite } from '../app/util/testing'
 import { toRepeatAsync } from '../utils/data'
@@ -60,6 +61,19 @@ const seed = (async (opts: Options) => {
 
     assert.strictEqual(crRet.statusCode, 200, crRet.body)
 
+    // create comments for all posts
+    const resp = await sess1.inject('post', 'getPosts', { type: 'thread' })
+    assert.strictEqual(resp.statusCode, 200, resp.body)
+    const posts1 = resp.json().data.posts as PostDto[]
+    await posts1.forEach(async ({ uuid }) => await sess1.injectAs(Role.Admin, 'comment', 'createComment', {
+        resource: {
+            type: 'post',
+            uuid,
+            site: siteName1
+        },
+        content: loremIpsum({ count: 1, units: 'paragraphs' })
+    }))
+
     if (stop) {
         await finalize()
     }
@@ -73,4 +87,6 @@ try {
     })
 } catch (error) {
     console.error(error)
+} finally {
+    console.log('done')
 }
