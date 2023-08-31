@@ -6,9 +6,9 @@ import {
   YStack
 } from '@my/ui'
 import { ChevronDown, ChevronUp } from '@tamagui/lucide-icons'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { LoginRes } from 'app/services/api'
-import { clearLocalToken, clearLocalUser, fetchLocalUser } from 'app/services/local'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useCurrentUser } from 'app/hooks/useCurrentUser'
+import { clearLocalToken, clearLocalUser } from 'app/services/local'
 import React, { useState } from 'react'
 import { useLink } from 'solito/link'
 
@@ -35,7 +35,7 @@ export function HomeScreen() {
 
   const queryClient = useQueryClient()
 
-  const userQuery = useQuery<null | LoginRes['user']>(['user'], fetchLocalUser)
+  const userQuery = useCurrentUser()
 
   const logoutMutation = useMutation(
     () => Promise.all([clearLocalToken(), clearLocalUser()]),

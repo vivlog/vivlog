@@ -28,10 +28,10 @@ export class Comment {
     @Column({ type: 'simple-json', nullable: true })
     agent?: AgentInfo
 
-    @Column({ nullable: true})
+    @Column({ nullable: true })
     user_uuid?: string
 
-    @Column({ nullable: true})
+    @Column({ nullable: true })
     user_site?: string
 }
 
@@ -72,10 +72,10 @@ export const getCommentSchema = Type.Object({
 export type GetCommentDto = Static<typeof getCommentSchema>
 
 export const getCommentsSchema = Type.Object({
-    filters: Type.Optional(Type.Object({
-        title: Type.Optional(Type.String()),
-        site: Type.Optional(Type.String()),
-    })),
+    resource: Type.Object({
+        type: Type.String(),
+        uuid: Type.String(),
+    }),
     limit: Type.Optional(Type.Number()),
     offset: Type.Optional(Type.Number()),
     with_total: Type.Optional(Type.Boolean()),

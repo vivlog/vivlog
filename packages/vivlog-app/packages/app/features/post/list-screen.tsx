@@ -9,7 +9,6 @@ export function PostListPart() {
     const getPostsQuery = useQuery(['posts'], post.getPosts)
     if (getPostsQuery.isError) {
         console.log(getPostsQuery.error)
-
     }
     if (getPostsQuery.isSuccess) {
         console.log(getPostsQuery.data)
@@ -19,15 +18,15 @@ export function PostListPart() {
         {getPostsQuery.isError && <View><Paragraph>Unable to fetch posts: {(getPostsQuery.error as Error).message}</Paragraph></View>}
         {getPostsQuery.isSuccess &&
             getPostsQuery.data?.posts.map((post) => {
-                return <View maw={400} bg="$gray3" p="$3" key={post.id} borderRadius="$3">
+                return <View maw={400} bg="$gray3" p="$3" key={post.uuid} borderRadius="$3">
                     <View display='flex' marginBottom={8}>
                         <Image mr={8} borderRadius={99} source={{ uri: 'https://placekitten.com/200/300', width: 32, height: 32 }}></Image>
                         <YStack>
                             <View>
-                                <Text flex={1}>{post.author.username}</Text>
-                                <Text color="$gray10"> @{post.author.site}</Text>
+                                <Text flex={1}>{post.author?.username}</Text>
+                                <Text color="$gray10"> @{post.author?.site}</Text>
                             </View>
-                            <Text color="$gray11"> {post.author.description ?? 'nothing to say'}</Text>
+                            <Text color="$gray11"> {post.author?.description ?? 'nothing to say'}</Text>
                         </YStack>
                     </View>
                     <View borderTopWidth={1} borderColor="$gray5">

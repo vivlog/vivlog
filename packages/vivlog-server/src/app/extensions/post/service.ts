@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import assert from 'assert'
 import { randomUUID } from 'crypto'
 import { DataSource } from 'typeorm'
 import { ConfigProvider } from '../../../config'
@@ -46,32 +47,33 @@ export class PostService {
     }
 
     async updatePost(dto: UpdatePostDto) {
-        const post = await this.db.getRepository(Post).findOneBy({ id: dto.id })
+        const post = await this.db.getRepository(Post).findOneBy({ uuid: dto.uuid })
         if (!post) {
             throw new Error('Post not found')
         }
-        return this.getPost({ site: dto.site ?? await this.defaultSite, id: dto.id })
+        return this.getPost({ uuid: dto.uuid })
     }
 
     async deletePost(dto: DeletePostDto) {
-        await this.db.getRepository(Post).delete(dto.id)
+        await this.db.getRepository(Post).delete(dto)
         return { deleted: true }
     }
 
     async getPost(dto: GetPostDto) {
-        if (!dto.site) {
-            dto.site = await this.defaultSite
-        }
+        console.log('getPost', dto)
 
         // const ret = await this.db.getRepository(Post).findOneBy(dto)
         const ret = await this.db.getRepository(Post).createQueryBuilder('post')
             .leftJoinAndMapOne('post.author', 'user', 'author', 'author.uuid = post.author_uuid')
             .where(dto)
+            .printSql()
             .getOne()
 
         if (!ret) {
             throw new BadRequestError('Post not found')
         }
+
+        assert(ret.uuid == dto.uuid, 'uuid mismatch')
 
         return this.postPostProcess(ret)
     }

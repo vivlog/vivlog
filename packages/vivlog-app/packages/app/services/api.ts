@@ -1,4 +1,4 @@
-import { Post } from 'app/typing/entities'
+import { CommentDto, CreateCommentDto, Post, Resource } from 'app/typing/entities'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export let baseUrl = 'http://192.168.1.2:9000/api'
@@ -134,11 +134,13 @@ export type PostsResp = {
 
 export const post = {
     getPosts: (options?) => rpcRequest('post', 'getPosts', {}, options) as Promise<PostsResp>,
-    getPost: (id: number, options?) => rpcRequest('post', 'getPost', { id }, options) as Promise<Post>,
+    getPost: (uuid: string, options?) => rpcRequest('post', 'getPost', { uuid }, options) as Promise<Post>,
     browsePosts: (options?) => rpcRequest('post', 'browsePosts', {}, options) as Promise<PostsResp>,
     syncPosts: (options?) => rpcRequest('post', 'syncPosts', {}, options),
 }
 
 export const comment = {
     getComment: ({ type, uuid }: { type: string; uuid: string }, options?) => rpcRequest('comment', 'getComment', { type, uuid }, options),
+    getComments: ({ resource }: { resource: Resource }, options?) => rpcRequest('comment', 'getComments', { resource }, options) as Promise<{ comments: CommentDto[] }>,
+    createComment: (dto: CreateCommentDto, options?) => rpcRequest('comment', 'createComment', dto, options),
 }

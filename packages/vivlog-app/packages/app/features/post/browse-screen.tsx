@@ -18,9 +18,8 @@ export function PostBrowsePart() {
 
     const { push } = useRouter()
 
-    const handleTouch = () => {
-        console.log('touch')
-        push('/post/detail/1')
+    const handleTouch = (uuid: string) => {
+        push('/post/detail/' + uuid)
     }
 
     return (<YStack space>
@@ -28,7 +27,7 @@ export function PostBrowsePart() {
         {browsePostsQuery.isError && <View><Paragraph>Unable to fetch posts: {(browsePostsQuery.error as Error).message}</Paragraph></View>}
         {browsePostsQuery.isSuccess &&
             browsePostsQuery.data?.posts.map((post) => {
-                return <ListItem maw={400} bg="$color1" p="$3" key={post.id} borderRadius="$3" hoverStyle={
+                return <ListItem maw={400} bg="$color1" p="$3" key={post.uuid} borderRadius="$3" hoverStyle={
                     {
                         bg: '$color3',
                     }
@@ -40,7 +39,7 @@ export function PostBrowsePart() {
                                 <Text >{post.author?.username}</Text>
                             </View>
                         </View>
-                        <View borderTopWidth={1} paddingTop={8} borderColor="$gray5" onPress={handleTouch} onTouchEnd={handleTouch}>
+                        <View borderTopWidth={1} paddingTop={8} borderColor="$gray5" onPress={() => handleTouch(post.uuid)}>
                             <Paragraph fontSize={13} lineHeight={14}>{post.content}</Paragraph>
                         </View>
                     </YStack>

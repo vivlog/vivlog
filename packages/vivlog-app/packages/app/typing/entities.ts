@@ -9,6 +9,7 @@ type IUserDto = {
 }
 
 export type Resource = {
+    site: string
     uuid: string
     type: string
 }
@@ -59,4 +60,13 @@ export type CommentDto = {
     agent?: AgentInfo | undefined
     user_uuid?: string | undefined
     user_site?: string | undefined
+}
+
+export type CreateCommentDto = {
+    resource: {
+        site: string
+        uuid: string
+        type: string
+    }
+    content: string
 }

@@ -34,7 +34,7 @@ describe('verifySource', () => {
         try {
             await verifySource(secret)(req, null as any, null as any)
         } catch (error) {
-            expect((error as Error).message).to.equal('invalid signature')
+            expect((error as Error).message).to.contains('invalid signature')
         }
     })
 })

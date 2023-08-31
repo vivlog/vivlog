@@ -72,16 +72,13 @@ export class CommentService {
 
     async getComments(dto: GetCommentsDto) {
 
-        const { filters, limit, offset, with_total } = dto
+        const { resource, limit, offset, with_total } = dto
 
         const query = this.db.getRepository(Comment)
             .createQueryBuilder('comment')
 
-        if (filters) {
-            if (filters.title) {
-                query.andWhere('comment.title like :title', { title: `%${filters.title}%` })
-            }
-        }
+        query.where('comment.resource_type = :resource_type', { resource_type: resource.type })
+        query.andWhere('comment.resource_uuid = :resource_uuid', { resource_uuid: resource.uuid })
 
         if (limit) {
             query.limit(limit)
