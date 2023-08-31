@@ -1,4 +1,4 @@
-import { Button, Image, Paragraph, Text, View, YStack } from '@my/ui'
+import { Button, H2, Image, Paragraph, Text, View, YStack } from '@my/ui'
 import { ChevronLeft } from '@tamagui/lucide-icons'
 import { useQuery } from '@tanstack/react-query'
 import { post } from 'app/services/api'
@@ -42,11 +42,11 @@ export function PostListScreen() {
     const link = useLink({
         href: '/',
     })
-    return <YStack f={1} jc="center" ai="center" space>
+    return <YStack f={1} marginTop={16} jc="center" ai="center" space>
         <Button {...link} icon={ChevronLeft}>
             Go Home
         </Button>
-        <Paragraph ta="center" fow="700">Posts</Paragraph>
+        <H2 ta="center" fow="700">Posts</H2>
         <PostListPart></PostListPart>
     </YStack>
 }

@@ -1,4 +1,4 @@
-import { Button, Paragraph, YStack } from '@my/ui'
+import { Button, H2, YStack } from '@my/ui'
 import { ChevronLeft } from '@tamagui/lucide-icons'
 import React from 'react'
 import { createParam } from 'solito'
@@ -13,11 +13,11 @@ export function UserDetailScreen() {
   })
 
   return (
-    <YStack f={1} jc="center" ai="center" space>
+    <YStack f={1} marginTop={16} jc="center" ai="center" space>
       <Button {...link} icon={ChevronLeft}>
         Go Home
       </Button>
-      <Paragraph ta="center" fow="700">{`User ID: ${id}`}</Paragraph>
+      <H2 ta="center" fow="700">{`User ID: ${id}`}</H2>
     </YStack>
   )
 }

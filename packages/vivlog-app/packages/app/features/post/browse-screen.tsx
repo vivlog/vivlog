@@ -1,4 +1,4 @@
-import { Button, Image, ListItem, Paragraph, ScrollView, Text, View, YStack } from '@my/ui'
+import { Button, H2, Image, ListItem, Paragraph, ScrollView, Text, View, YStack } from '@my/ui'
 import { ChevronLeft, RefreshCcw } from '@tamagui/lucide-icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { post } from 'app/services/api'
@@ -67,14 +67,17 @@ export function PostBrowseScreen() {
     }
     return (
         <ScrollView>
-            <YStack f={1} jc="center" ai="center" space>
-                <Button {...link} icon={ChevronLeft}>
-                    Go Home
-                </Button>
-                <Paragraph ta="center" fow="700">Posts</Paragraph>
-                <Button onPress={handleSync} icon={RefreshCcw}>
-                    Sync
-                </Button>
+            <YStack f={1} marginTop={16} jc="center" ai="center" space>
+
+                <H2 ta="center" fow="700">Posts</H2>
+                <View display='flex'>
+                    <Button {...link} icon={ChevronLeft}>
+                        Go Home
+                    </Button>
+                    <Button onPress={handleSync} icon={RefreshCcw}>
+                        Sync
+                    </Button>
+                </View>
                 <PostBrowsePart></PostBrowsePart>
             </YStack>
         </ScrollView>

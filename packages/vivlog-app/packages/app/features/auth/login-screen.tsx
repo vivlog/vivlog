@@ -1,4 +1,4 @@
-import { Button, Input, Paragraph, Spacer, YStack, useToastController } from '@my/ui'
+import { Button, H2, Input, Paragraph, Spacer, YStack, useToastController } from '@my/ui'
 import { ChevronLeft } from '@tamagui/lucide-icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { LoginDto, LoginRes, auth, setToken } from 'app/services/api'
@@ -97,11 +97,11 @@ export function LoginScreen() {
     })
   }
   return (
-    <YStack f={1} jc="center" ai="center" space>
+    <YStack f={1} marginTop={16} jc="center" ai="center" space>
       <Button {...link} icon={ChevronLeft}>
         Go Home
       </Button>
-      <Paragraph ta="center" fow="700">Login</Paragraph>
+      <H2 ta="center" fow="700">Login</H2>
       <LoginForm onSubmit={handleSubmit}></LoginForm>
     </YStack>
   )

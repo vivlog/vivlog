@@ -1,4 +1,4 @@
-import { Button, H3, Image, Paragraph, Spacer, Text, View, YStack } from '@my/ui'
+import { Button, H2, H3, Image, Paragraph, Spacer, Text, View, YStack } from '@my/ui'
 import { ChevronLeft, Home } from '@tamagui/lucide-icons'
 import CommentForm from 'app/components/CommentForm'
 import { useComments } from 'app/hooks/useComments'
@@ -28,6 +28,8 @@ export function PostDetailScreen() {
 
   return (
     <YStack f={1} jc="center" ai="center" space ml={4}>
+      <H2 ta="center" fow="700">Post</H2>
+
       <View display='flex'>
         <Button onPress={() => back()} icon={ChevronLeft}>
           Go Back
@@ -74,7 +76,7 @@ export function PostDetailScreen() {
         }
         {
           commentsQuery.comments ? commentsQuery.comments.map((comment) => {
-            return <View key={comment.uuid}>
+            return <View key={comment.uuid} marginBottom={24}>
               <View display='flex' ai="center" marginBottom={8}>
                 <Image mr={8} borderRadius={99} source={{ uri: 'https://placekitten.com/200/300', width: 32, height: 32 }}></Image>
                 <YStack>
