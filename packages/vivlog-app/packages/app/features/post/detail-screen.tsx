@@ -3,6 +3,7 @@ import { ChevronLeft, Home } from '@tamagui/lucide-icons'
 import CommentForm from 'app/components/CommentForm'
 import { useComments } from 'app/hooks/useComments'
 import { usePost } from 'app/hooks/usePost'
+import { myShadows } from 'app/presets/shadow'
 import React from 'react'
 import { createParam } from 'solito'
 import { useLink } from 'solito/link'
@@ -53,10 +54,11 @@ export function PostDetailScreen() {
           <View
             bg='$gray1'
             borderRadius="$3" bw='1' padding={16} borderColor="$gray3"
+            hoverStyle={myShadows.small}
           >
             <View display='flex' marginBottom={8}
             >
-              <Image mr={8} borderRadius={99} source={{ uri: 'https://placekitten.com/200/300', width: 32, height: 32 }}></Image>
+              <Image mr={8} borderRadius={99} source={{ uri: postQuery.post.author?.avatarUrl, width: 32, height: 32 }}></Image>
               <YStack>
                 <View>
                   <Text flex={1}>{postQuery.post.author?.username}</Text>
@@ -65,7 +67,7 @@ export function PostDetailScreen() {
                 <Text color="$gray11"> {postQuery.post.author?.description ?? 'nothing to say'}</Text>
               </YStack>
             </View>
-            <View borderTopWidth={1} borderColor="$gray5">
+            <View borderTopWidth={1} paddingTop={8} borderColor="$gray5">
               <Paragraph>{postQuery.post.content}</Paragraph>
             </View>
           </View>

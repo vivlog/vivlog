@@ -1,4 +1,4 @@
-import { CommentDto, CreateCommentDto, Post, Resource } from 'app/typing/entities'
+import { CommentDto, CreateCommentDto, CreatePostDto, Post, Resource } from 'app/typing/entities'
 import { useRouter } from 'solito/router'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -117,6 +117,8 @@ export type LoginRes = {
         id: number
         uuid: number
         username: string
+        role: string
+        description?: string
         avatarUrl: string
     }
 }
@@ -149,6 +151,7 @@ export const post = {
     getPost: (uuid: string, options?) => rpcRequest('post', 'getPost', { uuid }, options) as Promise<Post>,
     browsePosts: (options?) => rpcRequest('post', 'browsePosts', {}, options) as Promise<PostsResp>,
     syncPosts: (options?) => rpcRequest('post', 'syncPosts', {}, options),
+    createPost: (dto: CreatePostDto, options?) => rpcRequest('post', 'createPost', dto, options),
 }
 
 export const comment = {

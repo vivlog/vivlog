@@ -203,6 +203,9 @@ export class PostService {
             query.offset(offset)
         }
 
+        // desc
+        query.orderBy('post.created_at', 'DESC')
+
         if (with_total) {
             const [posts, total] = await query.getManyAndCount()
             return {

@@ -66,7 +66,7 @@ export function createPostApi(host: Host) {
             return await postService.getPosts(req.body!)
         })
 
-    routes.new().minRole(Role.Reader)
+    routes.new()
         .handle('post', 'browsePosts', browsePostsSchema, async (req) => {
             return await postService.browsePosts(req.body!)
         })

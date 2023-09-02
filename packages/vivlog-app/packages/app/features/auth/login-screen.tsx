@@ -1,9 +1,11 @@
-import { Button, H2, Input, Paragraph, Spacer, YStack, useToastController } from '@my/ui'
+import { Button, H2, Input, Paragraph, Spacer, View, YStack, useToastController } from '@my/ui'
 import { ChevronLeft } from '@tamagui/lucide-icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useLogoutMutation } from 'app/hooks/useLogoutMutation'
 import { LoginDto, LoginRes, auth, setToken } from 'app/services/api'
 import { clearLocalToken, setLocalToken, setLocalUser } from 'app/services/local'
 import { useFormik } from 'formik'
+import { useEffect } from 'react'
 import { GestureResponderEvent } from 'react-native'
 import { useLink } from 'solito/link'
 import { useRouter } from 'solito/router'
@@ -28,6 +30,12 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
     },
   })
 
+  const logoutMutation = useLogoutMutation()
+
+  useEffect(() => {
+    logoutMutation.mutate()
+  }, [])
+
   const handlePressSubmit = (e: GestureResponderEvent) => {
     e.preventDefault()
     form.handleSubmit()
@@ -46,6 +54,12 @@ const LoginForm = ({ onSubmit }: LoginFormProps) => {
       <Input
         placeholder="Password"
         value={form.values.password}
+        onKeyPress={(e) => {
+          if (e.nativeEvent.key === 'Enter') {
+            form.handleSubmit()
+          }
+        }
+        }
         onChangeText={form.handleChange('password')}>
       </Input>
       {
@@ -62,6 +76,8 @@ export function LoginScreen() {
   const link = useLink({
     href: '/',
   })
+
+  const registerLink = useLink({ href: '/auth/register' })
   const toast = useToastController()
   const { replace } = useRouter()
   const loginMutation = useMutation<LoginRes, Error, LoginDto>(async (dto) => {
@@ -102,9 +118,13 @@ export function LoginScreen() {
   }
   return (
     <YStack f={1} marginTop={16} jc="center" ai="center" space>
-      <Button {...link} icon={ChevronLeft}>
-        Go Home
-      </Button>
+      <View display='flex' gap={16}>
+        <Button {...link} icon={ChevronLeft}>
+          Go Home
+        </Button>
+        <Button {...registerLink}>Register</Button>
+
+      </View>
       <H2 ta="center" fow="700">Login</H2>
       <LoginForm onSubmit={handleSubmit}></LoginForm>
     </YStack>

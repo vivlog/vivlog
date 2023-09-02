@@ -11,8 +11,9 @@ export const InitLocal = () => {
     if (tokenQuery.data) {
         console.log('InitLocal', 'tokenQuery.data', tokenQuery.data)
         setToken(tokenQuery.data)
-        setRouter(router)
     }
+
+    setRouter(router)
 
     return null
 }

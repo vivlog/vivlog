@@ -6,7 +6,7 @@ import { useLink } from 'solito/link'
 
 export function PostListPart() {
     // const tokenQuery = useQuery<null | LoginRes['token']>(['token'], fetchLocalToken)
-    const getPostsQuery = useQuery(['posts'], post.getPosts)
+    const getPostsQuery = useQuery(['posts', 'list'], post.getPosts)
     if (getPostsQuery.isError) {
         console.log(getPostsQuery.error)
     }

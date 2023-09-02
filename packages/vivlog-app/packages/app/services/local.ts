@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { LoginRes } from './api'
 
-const prefix = '@vivlog:'
+export const prefix = '@vivlog:'
 
 export async function fetchLocalToken() {
     console.log('fetchLocalToken')

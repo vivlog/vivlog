@@ -35,7 +35,23 @@ export type Post = {
     published_at: Date
     author?: IUserDto
     remote_author: IUserDto
+}
 
+export type CreatePostDto = {
+    site?: string
+    title?: string
+    type?: 'thread' | 'reply' | 'comment'
+    slug?: string
+    content?: any
+    author_uuid?: string
+    author_site?: string
+    attachment_vids?: any
+    custom?: any
+    status?: 'draft' | 'future' | 'published' | 'deleted'
+    visibility?: 'public' | 'private' | 'internal'
+    format?: 'standard' | 'link'
+    sticky?: boolean
+    published_at?: string
 }
 
 export interface AgentInfo {
