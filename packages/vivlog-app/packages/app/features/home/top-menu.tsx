@@ -1,5 +1,5 @@
 import { AvatarBox, Button, Input, Text, View } from '@my/ui'
-import { Plus } from '@tamagui/lucide-icons'
+import { Plus, Settings } from '@tamagui/lucide-icons'
 import { useCurrentUser } from 'app/hooks/useCurrentUser'
 import { myShadows } from 'app/presets/shadow'
 import { useRouter } from 'solito/router'
@@ -24,15 +24,9 @@ function TopMenu() {
     return <View display='flex' bg='$gray1' ai='center' bbw={1} p={8} bbc='$gray5' style={
         { ...myShadows.small }
     }>
-        <View flex={1} display='flex' ai='center' gap={8} onPress={handlePressUser}>
+        <View cursor='pointer' flex={1} display='flex' ai='center' gap={8} onPress={handlePressUser}>
             <AvatarBox uri={user?.avatarUrl}></AvatarBox>
-            <Text
-                cursor='pointer'
-                hoverStyle={
-                    {
-                        fontSize: 18,
-                    }
-                }>{user?.username ?? 'Not login'}</Text>
+            <Text hoverStyle={{ fontSize: 18 }}>{user?.username ?? 'Not login'}</Text>
         </View>
         <View flex={1} display='flex' jc='center'>
             <Text fontSize={20}>SiteName</Text>
@@ -42,7 +36,9 @@ function TopMenu() {
                 <Input placeholder='Search' />
             </View>
             <Button onPress={handlePressPlus} icon={<Plus size={28} color='$gray12' />} chromeless circular />
-
+            {
+                user?.role === 'admin' && <Button onPress={() => router.push('/admin/overview')} icon={<Settings size={28} color='$gray12' />} chromeless circular />
+            }
         </View>
     </View>
 }

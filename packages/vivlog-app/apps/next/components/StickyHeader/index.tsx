@@ -11,7 +11,7 @@ function FixedHeader({ children }: FixedHeaderProps) {
                 {children}
             </div>
             {/* // prevent covering by fixed header */}
-            <div style={{ height: 48 }}></div>
+            <div style={{ height: 64 }}></div>
 
         </>
     );
