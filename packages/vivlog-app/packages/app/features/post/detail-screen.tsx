@@ -12,6 +12,7 @@ const { useParam } = createParam<{ id: string }>()
 
 export function PostDetailScreen() {
   const [uuid] = useParam('id')
+
   const linkToHome = useLink({
     href: '/',
   })
@@ -48,8 +49,13 @@ export function PostDetailScreen() {
           postQuery.isError && <Paragraph>Unable to fetch post: {(postQuery.error as Error).message}</Paragraph>
         }
         {
-          !!postQuery.post && uuid && <View>
-            <View display='flex' marginBottom={8}>
+          !!postQuery.post && uuid &&
+          <View
+            bg='$gray1'
+            borderRadius="$3" bw='1' padding={16} borderColor="$gray3"
+          >
+            <View display='flex' marginBottom={8}
+            >
               <Image mr={8} borderRadius={99} source={{ uri: 'https://placekitten.com/200/300', width: 32, height: 32 }}></Image>
               <YStack>
                 <View>
@@ -76,7 +82,7 @@ export function PostDetailScreen() {
         }
         {
           commentsQuery.comments ? commentsQuery.comments.map((comment) => {
-            return <View key={comment.uuid} marginBottom={24}>
+            return <View key={comment.uuid} marginBottom={24} borderRadius="$3" bw='1' padding={16} borderColor="$gray3" backgroundColor='$gray1'>
               <View display='flex' ai="center" marginBottom={8}>
                 <Image mr={8} borderRadius={99} source={{ uri: 'https://placekitten.com/200/300', width: 32, height: 32 }}></Image>
                 <YStack>
@@ -86,7 +92,7 @@ export function PostDetailScreen() {
                   </View>
                 </YStack>
               </View>
-              <View borderTopWidth={1} borderColor="$gray5">
+              <View>
                 <Paragraph>{comment.content}</Paragraph>
               </View>
             </View>

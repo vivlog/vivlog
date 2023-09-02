@@ -70,3 +70,19 @@ export type CreateCommentDto = {
     }
     content: string
 }
+
+export type GuestInfo = {
+    name: string
+    email: string
+    site?: string
+}
+
+export function encodeGuestInfo(info: GuestInfo) {
+    return Buffer.from(JSON.stringify(info)).toString('base64')
+}
+
+export function createGuestHeader(info: GuestInfo) {
+    return {
+        'x-vivlog-guest': encodeGuestInfo(info),
+    }
+}

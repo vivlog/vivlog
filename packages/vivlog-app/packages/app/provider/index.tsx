@@ -8,16 +8,16 @@ import config from '../tamagui.config'
 import { InitLocal } from './InitLocal'
 import { ToastViewport } from './ToastViewport'
 
-
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // default: true
+    },
+  },
+})
 export function Provider({ children, ...rest }: Omit<TamaguiProviderProps, 'config'>) {
   const scheme = useColorScheme()
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false, // default: true
-      },
-    },
-  })
+
   const asyncStoragePersister = createAsyncStoragePersister({
     storage: AsyncStorage,
   })

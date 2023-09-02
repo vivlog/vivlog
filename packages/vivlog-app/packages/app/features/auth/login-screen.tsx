@@ -67,7 +67,11 @@ export function LoginScreen() {
   const loginMutation = useMutation<LoginRes, Error, LoginDto>(async (dto) => {
     await setToken('')
     await clearLocalToken()
-    return await auth.loginUser(dto)
+    return await auth.loginUser(dto, {
+      headers: {
+        'authorization': '',
+      }
+    })
   })
   const queryClient = useQueryClient()
   const handleSubmit = (values) => {

@@ -1,8 +1,15 @@
 import { CommentDto, CreateCommentDto, Post, Resource } from 'app/typing/entities'
+import { useRouter } from 'solito/router'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export let baseUrl = 'http://192.168.1.2:9000/api'
 export let token = ''
+export type Router = ReturnType<typeof useRouter>
+export let router: Router | null = null
+
+export function setRouter(r: Router) {
+    router = r
+}
 
 export function setBaseUrl(url: string) {
     if (url.endsWith('/')) {
@@ -43,7 +50,7 @@ export async function fetchApi(url, options) {
         options.headers = {}
     }
 
-    if (token) {
+    if (token && !options.headers['authorization']) {
         options.headers['authorization'] = token
     }
 
@@ -62,6 +69,9 @@ export async function fetchApi(url, options) {
 
     if (resp.status !== 200) {
         const eres = (await resp.json()) as unknown as ErrRes
+        if (eres.message.includes('invalid token')) {
+            router?.push('/auth/login')
+        }
         throw new RequestError(eres.message, eres)
     }
 
@@ -105,7 +115,9 @@ export type LoginRes = {
     token: string
     user: {
         id: number
+        uuid: number
         username: string
+        avatarUrl: string
     }
 }
 

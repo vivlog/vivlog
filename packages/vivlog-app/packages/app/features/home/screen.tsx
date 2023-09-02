@@ -47,7 +47,7 @@ export function HomeScreen() {
     })
 
   return (
-    <YStack f={1} jc="center" ai="center" p="$4" space>
+    <YStack f={1} p="$4" space>
       <Text>User: {userQuery.data?.username ?? 'not login'}</Text>
       <Button {...linkProps} >Link to user</Button>
       {!userQuery.data && (<>
