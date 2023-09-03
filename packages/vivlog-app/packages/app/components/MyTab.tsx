@@ -1,4 +1,4 @@
-import { SizableText, Stack, StackProps, TabLayout, Tabs, TabsTabProps, YStack } from '@my/ui'
+import { SizableText, Stack, StackProps, TabLayout, Tabs, TabsProps, TabsTabProps, YStack } from '@my/ui'
 import React, { useState } from 'react'
 
 const TabsRovingIndicator = ({ active, ...props }: { active?: boolean } & StackProps) => {
@@ -26,7 +26,7 @@ interface MyTabsProps {
     onChange?: (value: string) => void
 }
 
-export const MyTabs = ({ items, onChange, defaultValue }: MyTabsProps) => {
+export const MyTabs = ({ items, onChange, defaultValue, ...rest }: MyTabsProps & TabsProps) => {
     const [tabState, setTabState] = useState<{
         currentTab: string
         /**
@@ -62,14 +62,12 @@ export const MyTabs = ({ items, onChange, defaultValue }: MyTabsProps) => {
             value={currentTab}
             onValueChange={(value) => { setCurrentTab(value); onChange?.(value) }}
             orientation="horizontal"
-            size="$4"
-            padding="$2"
-            height={150}
             flexDirection="column"
             activationMode="manual"
             backgroundColor="$background"
             borderRadius="$4"
             position="relative"
+            {...rest}
         >
             <YStack>
                 {intentAt && (
@@ -97,18 +95,11 @@ export const MyTabs = ({ items, onChange, defaultValue }: MyTabsProps) => {
                     disablePassBorderRadius
                     loop={false}
                     aria-label="Tabs"
-                    space="$2"
+                    space={2}
+                    gap={2}
+                    mb={8}
                     backgroundColor="transparent"
                 >
-                    {/* <Tabs.Tab unstyled value="tab1" onInteraction={handleOnInteraction}>
-                        <SizableText>Profile</SizableText>
-                    </Tabs.Tab>
-                    <Tabs.Tab unstyled value="tab2" onInteraction={handleOnInteraction}>
-                        <SizableText>Connections</SizableText>
-                    </Tabs.Tab>
-                    <Tabs.Tab unstyled value="tab3" onInteraction={handleOnInteraction}>
-                        <SizableText>Notifications</SizableText>
-                    </Tabs.Tab> */}
                     {items.map((item) => (
                         <Tabs.Tab key={item.label} unstyled value={item.value} onInteraction={handleOnInteraction}>
                             <SizableText>{item.label}</SizableText>

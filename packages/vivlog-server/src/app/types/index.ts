@@ -58,6 +58,8 @@ export const Settings = {
         _group: 'system',
         site: 'site',
         title: 'title',
+        description: 'description',
+        keywords: 'keywords',
         initialized: 'initialized',
     },
     Comment: {
@@ -67,14 +69,7 @@ export const Settings = {
     }
 }
 
-export const defaultSettings = [
-    // TODO: add default settings here
-    { group: Settings.System._group, name: Settings.System.site, value: 'vivlog.net/x/demo' },
-    { group: Settings.System._group, name: Settings.System.title, value: 'Vivlog' },
-    { group: Settings.System._group, name: Settings.System.initialized, value: true },
-    { group: Settings.Comment._group, name: Settings.Comment.enabled, value: true },
-    { group: Settings.Comment._group, name: Settings.Comment.allow_guest, value: true },
-]
+
 
 export enum SourceType {
     User = 'user',

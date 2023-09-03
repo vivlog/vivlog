@@ -35,4 +35,13 @@ export const myShadows = {
         shadowOpacity: 0.22,
         shadowRadius: 2.22,
     },
+    mild: {
+        shadowColor: '$gray5',
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+    },
 }

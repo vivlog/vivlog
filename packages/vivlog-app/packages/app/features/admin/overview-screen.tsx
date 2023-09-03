@@ -5,6 +5,8 @@ import { MyTabs } from 'app/components/MyTab'
 import { prefix } from 'app/services/local'
 import React from 'react'
 import { useLink } from 'solito/link'
+import { AdminSystemScreenPart } from './system-screen'
+import { AdminUserScreenPart } from './user-screen'
 
 
 export function AdminOverviewScreen() {
@@ -17,9 +19,13 @@ export function AdminOverviewScreen() {
         value: 'overview',
         content: <Text>Overview</Text>
     }, {
+        label: 'System',
+        value: 'system',
+        content: <AdminSystemScreenPart />
+    }, {
         label: 'Users',
         value: 'users',
-        content: <Text>Users</Text>
+        content: <AdminUserScreenPart />
     }, {
         label: 'Connections',
         value: 'connections',
@@ -34,7 +40,7 @@ export function AdminOverviewScreen() {
             <H2 ta="center" fow="700">Admin</H2>
             <View maw={800} display='flex' w='100%'>
                 <PersistValue persistKey={`${prefix}persist:admin_overview_tab`} loadingRender={<Spinner></Spinner>}>
-                    <MyTabs items={tabs} defaultValue={tabs[0]?.value}></MyTabs>
+                    <MyTabs w='100%' items={tabs} defaultValue={tabs[0]?.value}></MyTabs>
                 </PersistValue>
             </View>
         </YStack>

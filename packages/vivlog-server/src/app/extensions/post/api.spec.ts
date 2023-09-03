@@ -6,7 +6,7 @@ import { defaultRawConfig } from '../../../config/types'
 import { ServerHost } from '../../../host/host'
 import { bootstrap } from '../../../server'
 import { defer, finalize, getNextAvailablePort, inject, removeFile } from '../../../utils/testing'
-import { Role, defaultSettings } from '../../types'
+import { Role } from '../../types'
 import { CombinedSession, createNewSession, createSite } from '../../util/testing'
 import { CreateConnectionDto } from '../connection/entities'
 import { PostDto, PostTypeEnum } from './entities'
@@ -52,7 +52,6 @@ describe('Post API', () => {
         assert.strictEqual(post.title, 'test')
         assert.strictEqual(post.content, 'test')
         assert.strictEqual(post.type, PostTypeEnum.Thread)
-        assert.strictEqual(post.author_site, defaultSettings.find(ent => ent.group == 'system' && ent.name == 'site')?.value)
         assert.strictEqual(post.author_uuid, sess.admin.user.uuid)
         assert.strictEqual(post.slug, '')
         assert.deepStrictEqual(post.attachment_vids, [])
@@ -72,7 +71,6 @@ describe('Post API', () => {
         assert.strictEqual(post.title, 'test')
         assert.strictEqual(post.content, 'test')
         assert.strictEqual(post.type, PostTypeEnum.Thread)
-        assert.strictEqual(post.author_site, defaultSettings.find(ent => ent.group == 'system' && ent.name == 'site')?.value)
         assert.strictEqual(post.author_uuid, sess.admin.user.uuid)
         assert.strictEqual(post.slug, '')
         assert.deepStrictEqual(post.attachment_vids, [])

@@ -20,7 +20,7 @@ export class CommentService {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
-        lazy(this, 'commentableEntities', () => container.resolve<string[]>('commentableEntities'))
+        lazy(this, 'commentableEntities', () => container.resolve<string[]>('CommentService::commentableEntities'))
     }
 
     async createComment(dto: CreateCommentDto, agent: AgentInfo) {

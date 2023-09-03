@@ -159,3 +159,24 @@ export const comment = {
     getComments: ({ resource }: { resource: Resource }, options?) => rpcRequest('comment', 'getComments', { resource }, options) as Promise<{ comments: CommentDto[] }>,
     createComment: (dto: CreateCommentDto, options?) => rpcRequest('comment', 'createComment', dto, options),
 }
+
+export type SchemaItem = {
+    group: string
+    name: string
+    label: string
+    defaultValue: any
+    formItemOptions: any
+    description: string
+}
+
+export type SettingItem = {
+    group: string
+    name: string
+    value: any
+}
+
+export const settings = {
+    getSystemInfo: (options?) => rpcRequest('setting', 'getSystemInfo', {}, options) as Promise<SettingItem[]>,
+    getSchema: (options?) => rpcRequest('setting', 'getSchema', {}, options) as Promise<SchemaItem[]>,
+    setItem: (dto: SettingItem, options?) => rpcRequest('setting', 'setItem', dto, options),
+}

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Static, Type } from '@sinclair/typebox'
+import { Static, TSchema, Type } from '@sinclair/typebox'
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
@@ -55,8 +55,22 @@ export const deleteItemsSchema = Type.Object({
     group: Type.String(),
 })
 
+export const getSchemaSchema = Type.Object({
+    group: Type.Optional(Type.String()),
+})
+
 export type DeleteItemsDto = Static<typeof deleteItemsSchema>
 
 export const initSettingsSchema = setItemsSchema
 
 export type InitSettingsDto = Static<typeof initSettingsSchema>
+
+export type SettingItem<T> = {
+    group: string
+    name: string
+    defaultValue: T
+    formItemOptions: any
+    schema: TSchema
+    description: string
+}
+

@@ -6,6 +6,8 @@ export class DefaultContainer {
         this.items = new Map()
     }
     register<T>(token: string, item: T) {
+        console.log(`register ${token}`)
+
         if (this.items.has(token)) {
             throw new Error(`Key ${token} already registered`)
         }
@@ -13,7 +15,7 @@ export class DefaultContainer {
     }
     resolve<T>(key: any): T {
         const r = this.items.get(key)
-        if (!r) {
+        if (r === undefined) {
             let msg
             if (key.name) {
                 msg = key.name
@@ -23,6 +25,19 @@ export class DefaultContainer {
             throw new Error(`Cannot resolve ${msg}`)
         }
         return r as T
+    }
+    mutate<T>(token: any, f: (item: T) => T, default_?: any): void {
+        let r = this.items.get(token)
+        if (r === undefined) {
+            if (default_ === undefined) {
+                throw new Error(`Cannot resolve ${token}`)
+            }
+            r = f(default_)
+            this.register(token, r)
+            return
+        }
+        const newItem = f(r as T)
+        this.items.set(token, newItem)
     }
 }
 

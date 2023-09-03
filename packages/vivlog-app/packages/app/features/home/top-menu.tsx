@@ -1,11 +1,14 @@
 import { AvatarBox, Button, Input, Text, View } from '@my/ui'
 import { Plus, Settings } from '@tamagui/lucide-icons'
 import { useCurrentUser } from 'app/hooks/useCurrentUser'
+import { useSystemInfo } from 'app/hooks/useSystemInfo'
 import { myShadows } from 'app/presets/shadow'
 import { useRouter } from 'solito/router'
 
 function TopMenu() {
     const userQuery = useCurrentUser()
+    const infoQuery = useSystemInfo()
+
     const user = userQuery.data
 
     const router = useRouter()
@@ -29,7 +32,7 @@ function TopMenu() {
             <Text hoverStyle={{ fontSize: 18 }}>{user?.username ?? 'Not login'}</Text>
         </View>
         <View flex={1} display='flex' jc='center'>
-            <Text fontSize={20}>SiteName</Text>
+            <Text fontSize={20}>{infoQuery.dict?.['system']?.['title'] ?? 'Vivlog'}</Text>
         </View>
         <View display='flex' flexDirection='row' flex={1} jc='flex-end' ai='center'>
             <View>

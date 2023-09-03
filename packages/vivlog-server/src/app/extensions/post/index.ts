@@ -8,7 +8,7 @@ function onActivate(host: Host) {
 }
 
 function onAllActivated(host: Host) {
-    host.container.resolve<string[]>('commentableEntities').push('post')
+    host.container.resolve<string[]>('CommentService::commentableEntities').push('post')
     const logger = host.container.resolve('logger') as Logger
     createPostApi(host)
     logger.info('Post module activated')

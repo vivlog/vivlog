@@ -1,8 +1,9 @@
+import { Type } from '@sinclair/typebox'
 import { RpcRequest } from '../../../host/host'
 import { Host } from '../../../host/types'
 import { RouteHelper } from '../../helper/route_helper'
-import { Role } from '../../types'
-import { deleteItemSchema, deleteItemsSchema, getItemSchema, getItemsSchema, initSettingsSchema, setItemSchema, setItemsSchema } from './entities'
+import { Role, Settings } from '../../types'
+import { deleteItemSchema, deleteItemsSchema, getItemSchema, getItemsSchema, getSchemaSchema, initSettingsSchema, setItemSchema, setItemsSchema } from './entities'
 import { SettingService } from './service'
 
 
@@ -15,6 +16,16 @@ export function createSettingApi(host: Host) {
     routes.new()
         .handle(module_, 'initSettings', initSettingsSchema, async (req: RpcRequest<typeof initSettingsSchema>) => {
             return await settingService.initSettings(req.body!)
+        })
+
+    routes.new()
+        .handle(module_, 'getPublicItems', getItemSchema, async (req) => {
+            return await settingService.getPublicItems(req.body!)
+        })
+
+    routes.new()
+        .handle(module_, 'getSystemInfo', Type.Any(), async () => {
+            return await settingService.getPublicItems({ group: Settings.System._group })
         })
 
     routes.new().minRole(Role.Reader)
@@ -47,4 +58,8 @@ export function createSettingApi(host: Host) {
             return await settingService.deleteItems(req.body!)
         })
 
+    routes.new().minRole(Role.Admin)
+        .handle(module_, 'getSchema', getSchemaSchema, async (req) => {
+            return await settingService.getSchema(req.body!)
+        })
 }

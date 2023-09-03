@@ -4,7 +4,7 @@ import { Comment } from './entities'
 import { CommentService } from './service'
 
 function onActivate(host: Host) {
-    host.container.register('commentableEntities', [])
+    host.container.register('CommentService::commentableEntities', [])
     host.container.register(CommentService.name, new CommentService(host.container))
 }
 

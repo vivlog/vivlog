@@ -21,3 +21,22 @@ export function lazy<TVal, TTar>(target: TTar, key: keyof typeof target, initial
         configurable: true
     })
 }
+
+/**
+ * load every time when accessed
+ */
+export function always<TVal, TTar>(target: TTar, key: keyof typeof target, initializer: () => TVal): void {
+    let value: TVal
+
+    Object.defineProperty(target, key, {
+        get() {
+            value = initializer()
+            return value
+        },
+        set(newValue) {
+            value = newValue
+        },
+        enumerable: true,
+        configurable: true
+    })
+}
