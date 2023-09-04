@@ -1,6 +1,7 @@
 import { Button, H3, ListItem, Separator, Sheet, Text, View, YGroup, YStack } from '@my/ui'
 import { ChevronRight, FilePlus2, Moon, Star, X } from '@tamagui/lucide-icons'
 import { useState } from 'react'
+import { CrudForm } from './CrudForm'
 
 interface CrudProps {
     width?: number
@@ -40,7 +41,7 @@ export function Crud({ adapter, width, ...props }: CrudProps) {
                         <H3 flex={1}>Create New</H3>
                         <Button bg={'$colorTransparent'} size="$6" circular icon={X} onPress={() => setShowCreateSheet(false)} />
                     </View>
-                    <Text>Helloworld</Text>
+                    <CrudForm />
                 </Sheet.Frame>
             </Sheet>
         </View>
