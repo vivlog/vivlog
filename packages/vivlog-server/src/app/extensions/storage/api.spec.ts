@@ -8,15 +8,15 @@ import { inject } from '../../../utils/testing'
 import { Role } from '../../types'
 import { CombinedSession, createNewSession } from '../../util/testing'
 
-describe.skip('Example API', () => {
+describe.skip('Storage API', () => {
     let host: ServerHost
     let sess: CombinedSession
     before(async () => {
         defaultRawConfig.dbPath = ':memory:'
         host = await bootstrap()
     })
-    step('create a example while not logged in, expect permission denied', async () => {
-        const ret = await inject(host, 'example', 'createExample', {
+    step('create a storage while not logged in, expect permission denied', async () => {
+        const ret = await inject(host, 'storage', 'createStorage', {
             title: 'test',
             content: 'test',
         })
@@ -26,8 +26,8 @@ describe.skip('Example API', () => {
         sess = await createNewSession(host, true, [Role.Admin, Role.Reader])
     })
 
-    step('create a example', async () => {
-        await sess.inject('example', 'createExample', {
+    step('create a storage', async () => {
+        await sess.inject('storage', 'createStorage', {
             title: 'test',
             content: 'test',
         })
