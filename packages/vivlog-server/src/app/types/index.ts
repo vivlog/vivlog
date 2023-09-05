@@ -66,7 +66,23 @@ export const Settings = {
         _group: 'comment',
         enabled: 'enabled',
         allow_guest: 'allow_guest', // allow guest to comment (without login)
-    }
+    },
+    Storage: {
+        _group: 'storage',
+        // 存储后端
+        backend: 'backend', // 'local' | 's3' | 'oss' | 'qiniu' | 'upyun' | 'cos' | 'minio' | 'custom'
+        // 存储后端配置, key 命名格式为 backend_config.{backend}.{key}
+        // [key: string]: any,
+        // 默认存储后端名称
+        default_backend: 'default_backend',
+        // 本地存储后端配置
+        // [backend_config.local.path_prefix]: string, // 本地存储路径前缀，例如 /var/www/example.com/objects
+        // 以下二者取并集
+        allowed_mime_types: 'allowed_mime_types', // string[], // 允许上传的 MIME 类型
+        allowed_exts: 'allowed_exts', // string[], // 允许上传的扩展名
+        resolve_cache_ttl: 'resolve_cache_ttl', // number, // 解析缓存时间，单位为秒，表示解析结果的最大缓存时间
+        max_upload_size: 'max_upload_size', // number, // 最大上传文件大小，单位为字节
+    },
 }
 
 

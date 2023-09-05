@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import multipart from '@fastify/multipart'
 import { Static, TSchema } from '@sinclair/typebox'
 import assert from 'assert'
 import { FastifyInstance, FastifyRequest } from 'fastify'
@@ -51,6 +52,7 @@ export class ServerHost implements Host {
         this.sitePath = this.config.get('sitePath')!
         this.apiPath = this.config.get('apiPath')!
         this.logger.info('sitePath: %s', this.sitePath)
+        this.app.register(multipart)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         this.app.post(`${this.sitePath}${this.apiPath}/status/ready`, (_req, _res) => {
             return { data: true }

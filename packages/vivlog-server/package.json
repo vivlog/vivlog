@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@fastify/cors": "^8.3.0",
+    "@fastify/multipart": "^7.7.3",
     "@fastify/type-provider-typebox": "^3.4.0",
     "@sinclair/typebox": "^0.30.4",
     "@types/bcrypt": "^5.0.0",

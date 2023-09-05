@@ -1,16 +1,25 @@
-import { randomUUID } from 'crypto'
-import { DataSource } from 'typeorm'
+import { FastifyRequest } from 'fastify'
+import * as fs from 'fs'
+import { pipeline } from 'stream'
+import { DataSource, Repository } from 'typeorm'
 import { DefaultContainer } from '../../../container'
-import { Logger } from '../../../host/types'
+import { BadRequestError, Logger } from '../../../host/types'
 import { lazy } from '../../../utils/lazy'
 import { Settings } from '../../types'
 import { SettingService } from '../setting/service'
-import { CreateStorageDto, DeleteStorageDto, Storage, GetStorageDto, GetStoragesDto, UpdateStorageDto } from './entities'
+import { Attachment } from './entities'
 
+import path from 'path'
+import { promisify } from 'util'
+import { ConfigProvider } from '../../../config'
+
+const pump = promisify(pipeline)
 export class StorageService {
     public db: DataSource
     public logger: Logger
+    public config: ConfigProvider
     public settingService: SettingService
+    public attachmentRepository: Repository<Attachment>
     get defaultSite() {
         return this.settingService.getValue<string>(Settings.System._group, Settings.System.site)
     }
@@ -18,68 +27,70 @@ export class StorageService {
     constructor(container: DefaultContainer) {
         lazy(this, 'db', () => container.resolve('db') as DataSource)
         lazy(this, 'logger', () => container.resolve('logger') as Logger)
+        lazy(this, 'config', () => container.resolve('config') as ConfigProvider)
         lazy(this, 'settingService', () => container.resolve(SettingService.name) as SettingService)
+        lazy(this, 'attachmentRepository', () => this.db.getRepository('Attachment'))
     }
 
-    async createStorage(dto: CreateStorageDto) {
-        const storage = this.db.getRepository(Storage).create(dto)
-        storage.uuid = randomUUID()
-        await this.db.getRepository(Storage).save(storage)
-        return storage
+
+    async uploadFile(request: FastifyRequest, options: { comment?: string; uploader_uuid?: string }): Promise<Attachment> {
+        const file = await request.file()
+        if (!file) {
+            throw new BadRequestError('No file uploaded')
+        }
+        const maxUploadSize = await this.settingService.getValue<number>(Settings.Storage._group, Settings.Storage.max_upload_size)
+        // check content-length
+        if (file.file.readableLength > maxUploadSize) {
+            throw new BadRequestError('File too large')
+        }
+
+        const attachment = new Attachment()
+
+        attachment.filename = file.filename
+        attachment.mime_type = file.mimetype
+        attachment.size = 0
+        attachment.comment = options.comment
+        attachment.uploader_uuid = options.uploader_uuid
+        attachment.is_local = true
+        attachment.path = path.join(this.config.get('storagePath') ?? '/tmp', file.filename)
+
+        await pump(file.file, fs.createWriteStream(attachment.path))
+
+        attachment.size = fs.statSync(attachment.path).size
+
+        return attachment
+    }
+    // vid example: vivlog://example.com/siteB?r=attachment&id=short_id
+    async resolveFile(vid: string): Promise<Buffer> {
+        const parsed = new URL(vid)
+        const site = 'https' + parsed.host + parsed.pathname
+        const resourceType = parsed.searchParams.get('r')
+        const resourceId = parsed.searchParams.get('id')
+        if (!resourceType || !resourceId) {
+            throw new BadRequestError('Invalid vid')
+        }
+        const url = `${site}/api/storage/${resourceType}/${resourceId}`
+        const response = await fetch(url)
+        return response.data
     }
 
-    async updateStorage(dto: UpdateStorageDto) {
-        const storage = await this.db.getRepository(Storage).findOneBy({ uuid: dto.uuid })
-        if (!storage) {
-            throw new Error('Storage not found')
+    async deleteFile(attachment: Attachment): Promise<void> {
+        // 如果文件是本地的，删除文件
+        if (attachment.is_local) {
+            fs.unlinkSync(attachment.path)
         }
-        return this.getStorage({ site: dto.site ?? await this.defaultSite, uuid: dto.uuid })
+
+        // 删除数据库中的记录
+        await this.attachmentRepository.delete(attachment.id)
     }
 
-    async deleteStorage(dto: DeleteStorageDto) {
-        await this.db.getRepository(Storage).delete(dto.uuid)
-        return { deleted: true }
-    }
-
-    async getStorage(dto: GetStorageDto) {
-        if (!dto.site) {
-            dto.site = await this.defaultSite
-        }
-        return this.db.getRepository(Storage).findOneBy(dto)
-    }
-
-    async getStorages(dto: GetStoragesDto) {
-
-        const { filters, limit, offset, with_total } = dto
-
-        const query = this.db.getRepository(Storage)
-            .createQueryBuilder('storage')
-
-        if (filters) {
-            if (filters.title) {
-                query.andWhere('storage.title like :title', { title: `%${filters.title}%` })
-            }
-        }
-
-        if (limit) {
-            query.limit(limit)
-        }
-
-        if (offset) {
-            query.offset(offset)
-        }
-
-        if (with_total) {
-            const [storages, total] = await query.getManyAndCount()
-            return {
-                storages,
-                total
-            }
-        }
-
-        const storages = await query.getMany()
-        return {
-            storages
+    async downloadFile(attachment: Attachment): Promise<Buffer> {
+        // 如果文件是本地的，直接读取文件
+        if (attachment.is_local) {
+            return fs.readFileSync(attachment.path)
+        } else {
+            // 否则，解析文件
+            return this.resolveFile(attachment.url)
         }
     }
 }

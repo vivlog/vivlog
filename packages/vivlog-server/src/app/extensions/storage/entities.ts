@@ -21,6 +21,9 @@ export class Attachment {
     @Column()
     mime_type: string
 
+    @Column()
+    size: number
+
     @Column({ nullable: true })
     comment?: string
 
@@ -58,7 +61,7 @@ export class Attachment {
     resolved_at?: Date
 }
 
-export type AttachmentDto = Attachment;
+export type AttachmentDto = typeof Attachment;
 
 const createAttachmentSchemaObj = {
     site: Type.Optional(Type.String()),
