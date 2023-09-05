@@ -1,5 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 @Entity()
 export class Attachment {
@@ -7,27 +7,60 @@ export class Attachment {
     id: number
 
     @Column()
+    short_id: string
+
+    @Column()
+    vid: string
+
+    @Column()
     site: string
+
+    @Column()
+    filename: string
+
+    @Column()
+    mime_type: string
+
+    @Column({ nullable: true })
+    comment?: string
 
     @Column()
     uuid: string
 
     @Column()
-    title?: string
+    is_local: boolean
+
+    @Column({ nullable: true })
+    url?: string
+
+    @Column({ nullable: true })
+    thumbnail_url?: string
+
+    @Column({ nullable: true })
+    path: string
+
+    @Column({ nullable: true })
+    base64?: string
 
     @Column('simple-json')
-    content?: unknown
+    custom?: unknown
 
-    @Column()
-    author_uuid?: string
+    @Column({ nullable: true })
+    uploader_uuid?: string
 
-    @Column()
-    author_site?: string
+    @CreateDateColumn()
+    created_at: Date
+
+    @UpdateDateColumn()
+    updated_at: Date
+
+    @Column({ nullable: true })
+    resolved_at?: Date
 }
 
-export type StorageDto = Storage;
+export type AttachmentDto = Attachment;
 
-const createStorageSchemaObj = {
+const createAttachmentSchemaObj = {
     site: Type.Optional(Type.String()),
     title: Type.Optional(Type.String()),
     content: Type.Optional(Type.Unknown()),
@@ -35,32 +68,32 @@ const createStorageSchemaObj = {
     author_site: Type.Optional(Type.String()),
 }
 
-export const createStorageSchema = Type.Object(createStorageSchemaObj)
+export const createAttachmentSchema = Type.Object(createAttachmentSchemaObj)
 
-export type CreateStorageDto = Static<typeof createStorageSchema>
+export type CreateAttachmentDto = Static<typeof createAttachmentSchema>
 
-export const updateStorageSchema = Type.Object({
+export const updateAttachmentSchema = Type.Object({
     uuid: Type.String(),
-    ...createStorageSchemaObj,
+    ...createAttachmentSchemaObj,
 })
 
-export type UpdateStorageDto = Static<typeof updateStorageSchema>
+export type UpdateAttachmentDto = Static<typeof updateAttachmentSchema>
 
-export const deleteStorageSchema = Type.Object({
+export const deleteAttachmentSchema = Type.Object({
     site: Type.Optional(Type.String()),
     uuid: Type.String(),
 })
 
-export type DeleteStorageDto = Static<typeof deleteStorageSchema>
+export type DeleteAttachmentDto = Static<typeof deleteAttachmentSchema>
 
-export const getStorageSchema = Type.Object({
+export const getAttachmentSchema = Type.Object({
     site: Type.Optional(Type.String()),
     uuid: Type.String(),
 })
 
-export type GetStorageDto = Static<typeof getStorageSchema>
+export type GetAttachmentDto = Static<typeof getAttachmentSchema>
 
-export const getStoragesSchema = Type.Object({
+export const getAttachmentsSchema = Type.Object({
     filters: Type.Optional(Type.Object({
         title: Type.Optional(Type.String()),
         site: Type.Optional(Type.String()),
@@ -70,4 +103,4 @@ export const getStoragesSchema = Type.Object({
     with_total: Type.Optional(Type.Boolean()),
 })
 
-export type GetStoragesDto = Static<typeof getStoragesSchema>
+export type GetAttachmentsDto = Static<typeof getAttachmentsSchema>

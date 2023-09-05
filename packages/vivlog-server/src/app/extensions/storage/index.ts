@@ -1,6 +1,6 @@
 import { Extension, Host, Logger } from '../../../host/types'
 import { createStorageApi } from './api'
-import { Storage } from './entities'
+import { Attachment } from './entities'
 import { StorageService } from './service'
 
 function onActivate(host: Host) {
@@ -23,7 +23,7 @@ const meta = {
     }
 }
 
-const entities = [Storage]
+const entities = [Attachment]
 
 export default {
     onActivate,

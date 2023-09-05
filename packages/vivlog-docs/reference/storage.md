@@ -22,14 +22,13 @@ Vivlog 的存储系统具备如下特性：
   - See: <https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types>
 - size: number, required - 附件的大小，单位为字节。
 - name: string, required - 附件的文件名（全名）。
-- ext: string, optional - 附件的扩展名。
 - comment: string, optional - 附件的注释。
 - uploader: string, optional - 附件的上传者 UUID。
 - storage: string, required - 附件的存储后端名称。
 - is_local: boolean, required - 附件是否为本地附件。
 - url: string, optional - 附件的 URL 地址。如果是本地附件，则为 `null`。如果是远程附件，则为远程附件解析后的真实地址。
 - path: string, optional - 附件在服务器的存储路径。
-- content: string, optional - 附件的内容，Base64 编码。对于小文件，可以直接将文件内容存储在数据库中，而不是存储在文件系统中。
+- base64: string, optional - 附件的内容，Base64 编码。对于小文件，可以直接将文件内容存储在数据库中，而不是存储在文件系统中。
 - created_at: number, required - 附件的创建时间，Unix 时间戳，单位为毫秒。
 - updated_at: number, required - 附件的更新时间，Unix 时间戳，单位为毫秒。
 - resolved_at: number, optional - 附件的解析时间，Unix 时间戳，单位为毫秒。
